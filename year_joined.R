@@ -79,11 +79,29 @@ all.possibilities <- expand.grid(id = countrycode_data$iso3c,
                                  report_year = 2001:2010, 
                                  stringsAsFactors=FALSE)
 
-full.data <- all.possibilities %>%
+all.years <- all.possibilities %>%
   left_join(joined, by=c("id", "report_year" = "start_year")) %>%
+  arrange(id, report_year)
+
+# Collapse 2007-2010; if any countries were added in those years, mark 2007 
+# as true; return just the 2007 row
+yrs2007_10 <- all.years %>%
+  filter(report_year >= 2007) %>%
+  group_by(id) %>%
+  mutate(joined = ifelse(all(is.na(joined)), NA, TRUE)) %>%
+  filter(report_year == 2007)
+
+# Remove 2007-2010 and add the collapsed 2007 row; make the year a factor and 
+# add the 2007-2010 label to the 2007
+full.data <- all.years %>%
+  filter(report_year < 2007) %>%
+  bind_rows(yrs2007_10) %>%
   arrange(id, report_year) %>%
   group_by(id) %>%
-  mutate(in.report = calc.tip.presence(joined))
+  mutate(in.report = calc.tip.presence(joined),
+         year.factor = factor(report_year, 
+                              labels=c(as.character(2001:2006), "2007-2010"),
+                              ordered=TRUE))
 
 # Load map information
 countries.map <- readOGR("map_data", "ne_110m_admin_0_countries")
@@ -99,14 +117,13 @@ possible.countries <- expand.grid(id = unique(as.character(countries.ggmap$id)),
 # -----------
 # Plot data
 # -----------
-# TODO: Collapse 2007-2010
 report.map <- ggplot(full.data, aes(fill=in.report, map_id=id)) +
   geom_map(map=countries.ggmap) + 
   # Second layer to add borders and slash-less legend
   geom_map(map=countries.ggmap, size=0.15, colour="black", show_guide=FALSE) + 
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
-  facet_wrap(~ report_year, ncol=3) + 
+  facet_wrap(~ year.factor, ncol=3) + 
   scale_fill_manual(values=c("white", "grey10", "grey70"), name="") +
   theme_blank_map() + 
   theme(legend.position="top", legend.key.size=unit(0.5, "lines"),
