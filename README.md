@@ -9,7 +9,7 @@ TODO:
 * [ ] Create new variables and dataset
 * [ ] Create map
 
-Script: None so far
+Script: [`cables_tip.R`](cables_tip.R)
 
 Output: 
 
