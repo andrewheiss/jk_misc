@@ -47,16 +47,20 @@ theme_blank_map <- function(base_size=12, base_family="Source Sans Pro Light") {
 #
 # Function only returns the final text
 calc.tip.presence <- function(x) {
-  possible.levels <- c("No    ", "New    ", "Yes")
+  possible.levels <- c("New to report    ", "In report    ", "Not in report")
+  
   if (all(is.na(x))) {
-    return(factor("No    ", levels=possible.levels))
+    x.text <- factor(possible.levels[3], levels=possible.levels)
   } else{
     x.num <- cumsum(ifelse(is.na(x), FALSE, x))
     x.final <- cumsum(x.num)
-    x.text <- cut(x.final, breaks=c(0, 0.9, 1, Inf), include.lowest=TRUE, 
-                  labels=possible.levels)
-    return(x.text) 
+    x.text <- ifelse(x.final == 0, possible.levels[3], 
+                     ifelse(x.final == 1, possible.levels[1], 
+                            possible.levels[2]))
+#     x.text <- cut(x.final, breaks=c(0, 0.9, 1, Inf), include.lowest=TRUE, 
+#                   labels=possible.levels)
   }
+  return(factor(x.text, levels=possible.levels, ordered=TRUE))
 }
 
 
@@ -124,7 +128,7 @@ report.map <- ggplot(full.data, aes(fill=in.report, map_id=id)) +
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
   facet_wrap(~ year.factor, ncol=3) + 
-  scale_fill_manual(values=c("white", "grey10", "grey70"), name="") +
+  scale_fill_manual(values=c("grey10", "grey70", "white"), name="") +
   theme_blank_map() + 
   theme(legend.position="top", legend.key.size=unit(0.5, "lines"),
         strip.background=element_rect(colour="#FFFFFF", fill="#FFFFFF"))
