@@ -1,8 +1,27 @@
 library(dplyr)
-library(tidyr)
 library(readr)
 library(countrycode)
+library(rgdal)
+library(ggplot2)
+library(grid)
+library(Cairo)
 
+
+# ------------------
+# Useful functions
+# ------------------
+theme_blank_map <- function(base_size=12, base_family="Source Sans Pro Light") {
+  ret <- theme_bw(base_size, base_family) + 
+    theme(panel.background = element_rect(fill="#ffffff", colour=NA),
+          title=element_text(vjust=1.2, family="Source Sans Pro Semibold"),
+          panel.border=element_blank(), axis.line=element_blank(),
+          panel.grid=element_blank(), axis.ticks=element_blank(),
+          axis.title=element_blank(), axis.text=element_blank(),
+          legend.text=element_text(size=rel(0.7), family="Source Sans Pro Light"),
+          legend.title=element_text(size=rel(0.9), family="Source Sans Pro Semibold"),
+          strip.text=element_text(size=rel(1), family="Source Sans Pro Semibold"))
+  ret
+}
 
 # Determine a country's presence in the annual TIP report
 # Fun logic to get this working:
@@ -49,7 +68,8 @@ calc.tip.presence <- function(x) {
 
 joined <- read_csv("data/year_joined.csv") %>%
   mutate(id = countrycode(cow, "cown", "iso3c"),
-         joined = TRUE)
+         joined = TRUE) %>%
+  select(id, start_year, joined)
 
 all.possibilities <- expand.grid(id = countrycode_data$iso3c,
                                  report_year = 2001:2010, 
@@ -61,3 +81,29 @@ full.data <- all.possibilities %>%
   group_by(id) %>%
   mutate(in.report = calc.tip.presence(joined))
 
+# Load map information
+countries.map <- readOGR("map_data", "ne_110m_admin_0_countries")
+countries.robinson <- spTransform(countries.map, CRS("+proj=robin"))
+countries.ggmap <- fortify(countries.robinson, region="iso_a3") %>%
+  filter(!(id %in% c("ATA", -99)))  # Get rid of Antarctica and NAs
+
+# All possible countries (to fix the South Sudan issue)
+possible.countries <- expand.grid(id = unique(as.character(countries.ggmap$id)),
+                                  year = c(2001, 2010), stringsAsFactors=FALSE)
+
+# -----------
+# Plot data
+# -----------
+report.map <- ggplot(full.data, aes(fill=in.report, map_id=id)) +
+  geom_map(map=countries.ggmap) + 
+  # Second layer to add borders and slash-less legend
+  geom_map(map=countries.ggmap, size=0.15, colour="black", show_guide=FALSE) + 
+  expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
+  coord_equal() +
+  facet_wrap(~ report_year, ncol=3) + 
+  scale_fill_manual(values=c("white", "grey10", "grey70", "grey90"), name="") +
+  theme_blank_map() + 
+  theme(legend.position="top", legend.key.size=unit(0.5, "lines"),
+        strip.background=element_rect(colour="#FFFFFF", fill="#FFFFFF"))
+report.map
+ggsave(report.map, filename="figures/map_joined_report.pdf", device=cairo_pdf)
