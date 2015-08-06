@@ -56,8 +56,11 @@ all.countries <- possible.countries %>%
 # -----------
 # Plot data
 # -----------
+# TODO: BW colors
+# TODO: Better facet titles
+# TODO: Nicer legend
 ggplot(all.countries, aes(fill=crim.level)) +
-  geom_map(aes(map_id=id), map=countries.ggmap, size=0.2) + 
+  geom_map(aes(map_id=id), map=countries.ggmap, size=0) + 
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
   facet_wrap(~ year, ncol=1) + 
