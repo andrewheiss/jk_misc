@@ -87,4 +87,4 @@ base.map <- ggplot() +
   # Best if not manually converting to Robinson
   # coord_map(xlim=c(-180, 180), ylim=c(-60, 90), projection="gall", param=0) + 
 base.map
-ggsave(base.map, filename="unodc_base_map.pdf")
+ggsave(base.map, filename="figures/unodc_base_map.pdf")
