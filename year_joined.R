@@ -44,14 +44,14 @@ theme_blank_map <- function(base_size=12, base_family="Source Sans Pro Light") {
 #
 # Function only returns the final text
 calc.tip.presence <- function(x) {
-  possible.levels <- c("No", "New", "Yes", "Missing")
+  possible.levels <- c("No    ", "New    ", "Yes")
   if (all(is.na(x))) {
-    return(factor("Missing", levels=possible.levels))
+    return(factor("No    ", levels=possible.levels))
   } else{
     x.num <- cumsum(ifelse(is.na(x), FALSE, x))
     x.final <- cumsum(x.num)
     x.text <- cut(x.final, breaks=c(0, 0.9, 1, Inf), include.lowest=TRUE, 
-                  labels=c("No", "New", "Yes"))
+                  labels=possible.levels)
     return(x.text) 
   }
 }
@@ -94,6 +94,7 @@ possible.countries <- expand.grid(id = unique(as.character(countries.ggmap$id)),
 # -----------
 # Plot data
 # -----------
+# TODO: Collapse 2007-2010
 report.map <- ggplot(full.data, aes(fill=in.report, map_id=id)) +
   geom_map(map=countries.ggmap) + 
   # Second layer to add borders and slash-less legend
@@ -101,7 +102,7 @@ report.map <- ggplot(full.data, aes(fill=in.report, map_id=id)) +
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
   facet_wrap(~ report_year, ncol=3) + 
-  scale_fill_manual(values=c("white", "grey10", "grey70", "grey90"), name="") +
+  scale_fill_manual(values=c("white", "grey10", "grey70"), name="") +
   theme_blank_map() + 
   theme(legend.position="top", legend.key.size=unit(0.5, "lines"),
         strip.background=element_rect(colour="#FFFFFF", fill="#FFFFFF"))
