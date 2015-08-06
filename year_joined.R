@@ -121,6 +121,7 @@ possible.countries <- expand.grid(id = unique(as.character(countries.ggmap$id)),
 # -----------
 # Plot data
 # -----------
+# TODO: See if we can collapse 2006-2010 instead so there's a better grid
 report.map <- ggplot(full.data, aes(fill=in.report, map_id=id)) +
   geom_map(map=countries.ggmap) + 
   # Second layer to add borders and slash-less legend
