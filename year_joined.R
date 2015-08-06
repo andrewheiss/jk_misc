@@ -1,3 +1,6 @@
+# ----------------
+# Load libraries
+# ----------------
 library(dplyr)
 library(readr)
 library(countrycode)
@@ -56,6 +59,7 @@ calc.tip.presence <- function(x) {
   }
 }
 
+
 # -----------
 # Load data
 # -----------
@@ -90,6 +94,7 @@ countries.ggmap <- fortify(countries.robinson, region="iso_a3") %>%
 # All possible countries (to fix the South Sudan issue)
 possible.countries <- expand.grid(id = unique(as.character(countries.ggmap$id)),
                                   year = c(2001, 2010), stringsAsFactors=FALSE)
+
 
 # -----------
 # Plot data
