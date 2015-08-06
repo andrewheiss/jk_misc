@@ -1,0 +1,90 @@
+# Useful links:
+#   https://rud.is/b/2015/07/09/faceted-world-population-by-income-choropleths-in-ggplot/
+#   http://gis.stackexchange.com/q/44387
+#   https://github.com/geocomPP/sdv/blob/master/S3.md
+# And my StackExchange question: 
+#   http://gis.stackexchange.com/q/157139/56265
+#
+# Shapefiles:
+#   Admin 0 – Countries 2.0
+#     http://www.naturalearthdata.com/downloads/110m-cultural-vectors/
+#   Land 2.0
+#     http://www.naturalearthdata.com/downloads/110m-physical-vectors/
+
+# ----------------
+# Load libraries
+# ----------------
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(countrycode)
+library(grid)
+library(Cairo)
+
+# Map stuff
+# You must install geos (http://trac.osgeo.org/geos/) and 
+# gdal (http://www.gdal.org/) first. 
+# Easy to do on OS X: `brew install geos gdal`
+# Then install these packages from source
+# install.packages(c("rgeos", "rgdal"), type="source")
+library(rgdal)
+
+
+# ------------------
+# Useful functions
+# ------------------
+theme_blank_map <- function(base_size=12, base_family="Source Sans Pro Light") {
+  ret <- theme_bw(base_size, base_family) + 
+    theme(panel.background = element_rect(fill="#ffffff", colour=NA),
+          title=element_text(vjust=1.2, family="Source Sans Pro Semibold"),
+          panel.border=element_blank(), axis.line=element_blank(),
+          panel.grid=element_blank(), axis.ticks=element_blank(),
+          axis.title=element_blank(), axis.text=element_blank(),
+          legend.text=element_text(size=rel(0.7), family="Source Sans Pro Light"),
+          legend.title=element_text(size=rel(0.9), family="Source Sans Pro Semibold"))
+  ret
+}
+
+
+# -----------
+# Load data
+# -----------
+# Load map information
+countries.map <- readOGR("map_data", "ne_110m_admin_0_countries")
+countries.robinson <- spTransform(countries.map, CRS("+proj=robin"))
+countries.ggmap <- fortify(countries.robinson, region="iso_a3") %>%
+  filter(!(id %in% c("ATA", -99)))  # Get rid of Antarctica and NAs
+
+continents.map <- readOGR("map_data", "ne_110m_land")
+continents.robinson <- spTransform(continents.map, CRS("+proj=robin"))
+continents.ggmap <- fortify(continents.robinson) %>%
+  # Antarctica and its islands are ids 0-7 (the mainland is 7)
+  # fortify() coerces id to character, so the filter command is a little wonky
+  filter(!(id %in% as.character(0:7)))
+
+# Determine which countries to plot
+all.countries <- data_frame(id = unique(as.character(countries.ggmap$id))) 
+
+not.covered <- read_csv("data/unodc_not_covered.csv") %>%
+  mutate(id = countrycode(country_name, "country.name", "iso3c"))
+
+countries.covered <- all.countries %>% anti_join(not.covered, by="id")
+
+
+# -----------
+# Plot data
+# -----------
+country.color <- "grey90"
+base.map <- ggplot() +
+  geom_polygon(data=continents.ggmap, aes(long, lat, group=group),
+               colour=country.color, fill="white", size=0.3) + 
+  geom_map(data=countries.covered, aes(map_id=id),
+           map=countries.ggmap, colour=country.color, fill=country.color, size=0.2) + 
+  coord_equal() +  # Use when manually converting to Robinson
+  theme_blank_map()
+  # No need for this...
+  # expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
+  # Best if not manually converting to Robinson
+  # coord_map(xlim=c(-180, 180), ylim=c(-60, 90), projection="gall", param=0) + 
+base.map
+ggsave(base.map, filename="unodc_base_map.pdf")

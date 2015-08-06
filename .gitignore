@@ -1,0 +1,7 @@
+# Project files
+original_files/*
+
+# R stuff
+.Rproj.user
+.Rhistory
+.RData
