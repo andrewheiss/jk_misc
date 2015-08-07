@@ -13,6 +13,7 @@ library(ggplot2)
 library(grid)
 library(Cairo)
 library(ggmap)
+library(countrycode)
 
 
 # ------------------
@@ -84,24 +85,7 @@ parse.city <- function(x) {
 # -----------
 # Load data
 # -----------
-cables <- read_csv("original_files/Cables Trafficking.csv")
-
-# TODO: Geocode embassies; determine country
-embassies <- cables %>% distinct(Embassy) %>% select(Embassy)
-# embassies.geocoded <- geocode(embassies$Embassy, output="all",
-#                               messaging=FALSE)
-# saveRDS(embassies.geocoded, "data/embassies_geocoded.rds")
-# geocodeQueryCheck()
-embassies.geocoded <- readRDS("data/embassies_geocoded.rds")
-
-embassies.full <- embassies %>% 
-  bind_cols(bind_rows(lapply(1:length(embassies.geocoded), FUN=function(x) 
-    parse.city(embassies.geocoded[[x]]))))
-
-check.me <- embassies.full %>%
-  select(Embassy, country, formatted_address)
-
-
+# Regex searches to clean up the cable data
 # Remove State department prefixes
 state.dept.prefixes <- c("^Efto" = "", "^Noforn" = "")
 
@@ -111,32 +95,90 @@ city.updates <- c("Alexandria" = "Alexandria, Egypt",
                   "Hamilton" = "Hamilton, Bermuda", 
                   "Kolonia" = "Kolonia, Micronesia", 
                   "Melbourne" = "Melbourne, Australia", 
-                  "Naples" = "Naples, Italy", 
+                  "Naples" = "Napoli", 
+                  "Nicosia" = "Metochiou & Ploutarchou Street, 2407, Engomi",
                   "Nogales" = "Nogales, AZ", 
-                  "Nssau" = "Nassau, Bahamas", 
+                  "Nssau" = "Nassau, Bahamas",
+                  "Pristina" = "Ahmet Krasniqi, Prishtinë 10000, Kosovo",
                   "Sanjose" = "San Jose, Costa Rica", 
                   "Santiago" = "Santiago, Chile", 
                   "Stpetersburg" = "St. Petersburg, Russia", 
                   "Vancouver" = "Vancouver, BC")
 
-# Google struggles with these cities, so just get the countries
-just.countries <- c("Nicosia" = "Cyprus", "Pristina" = "Kosovo")
+# Cities that have the same name as the country, or that Google struggles to find
+city.countries <- c("Belize" = "Belmopan, Belize",
+                    "Brasilia" = "Brasilia, Brazil",
+                    "Curacao" = "Willemstad, Curacao",
+                    "Djibouti" = "Djibouti, Djibouti",
+                    "Grenada" = "St. George's, Grenada",
+                    "Guatemala" = "Guatemala City, Guatemala",
+                    "Hongkong" = "Hong Kong, Kong Kong",
+                    "Kuwait" = "Kuwait City, Kuwait",
+                    "Luxembourg" = "Luxembourg City, Luxembourg", 
+                    "Mexico" = "Mexico City, Mexico",
+                    "Panama" = "Panama City, Panama",
+                    "Singapore" = "Singapore, Singapore",
+                    "Tunis" = "Tunis, Tunisia",
+                    "Vatican" = "Vatican City, Vatican City")
 
-# Clean up embassy names
-embassies.fixed <- embassies.full %>%
+# Iran regional presence offices
+iran.offices <- c("Iranrpodubai" = "Tehran, Iran", "Rpodubai" = "Tehran, Iran")
+
+# IGOs and other miscellaneous embassy designations that won't be geocoded
+misc <- c("Unrome" = "UN Rome", "Unvievienna" = "UN Vienna", 
+          "Useubrussels" = "US to EU Brussels", 
+          "Usnato" = "US to NATO Brussels", 
+          "Usosce" = "US to OSCE Vienna", 
+          "Usunnewyork" = "US to UN New York",
+          "State" = "Secretary of State",
+          "Parto" = "US Delegation, Secretary")
+
+# Original cable data
+cables <- read_csv("original_files/Cables Trafficking.csv")
+
+# Extract a list of unique embassies, clean up names
+embassies <- cables %>% distinct(Embassy) %>% select(Embassy) %>%
   mutate(em.clean = Embassy,
-         em.clean = str_replace_all(em.clean, c(state.dept.prefixes, 
-                                                city.updates, just.countries)))
+         to.geocode = ifelse(em.clean %in% names(misc), FALSE, TRUE),
+         em.clean = str_replace_all(em.clean, c(state.dept.prefixes, city.updates,
+                                                city.countries, iran.offices)),
+         em.clean = str_replace_all(em.clean, misc))
 
-# 186 Parto                   Iran
-# 221 State                   Belgium?
+# Geocode embassies
+embassies.to.geocode <- embassies %>% 
+  filter(to.geocode == TRUE)
 
-# 105 Iranrpodubai (Regional presence office)
-# 208 Rpodubai (Regional presence office)
+geocode.cache <- "data/embassies_geocoded.rds"
+if (file.exists(geocode.cache)) {
+  embassies.geocoded <- readRDS(geocode.cache)
+} else {
+  embassies.geocoded <- geocode(embassies.to.geocode$em.clean, 
+                                output="all", messaging=FALSE)
+  saveRDS(embassies.geocoded, geocode.cache)
+  # geocodeQueryCheck()
+}
 
-# 242 Unrome
-# 243 Unvievienna
-# 244 Useubrussels
-# 245 Usnato
-# 246 Usosce
-# 247 Usunnewyork
+# Convert crazy nested list returned by Google to a dataframe
+# bind_rows(..., parse.city(...)) creates the dataframe
+# bind_cols joins that dataframe to original list of embassies to geocode
+embassies.parsed <- embassies.to.geocode %>% 
+  bind_cols(bind_rows(lapply(1:length(embassies.geocoded), FUN=function(x) 
+    parse.city(embassies.geocoded[[x]]))))
+
+# Merge parsed embassy data with the full list (which includes non-geocoded 
+# embassies, like the UN missions)
+embassies.full <- embassies %>% #select(Embassy) %>%
+  left_join(embassies.parsed, by=c("Embassy", "em.clean", "to.geocode"))
+
+# Manually check that embassies were geolocated correctly
+# check.me <- embassies.full %>%
+#   select(Embassy, country, formatted_address)
+
+embassies.final <- embassies.full %>%
+  mutate(city = ifelse(is.na(locality), admin_level_1, locality)) %>%
+  select(Embassy, country, city, 
+         lat, long, geocoded = to.geocode) %>%
+  mutate(iso = countrycode(country, "country.name", "iso3c"),
+         country = countrycode(iso, "iso3c", "country.name"))
+
+# TODO: Deal with Kosovo
