@@ -8,6 +8,7 @@
 # ----------------
 library(dplyr)
 library(readr)
+library(stringr)
 library(ggplot2)
 library(grid)
 library(Cairo)
@@ -58,7 +59,7 @@ parse.city <- function(x) {
   
   filter(address.parts, types == "country")$long_name
   
-  df <- data_frame(formmated_address = NULLtoNA(results$formatted_address),
+  df <- data_frame(formatted_address = NULLtoNA(results$formatted_address),
                    lat = NULLtoNA(geometry_parts$lat),
                    long = NULLtoNA(geometry_parts$lng),
                    loctype = tolower(NULLtoNA(geometry_parts$type)),
@@ -87,7 +88,8 @@ cables <- read_csv("original_files/Cables Trafficking.csv")
 
 # TODO: Geocode embassies; determine country
 embassies <- cables %>% distinct(Embassy) %>% select(Embassy)
-# embassies.geocoded <- geocode(embassies$Embassy, output="all")
+# embassies.geocoded <- geocode(embassies$Embassy, output="all",
+#                               messaging=FALSE)
 # saveRDS(embassies.geocoded, "data/embassies_geocoded.rds")
 # geocodeQueryCheck()
 embassies.geocoded <- readRDS("data/embassies_geocoded.rds")
@@ -95,3 +97,46 @@ embassies.geocoded <- readRDS("data/embassies_geocoded.rds")
 embassies.full <- embassies %>% 
   bind_cols(bind_rows(lapply(1:length(embassies.geocoded), FUN=function(x) 
     parse.city(embassies.geocoded[[x]]))))
+
+check.me <- embassies.full %>%
+  select(Embassy, country, formatted_address)
+
+
+# Remove State department prefixes
+state.dept.prefixes <- c("^Efto" = "", "^Noforn" = "")
+
+# Specify countries for ambiguous embassy names
+city.updates <- c("Alexandria" = "Alexandria, Egypt", 
+                  "Georgetown" = "Georgetown, Guyana", 
+                  "Hamilton" = "Hamilton, Bermuda", 
+                  "Kolonia" = "Kolonia, Micronesia", 
+                  "Melbourne" = "Melbourne, Australia", 
+                  "Naples" = "Naples, Italy", 
+                  "Nogales" = "Nogales, AZ", 
+                  "Nssau" = "Nassau, Bahamas", 
+                  "Sanjose" = "San Jose, Costa Rica", 
+                  "Santiago" = "Santiago, Chile", 
+                  "Stpetersburg" = "St. Petersburg, Russia", 
+                  "Vancouver" = "Vancouver, BC")
+
+# Google struggles with these cities, so just get the countries
+just.countries <- c("Nicosia" = "Cyprus", "Pristina" = "Kosovo")
+
+# Clean up embassy names
+embassies.fixed <- embassies.full %>%
+  mutate(em.clean = Embassy,
+         em.clean = str_replace_all(em.clean, c(state.dept.prefixes, 
+                                                city.updates, just.countries)))
+
+# 186 Parto                   Iran
+# 221 State                   Belgium?
+
+# 105 Iranrpodubai (Regional presence office)
+# 208 Rpodubai (Regional presence office)
+
+# 242 Unrome
+# 243 Unvievienna
+# 244 Useubrussels
+# 245 Usnato
+# 246 Usosce
+# 247 Usunnewyork
