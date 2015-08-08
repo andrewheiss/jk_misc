@@ -1,6 +1,9 @@
 # Project files
 original_files/*
 
+# Some data
+data/*.dta
+
 # R stuff
 .Rproj.user
 .Rhistory

@@ -2,7 +2,9 @@
 # Load libraries
 # ----------------
 library(dplyr)
+library(tidyr)
 library(readr)
+library(foreign)
 library(stringr)
 library(ggplot2)
 library(grid)
@@ -178,3 +180,46 @@ embassies.final <- embassies.full %>%
   # Deal with Kosovo
   mutate(country = ifelse(Embassy == "Pristina", "Kosovo", country),
          iso = ifelse(Embassy == "Pristina", "KOS", iso))
+
+cables.geocoded <- cables %>% 
+  rename(cables.month = `Actual number of cables that month`,
+         trafficking.cables.year = `Trafficking cables this year`) %>%
+  left_join(select(embassies.final, c(Embassy, country)), by="Embassy") %>%
+  filter(!is.na(country))
+
+cables.per.year <- cables.geocoded %>%
+  group_by(Year) %>%
+  summarise(total.all.countries = sum(cables.month))
+
+cables.tip <- cables.geocoded %>%
+  group_by(country, Year) %>%
+  summarise(cables = sum(cables.month),
+            tip.cables = sum(trafficking.cables.year, na.rm=TRUE)) %>%
+  mutate(prop.tip = tip.cables / cables) %>%
+  left_join(cables.per.year, by="Year") %>%
+  mutate(prop.cables.that.year = cables / total.all.countries) %>%
+  select(-total.all.countries)
+
+cables.panel <- cables.tip %>% 
+  expand(country, Year) %>%  # Magic dataframe expansion
+  left_join(cables.tip, by=c("country", "Year")) %>%
+  mutate(cow = countrycode(country, "country.name", "cown")) %>%
+  select(country, cow, year = Year, cables, tip.cables, 
+         prop.tip, prop.cables.that.year)
+
+
+# ----------------
+# Write to Stata
+# ----------------
+# Add fancy Stata labels
+labs <- c("Country name", "COW code", "Year", 
+          "Number of cables originating from country", 
+          "Number of cables related to TIP", 
+          "Proportion of cables related to TIP", 
+          "Proportion of total number of cables that year")
+attr(cables.panel, "var.labels") <- labs
+
+# TODO: Use haven::write_dta instead
+write.dta(cables.panel, "data/cables_panel.dta", version=11)
+system("stata-se -b do clean_dta.do")
+system("rm clean_dta.log")
