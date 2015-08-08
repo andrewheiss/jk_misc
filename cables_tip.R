@@ -179,6 +179,7 @@ embassies.final <- embassies.full %>%
   select(Embassy, country, city, 
          lat, long, geocoded = to.geocode) %>%
   mutate(iso = countrycode(country, "country.name", "iso3c"),
-         country = countrycode(iso, "iso3c", "country.name"))
-
-# TODO: Deal with Kosovo
+         country = countrycode(iso, "iso3c", "country.name")) %>%
+  # Deal with Kosovo
+  mutate(country = ifelse(Embassy == "Pristina", "Kosovo", country),
+         iso = ifelse(Embassy == "Pristina", "KOS", iso))
