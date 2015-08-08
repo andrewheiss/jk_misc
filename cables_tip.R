@@ -1,8 +1,3 @@
-# TASK: calculate VAR1 the percent of available cables that are on TIP
-# Calculate VAR2: the percent of cables available
-# Create country year dataset with cow code , year and these two variables
-# create map of density of TIP effort as defined by var1:the percent of available cables that are on TIP
-
 # ----------------
 # Load libraries
 # ----------------

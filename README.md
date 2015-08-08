@@ -4,10 +4,16 @@
 
 Instructions: `Cables Trafficking.csv`
 
+> Calculate VAR1: the percent of available cables that are on TIP
+> Calculate VAR2: the percent of cables available
+> Create country year dataset with cow code, year, and these two variables
+> Create map of density of TIP effort as defined by VAR1: the percent of available cables that are on TIP
+
+
 TODO: 
 
 * [ ] Create new variables and dataset
-* [ ] Create map
+* [ ] Create map with shaded countries, points for each embassy(?)
 
 Script: [`cables_tip.R`](cables_tip.R)
 
