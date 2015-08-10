@@ -96,7 +96,7 @@ TODO:
 
 * [x] Determine when countries were added to TIP report
 * [x] Create maps for 2001-2007+
-* [ ] Check if we can collapse 2006-2010 instead of 2007-2010 so the grid in the figure is nicer
+* [x] Check if we can collapse 2006-2010 instead of 2007-2010 so the grid in the figure is nicer
 
 Script: [`year_joined.R`](year_joined.R)
 
