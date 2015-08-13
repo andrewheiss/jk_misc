@@ -31,7 +31,9 @@ Instructions: `Funding/Funding analysis.docx`
 
 TODO:
 
-* [ ] See file 
+* [ ] 5 figures
+* [ ] Load content into qualitative data software and find common themes
+* [ ] Clean database
 
 Script: None so far
 
@@ -46,7 +48,8 @@ Instructions: `improvements/Statistics.docx`
 
 TODO:
 
-* [ ] See file 
+* [ ] Generate data
+* [ ] Graph changes over time or make table 
 
 Script: None so far
 
@@ -118,7 +121,7 @@ Script: None so far
 
 Output: 
 
-* None so far
+* Improve table
 
 
 ## ⭕️ Timelines
@@ -127,7 +130,7 @@ Instructions: `timeslines/Timeline.docx`
 
 TODO:
 
-* [ ] See file 
+* [ ] Make cool timelines for Indonesia 
 
 Script: None so far
 
@@ -142,7 +145,7 @@ Instructions: `Update this figure and add other stats….docx`
 
 TODO:
 
-* [ ] See file 
+* [ ] Recreate figure 
 
 Script: None so far
 
