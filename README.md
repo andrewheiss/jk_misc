@@ -81,6 +81,7 @@ TODO:
 
 * [x] Create base map with R
 * [x] Add labels and arrows in Illustrator
+* [x] Make Greenland part of Denmark
 
 Script: [`unodc_base_map.R`](unodc_base_map.R)
 
