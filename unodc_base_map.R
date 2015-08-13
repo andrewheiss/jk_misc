@@ -53,7 +53,8 @@ theme_blank_map <- function(base_size=12, base_family="Source Sans Pro Light") {
 countries.map <- readOGR("map_data", "ne_110m_admin_0_countries")
 countries.robinson <- spTransform(countries.map, CRS("+proj=robin"))
 countries.ggmap <- fortify(countries.robinson, region="iso_a3") %>%
-  filter(!(id %in% c("ATA", -99)))  # Get rid of Antarctica and NAs
+  filter(!(id %in% c("ATA", -99))) %>%  # Get rid of Antarctica and NAs
+  mutate(id = ifelse(id == "GRL", "DNK", id))  # Greenland is part of Denmark
 
 continents.map <- readOGR("map_data", "ne_110m_land")
 continents.robinson <- spTransform(continents.map, CRS("+proj=robin"))
@@ -65,10 +66,8 @@ continents.ggmap <- fortify(continents.robinson) %>%
 # Determine which countries to plot
 all.countries <- data_frame(id = unique(as.character(countries.ggmap$id))) 
 
-not.covered <- read_csv("data/unodc_not_covered.csv") %>%
+countries.covered <- read_csv("data/unodc_covered.csv") %>%
   mutate(id = countrycode(country_name, "country.name", "iso3c"))
-
-countries.covered <- all.countries %>% anti_join(not.covered, by="id")
 
 
 # -----------
