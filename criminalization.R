@@ -78,7 +78,8 @@ crim.all <- crim %>%
 countries.map <- readOGR("map_data", "ne_110m_admin_0_countries")
 countries.robinson <- spTransform(countries.map, CRS("+proj=robin"))
 countries.ggmap <- fortify(countries.robinson, region="iso_a3") %>%
-  filter(!(id %in% c("ATA", -99)))  # Get rid of Antarctica and NAs
+  filter(!(id %in% c("ATA", -99))) %>%  # Get rid of Antarctica and NAs
+  mutate(id = ifelse(id == "GRL", "DNK", id))  # Greenland is part of Denmark
 
 # All possible countries (to fix the South Sudan issue)
 possible.countries <- expand.grid(id = unique(as.character(countries.ggmap$id)),
