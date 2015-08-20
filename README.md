@@ -145,7 +145,7 @@ Output:
 * None so far
 
 
-## ⭕️ "Update this figure and add other stats…"
+## ✅ "Update this figure and add other stats…"
 
 Instructions: `Update this figure and add other stats….docx`
 
@@ -153,10 +153,12 @@ Instructions: `Update this figure and add other stats….docx`
 
 TODO:
 
-* [ ] Recreate figure 
+* [x] Recreate figure 
+* [x] Add 2015 data
 
-Script: None so far
+Script: [`tier_placements.R`](tier_placements.R)
 
 Output: 
 
-* None so far
+* [`data/tiers_2015.csv`](data/tiers_2015.csv)
+* [`figures/tier_percents.pdf`](figures/tier_percents.pdf)
