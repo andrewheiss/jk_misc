@@ -122,7 +122,7 @@ tip.effort <- cables.tip %>%
   summarize(avg.effort = mean(prop.tip),
             med.effort = median(prop.tip)) %>%
   mutate(id = countrycode(country, "country.name", "iso3c"),
-         bins = cut(avg.effort, seq(0, .25, .05), 
+         bins = cut(avg.effort, c(0, 0.00001, seq(0.05, .25, .05)), 
                     include.lowest=TRUE, ordered_result=TRUE))
 
 # Extract the ranges from cut(), increase the lower bound by 1, and make a nice label
@@ -134,6 +134,8 @@ bins.df <- data_frame(bins = levels(tip.effort$bins),
                       bin.clean = paste0(lower.clean * 100, "-", 
                                          upper * 100, "%    ")) %>%
   mutate(bin.clean = ifelse(lower >= 0.15, "> 15%", bin.clean),
+         bin.clean = ifelse(lower == 0, "0%    ", bin.clean),
+         bin.clean = ifelse(upper == 0.05, "0.01-5%    ", bin.clean),
          bin.clean = factor(bin.clean, levels=unique(bin.clean), ordered=TRUE))
 
 # Merge all the data together
@@ -177,7 +179,7 @@ effort.map.binned <- ggplot(effort.full, aes(fill=bin.clean, map_id=id)) +
              colour="black", size=0.5, show_guide=FALSE) + 
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
-  scale_fill_manual(values=c("grey90", "grey60", "grey30", "black"), name="") +
+  scale_fill_manual(values=c("white", "grey90", "grey60", "grey30", "black"), name="") +
   theme_blank_map() + 
   theme(legend.position="bottom", legend.key.size=unit(0.5, "lines"))
 effort.map.binned
