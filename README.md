@@ -1,6 +1,6 @@
 # Projects
 
-## ⭕️ Cables trafficking
+## ✅ Cables trafficking
 
 Instructions: `Cables Trafficking.csv`
 
