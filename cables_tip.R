@@ -4,9 +4,24 @@
 library(dplyr)
 library(tidyr)
 library(readr)
+library(magrittr)
 library(haven)
 library(foreign)
 library(countrycode)
+
+
+# ------------------
+# Useful functions
+# ------------------
+# Rather than fight with lapply or dplyr::mutate_each, just use a dumb for loop 
+# to add label attributes to each column
+add_labels <- function(df, labs) {
+  for (i in 1:ncol(df)) {
+    attr(df[[i]], "label") <- labs[i]
+  }
+  
+  df
+}
 
 
 # ---------------------
@@ -63,13 +78,8 @@ labs <- c("Country name", "COW code", "Year",
           "Proportion of cables related to TIP", 
           "Proportion of total number of cables that year")
 
-# Rather than fight with lapply or dplyr::mutate_each, just use a dumb for loop
-for (i in 1:ncol(cables.panel)) {
-  attr(cables.panel[[i]], "label") <- labs[i]  # For haven and RStudio
-}
-
-# For foreign
-attr(cables.panel, "var.labels") <- labs
+cables.panel %<>% add_labels(labs)  # For haven and RStudio
+attr(cables.panel, "var.labels") <- labs  # For foreign
 
 # write_dta(cables.panel, "data/cables_panel.dta")
 write.dta(cables.panel, "data/cables_panel.dta")
