@@ -157,7 +157,7 @@ effort.map <- ggplot(effort.full, aes(fill=avg.effort, map_id=id)) +
   geom_map(map=countries.ggmap, size=0.15, colour="black") + 
   geom_point(data=embassies.to.plot, 
              aes(x=long.robinson, y=lat.robinson, fill=NULL, map_id=NULL), 
-             colour="black", size=0.75, show_guide=FALSE) + 
+             colour="black", size=0.5, show_guide=FALSE) + 
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
   scale_fill_gradient(high="black", low="white", na.value="white",
@@ -174,7 +174,7 @@ effort.map.binned <- ggplot(effort.full, aes(fill=bin.clean, map_id=id)) +
   geom_map(map=countries.ggmap, size=0.15, colour="black", show_guide=FALSE) + 
   geom_point(data=embassies.to.plot, 
              aes(x=long.robinson, y=lat.robinson, fill=NULL, map_id=NULL), 
-             colour="black", size=0.75, show_guide=FALSE) + 
+             colour="black", size=0.5, show_guide=FALSE) + 
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
   scale_fill_manual(values=c("grey90", "grey60", "grey30", "black"), name="") +
