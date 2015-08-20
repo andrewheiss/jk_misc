@@ -1,6 +1,6 @@
 # Projects
 
-## ⭕️ Cables trafficking
+## ✅ Cables trafficking
 
 Instructions: `Cables Trafficking.csv`
 
@@ -18,7 +18,10 @@ TODO:
 * [x] Create new variables and dataset
 * [x] Create map with shaded countries, points for each embassy(?)
 
-Script: [`cables_tip.R`](cables_tip.R)
+Scripts: 
+
+* [`cables_geocode_embassies.R`](cables_geocode_embassies.R)
+* [`cables_tip.R`](cables_tip.R)
 
 Output: 
 
