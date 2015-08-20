@@ -16,13 +16,15 @@ Instructions: `Cables Trafficking.csv`
 TODO: 
 
 * [x] Create new variables and dataset
-* [ ] Create map with shaded countries, points for each embassy(?)
+* [x] Create map with shaded countries, points for each embassy(?)
 
 Script: [`cables_tip.R`](cables_tip.R)
 
 Output: 
 
 * `data/cables_panel.dta`
+* [`figures/map_avg_tip_effort.pdf`](figures/map_avg_tip_effort.pdf)
+* [`figures/map_avg_tip_effort_binned.pdf`](figures/map_avg_tip_effort_binned.pdf)
 
 
 ## ⭕️ Funding
