@@ -33,8 +33,9 @@ theme_blank_map <- function(base_size=12, base_family="Source Sans Pro Light") {
 # Clean data first
 # cleaned <- read_csv("data/year_joined_original.csv") %>%
 #   mutate(actual.name = countrycode(country_name, "country.name", "country.name"),
-#          cow = countrycode(actual.name, "country.name", "cown")) %>%
-#   select(country_name = actual.name, cow, start_year)
+#          cow = countrycode(actual.name, "country.name", "cown"),
+#          iso = countrycode(actual.name, "country.name", "iso3c")) %>%
+#   select(country_name = actual.name, cow, iso, start_year)
 # write_csv(cleaned, "data/year_joined.csv")
 
 # Load map information
@@ -51,15 +52,14 @@ possible.countries <- data_frame(id = unique(as.character(countries.ggmap$id)))
 year.levels <- data_frame(start_year = 2001, year.level = 1) %>%
   bind_rows(data_frame(start_year = 2002:2004, year.level = 2)) %>%
   bind_rows(data_frame(start_year = 2005:2007, year.level = 3)) %>%
-  bind_rows(data_frame(start_year = 2007:2010, year.level = 4)) %>%
+  bind_rows(data_frame(start_year = 2007:2013, year.level = 4)) %>%
   bind_rows(data_frame(start_year = NA, year.level = 5))
 
 joined <- read_csv("data/year_joined.csv") %>%
-  mutate(id = countrycode(cow, "cown", "iso3c")) %>%
-  select(id, start_year)
+  select(id = iso, start_year)
 
 year.labels <- c("Initial 2001 report    ", "2002-2004    ", "2005-2007    ",
-                 "2007-2010    ", "Not in report")
+                 "2007-2013    ", "Not in report")
 
 joined.full <- possible.countries %>% 
   left_join(joined, by="id") %>%
