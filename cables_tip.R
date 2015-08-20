@@ -8,6 +8,11 @@ library(magrittr)
 library(haven)
 library(foreign)
 library(countrycode)
+library(rgdal)
+library(ggplot2)
+library(grid)
+library(scales)
+library(Cairo)
 
 
 # ------------------
@@ -21,6 +26,19 @@ add_labels <- function(df, labs) {
   }
   
   df
+}
+
+theme_blank_map <- function(base_size=12, base_family="Source Sans Pro Light") {
+  ret <- theme_bw(base_size, base_family) + 
+    theme(panel.background = element_rect(fill="#ffffff", colour=NA),
+          title=element_text(vjust=1.2, family="Source Sans Pro Semibold"),
+          panel.border=element_blank(), axis.line=element_blank(),
+          panel.grid=element_blank(), axis.ticks=element_blank(),
+          axis.title=element_blank(), axis.text=element_blank(),
+          legend.text=element_text(size=rel(0.7), family="Source Sans Pro Light"),
+          legend.title=element_text(size=rel(0.9), family="Source Sans Pro Semibold"),
+          strip.text=element_text(size=rel(1), family="Source Sans Pro Semibold"))
+  ret
 }
 
 
@@ -83,3 +101,70 @@ attr(cables.panel, "var.labels") <- labs  # For foreign
 
 # write_dta(cables.panel, "data/cables_panel.dta")
 write.dta(cables.panel, "data/cables_panel.dta")
+
+
+# --------------------
+# Create a fancy map
+# --------------------
+# Load map information
+countries.map <- readOGR("map_data", "ne_110m_admin_0_countries")
+countries.robinson <- spTransform(countries.map, CRS("+proj=robin"))
+countries.ggmap <- fortify(countries.robinson, region="iso_a3") %>%
+  filter(!(id %in% c("ATA", -99))) %>%  # Get rid of Antarctica and NAs
+  mutate(id = ifelse(id == "GRL", "DNK", id))  # Greenland is part of Denmark
+
+# All possible countries (to fix the South Sudan issue)
+possible.countries <- data_frame(id = unique(as.character(countries.ggmap$id)))
+
+
+# Calculate aggregate proportions of TIP cables for each country and cut into bins
+tip.effort <- cables.tip %>%
+  group_by(country) %>%
+  summarize(avg.effort = mean(prop.tip),
+            med.effort = median(prop.tip)) %>%
+  mutate(id = countrycode(country, "country.name", "iso3c"),
+         bins = cut(avg.effort, seq(0, .25, .05), 
+                    include.lowest=TRUE, ordered_result=TRUE))
+
+# Extract the ranges from cut(), increase the lower bound by 1, and make a nice label
+# Converts [0,0.05] to 0-5% and (0.05,0.1] to 6-10%
+bins.df <- data_frame(bins = levels(tip.effort$bins),
+                      lower = as.numeric(gsub("[\\(\\[](.+),.*", "\\1", bins)),
+                      upper = as.numeric(gsub("[^,]*,([^]]*)\\]", "\\1", bins)),
+                      lower.clean = ifelse(grepl("^\\(", bins), lower + .01, lower),
+                      bin.clean = paste0(lower.clean * 100, "-", 
+                                         upper * 100, "%    ")) %>%
+  mutate(bin.clean = ifelse(lower >= 0.15, "> 15%", bin.clean),
+         bin.clean = factor(bin.clean, levels=unique(bin.clean), ordered=TRUE))
+
+# Merge all the data together
+effort.full <- possible.countries %>%
+  left_join(tip.effort, by="id") %>%
+  left_join(bins.df, by="bins")
+
+# Map of proportions with a gradient fill
+effort.map <- ggplot(effort.full, aes(fill=avg.effort, map_id=id)) +
+  geom_map(map=countries.ggmap, size=0.15, colour="black") + 
+  expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
+  coord_equal() +
+  scale_fill_gradient(high="black", low="white", na.value="white",
+                      guide="colorbar", labels=percent, name="") +
+  theme_blank_map() + 
+  theme(legend.position="bottom")
+effort.map
+ggsave(effort.map, filename="figures/map_avg_tip_effort.pdf", device=cairo_pdf)
+
+# Map of proportions with bins
+effort.map.binned <- ggplot(effort.full, aes(fill=bin.clean, map_id=id)) +
+  geom_map(map=countries.ggmap) + 
+  # Second layer to add borders and slash-less legend
+  geom_map(map=countries.ggmap, size=0.15, colour="black", show_guide=FALSE) + 
+  expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
+  coord_equal() +
+  scale_fill_manual(values=c("grey90", "grey60", "grey30", "black"), name="") +
+  theme_blank_map() + 
+  theme(legend.position="bottom", legend.key.size=unit(0.5, "lines"))
+effort.map.binned
+ggsave(effort.map.binned, 
+       filename="figures/map_avg_tip_effort_binned.pdf", 
+       device=cairo_pdf)
