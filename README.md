@@ -149,6 +149,8 @@ Output:
 
 Instructions: `Update this figure and add other stats….docx`
 
+*Updated data from [http://www.state.gov/j/tip/rls/tiprpt/2015/243366.htm](http://www.state.gov/j/tip/rls/tiprpt/2015/243366.htm) and elsewhere.*
+
 TODO:
 
 * [ ] Recreate figure 
