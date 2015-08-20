@@ -1,169 +1,176 @@
-"country_name","cow","start_year"
-"Afghanistan",700,2002
-"Albania",339,2001
-"Algeria",615,2005
-"Angola",540,2001
-"Antigua and Barbuda",58,2010
-"Argentina",160,2004
-"Armenia",371,2002
-"Australia",900,2004
-"Austria",305,2001
-"Azerbaijan",373,2004
-"Bahamas",31,2009
-"Bahrain",692,2001
-"Bangladesh",771,2001
-"Barbados",53,2010
-"Belarus",370,2001
-"Belgium",211,2001
-"Belize",80,2003
-"Benin",434,2001
-"Bolivia, Plurinational State of",145,2003
-"Bosnia and Herzegovina",346,2001
-"Botswana",571,2009
-"Brazil",140,2001
-"Bulgaria",355,2001
-"Burkina Faso",439,2001
-"Myanmar",775,2001
-"Burundi",516,2003
-"Cambodia",811,2001
-"Cameroon",471,2001
-"Canada",20,2001
-"Central African Republic",482,2006
-"Chad",483,2005
-"Chile",155,2004
-"China",710,2001
-"Colombia",100,2001
-"Congo",484,2008
-"Congo, the Democratic Republic of the",490,2001
-"Costa Rica",94,2001
-"Cote d'Ivoire",437,2001
-"Croatia",344,2003
-"Cuba",40,2003
-"Cyprus",352,2004
-"Czech Republic",316,2001
-"Denmark",390,2003
-"Djibouti",522,2006
-"Dominican Republic",42,2001
-"Ecuador",130,2004
-"Egypt",651,2004
-"El Salvador",92,2001
-"Equatorial Guinea",411,2002
-"Eritrea",531,2009
-"Estonia",366,2002
-"Ethiopia",530,2001
-"Fiji",950,2007
-"Finland",375,2003
-"France",220,2001
-"Gabon",481,2001
-"Gambia",420,2003
-"Georgia",372,2001
-"Germany",255,2001
-"Ghana",452,2001
-"Greece",350,2001
-"Grenada",55,2010
-"Guatemala",90,2001
-"Guinea",438,2004
-"Guinea-Bissau",404,2006
-"Guyana",110,2004
-"Haiti",41,2001
-"Honduras",91,2001
-"Hungary",310,2001
-"Iceland",395,2009
-"India",750,2001
-"Indonesia",850,2001
-"Iran, Islamic Republic of",630,2002
-"Iraq",645,2009
-"Ireland",205,2006
-"Israel",666,2001
-"Italy",325,2001
-"Jamaica",51,2003
-"Japan",740,2001
-"Jordan",663,2006
-"Kazakhstan",705,2001
-"Kenya",501,2003
-"Kiribati",946,2010
-"Kuwait",690,2003
-"Kyrgyzstan",703,2001
-"Lao People's Democratic Republic",812,2001
-"Latvia",367,2002
-"Lebanon",660,2001
-"Lesotho",570,2009
-"Liberia",450,2003
-"Libya",620,2005
-"Lithuania",368,2001
-"Luxembourg",212,2001
-"Macedonia, the former Yugoslav Republic of",343,2001
-"Madagascar",580,2004
-"Malawi",553,2003
-"Malaysia",820,2001
-"Maldives",781,2009
-"Mali",432,2001
-"Malta",338,2006
-"Mauritania",435,2004
-"Mauritius",590,2003
-"Mexico",70,2001
-"Micronesia, Federated States of",987,2009
-"Moldova, Republic of",359,2001
-"Mongolia",712,2005
-"Morocco",600,2001
-"Mozambique",541,2003
-"Namibia",565,2009
-"Nepal",790,2001
-"Netherlands",210,2001
-"New Zealand",920,2004
-"Nicaragua",93,2003
-"Niger",436,2003
-"Nigeria",475,2001
-"Norway",385,2003
-"Oman",698,2005
-"Pakistan",770,2001
-"Panama",95,2004
-"Papua New Guinea",910,2007
-"Paraguay",150,2004
-"Peru",135,2004
-"Philippines",840,2001
-"Poland",290,2001
-"Portugal",235,2002
-"Qatar",694,2001
-"Romania",360,2001
-"Russian Federation",365,2001
-"Rwanda",517,2003
-"Saudi Arabia",670,2001
-"Senegal",433,2002
-"Sierra Leone",451,2001
-"Singapore",830,2001
-"Slovakia",317,2003
-"Slovenia",349,2001
-"Somalia",520,2009
-"Korea, Republic of",732,2001
-"South Africa",560,2001
-"Spain",230,2001
-"Sri Lanka",780,2001
-"Saint Vincent and the Grenadines",57,2009
-"Sudan",625,2001
-"Suriname",115,2003
-"Swaziland",572,2009
-"Sweden",380,2001
-"Switzerland",225,2001
-"Syrian Arab Republic",652,2005
-"Tajikistan",702,2002
-"Tanzania, United Republic of",510,2002
-"Thailand",800,2001
-"Togo",461,2001
-"Trinidad and Tobago",52,2009
-"Tunisia",616,2006
-"Turkey",640,2001
-"Turkmenistan",701,2009
-"United Arab Emirates",696,2001
-"United Kingdom",200,2001
-"United States",2,2001
-"Uganda",500,2001
-"Ukraine",369,2001
-"Uruguay",165,2005
-"Uzbekistan",704,2003
-"Venezuela, Bolivarian Republic of",101,2003
-"Viet Nam",816,2001
-"Yemen",679,2005
-"Zambia",551,2003
-"Zimbabwe",552,2003
-"Korea, Democratic People's Republic of",731,2003
+"country_name","cow","iso","start_year"
+"Afghanistan",700,"AFG",2002
+"Albania",339,"ALB",2001
+"Algeria",615,"DZA",2005
+"Angola",540,"AGO",2001
+"Antigua and Barbuda",58,"ATG",2010
+"Argentina",160,"ARG",2004
+"Armenia",371,"ARM",2002
+"Australia",900,"AUS",2004
+"Austria",305,"AUT",2001
+"Azerbaijan",373,"AZE",2004
+"Bahamas",31,"BHS",2009
+"Bahrain",692,"BHR",2001
+"Bangladesh",771,"BGD",2001
+"Barbados",53,"BRB",2010
+"Belarus",370,"BLR",2001
+"Belgium",211,"BEL",2001
+"Belize",80,"BLZ",2003
+"Benin",434,"BEN",2001
+"Bolivia, Plurinational State of",145,"BOL",2003
+"Bosnia and Herzegovina",346,"BIH",2001
+"Botswana",571,"BWA",2009
+"Brazil",140,"BRA",2001
+"Bulgaria",355,"BGR",2001
+"Burkina Faso",439,"BFA",2001
+"Myanmar",775,"MMR",2001
+"Burundi",516,"BDI",2003
+"Cambodia",811,"KHM",2001
+"Cameroon",471,"CMR",2001
+"Canada",20,"CAN",2001
+"Central African Republic",482,"CAF",2006
+"Chad",483,"TCD",2005
+"Chile",155,"CHL",2004
+"China",710,"CHN",2001
+"Colombia",100,"COL",2001
+"Congo",484,"COG",2008
+"Congo, the Democratic Republic of the",490,"COD",2001
+"Costa Rica",94,"CRI",2001
+"Cote d'Ivoire",437,"CIV",2001
+"Croatia",344,"HRV",2003
+"Cuba",40,"CUB",2003
+"Cyprus",352,"CYP",2004
+"Czech Republic",316,"CZE",2001
+"Denmark",390,"DNK",2003
+"Djibouti",522,"DJI",2006
+"Dominican Republic",42,"DOM",2001
+"Ecuador",130,"ECU",2004
+"Egypt",651,"EGY",2004
+"El Salvador",92,"SLV",2001
+"Equatorial Guinea",411,"GNQ",2002
+"Eritrea",531,"ERI",2009
+"Estonia",366,"EST",2002
+"Ethiopia",530,"ETH",2001
+"Fiji",950,"FJI",2007
+"Finland",375,"FIN",2003
+"France",220,"FRA",2001
+"Gabon",481,"GAB",2001
+"Gambia",420,"GMB",2003
+"Georgia",372,"GEO",2001
+"Germany",255,"DEU",2001
+"Ghana",452,"GHA",2001
+"Greece",350,"GRC",2001
+"Grenada",55,"GRD",2010
+"Guatemala",90,"GTM",2001
+"Guinea",438,"GIN",2004
+"Guinea-Bissau",404,"GNB",2006
+"Guyana",110,"GUY",2004
+"Haiti",41,"HTI",2001
+"Honduras",91,"HND",2001
+"Hungary",310,"HUN",2001
+"Iceland",395,"ISL",2009
+"India",750,"IND",2001
+"Indonesia",850,"IDN",2001
+"Iran, Islamic Republic of",630,"IRN",2002
+"Iraq",645,"IRQ",2009
+"Ireland",205,"IRL",2006
+"Israel",666,"ISR",2001
+"Italy",325,"ITA",2001
+"Jamaica",51,"JAM",2003
+"Japan",740,"JPN",2001
+"Jordan",663,"JOR",2006
+"Kazakhstan",705,"KAZ",2001
+"Kenya",501,"KEN",2003
+"Kiribati",946,"KIR",2010
+"Kuwait",690,"KWT",2003
+"Kyrgyzstan",703,"KGZ",2001
+"Lao People's Democratic Republic",812,"LAO",2001
+"Latvia",367,"LVA",2002
+"Lebanon",660,"LBN",2001
+"Lesotho",570,"LSO",2009
+"Liberia",450,"LBR",2003
+"Libya",620,"LBY",2005
+"Lithuania",368,"LTU",2001
+"Luxembourg",212,"LUX",2001
+"Macedonia, the former Yugoslav Republic of",343,"MKD",2001
+"Madagascar",580,"MDG",2004
+"Malawi",553,"MWI",2003
+"Malaysia",820,"MYS",2001
+"Maldives",781,"MDV",2009
+"Mali",432,"MLI",2001
+"Malta",338,"MLT",2006
+"Mauritania",435,"MRT",2004
+"Mauritius",590,"MUS",2003
+"Mexico",70,"MEX",2001
+"Micronesia, Federated States of",987,"FSM",2009
+"Moldova, Republic of",359,"MDA",2001
+"Mongolia",712,"MNG",2005
+"Morocco",600,"MAR",2001
+"Mozambique",541,"MOZ",2003
+"Namibia",565,"NAM",2009
+"Nepal",790,"NPL",2001
+"Netherlands",210,"NLD",2001
+"New Zealand",920,"NZL",2004
+"Nicaragua",93,"NIC",2003
+"Niger",436,"NER",2003
+"Nigeria",475,"NGA",2001
+"Norway",385,"NOR",2003
+"Oman",698,"OMN",2005
+"Pakistan",770,"PAK",2001
+"Panama",95,"PAN",2004
+"Papua New Guinea",910,"PNG",2007
+"Paraguay",150,"PRY",2004
+"Peru",135,"PER",2004
+"Philippines",840,"PHL",2001
+"Poland",290,"POL",2001
+"Portugal",235,"PRT",2002
+"Qatar",694,"QAT",2001
+"Romania",360,"ROU",2001
+"Russian Federation",365,"RUS",2001
+"Rwanda",517,"RWA",2003
+"Saudi Arabia",670,"SAU",2001
+"Senegal",433,"SEN",2002
+"Sierra Leone",451,"SLE",2001
+"Singapore",830,"SGP",2001
+"Slovakia",317,"SVK",2003
+"Slovenia",349,"SVN",2001
+"Somalia",520,"SOM",2009
+"Korea, Republic of",732,"KOR",2001
+"South Africa",560,"ZAF",2001
+"Spain",230,"ESP",2001
+"Sri Lanka",780,"LKA",2001
+"Saint Vincent and the Grenadines",57,"VCT",2009
+"Sudan",625,"SDN",2001
+"Suriname",115,"SUR",2003
+"Swaziland",572,"SWZ",2009
+"Sweden",380,"SWE",2001
+"Switzerland",225,"CHE",2001
+"Syrian Arab Republic",652,"SYR",2005
+"Tajikistan",702,"TJK",2002
+"Tanzania, United Republic of",510,"TZA",2002
+"Thailand",800,"THA",2001
+"Togo",461,"TGO",2001
+"Trinidad and Tobago",52,"TTO",2009
+"Tunisia",616,"TUN",2006
+"Turkey",640,"TUR",2001
+"Turkmenistan",701,"TKM",2009
+"United Arab Emirates",696,"ARE",2001
+"United Kingdom",200,"GBR",2001
+"United States",2,"USA",2001
+"Uganda",500,"UGA",2001
+"Ukraine",369,"UKR",2001
+"Uruguay",165,"URY",2005
+"Uzbekistan",704,"UZB",2003
+"Venezuela, Bolivarian Republic of",101,"VEN",2003
+"Viet Nam",816,"VNM",2001
+"Yemen",679,"YEM",2005
+"Zambia",551,"ZMB",2003
+"Zimbabwe",552,"ZWE",2003
+"Korea, Democratic People's Republic of",731,"PRK",2003
+"Bhutan",760,"BTN",2013
+"Montenegro",341,"MNE",2003
+"Solomon Islands",940,"SLB",2011
+"Serbia",NA,"SRB",2003
+"South Sudan",626,"SSD",2012
+"Timor-Leste",860,"TLS",2005
+"Taiwan, Province of China",713,"TWN",2003
