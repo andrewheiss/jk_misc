@@ -103,9 +103,9 @@ attr(cables.panel, "var.labels") <- labs  # For foreign
 write.dta(cables.panel, "data/cables_panel.dta")
 
 
-# --------------------
-# Create a fancy map
-# --------------------
+# ------------------------
+# Load all data for maps
+# ------------------------
 # Load map information
 countries.map <- readOGR("map_data", "ne_110m_admin_0_countries")
 countries.robinson <- spTransform(countries.map, CRS("+proj=robin"))
@@ -115,7 +115,6 @@ countries.ggmap <- fortify(countries.robinson, region="iso_a3") %>%
 
 # All possible countries (to fix the South Sudan issue)
 possible.countries <- data_frame(id = unique(as.character(countries.ggmap$id)))
-
 
 # Calculate aggregate proportions of TIP cables for each country and cut into bins
 tip.effort <- cables.tip %>%
@@ -142,9 +141,23 @@ effort.full <- possible.countries %>%
   left_join(tip.effort, by="id") %>%
   left_join(bins.df, by="bins")
 
+# Convert embassy coordinates to Robinson projection and add to df
+embassies.robinson <- project(as.matrix(embassies %>% select(long, lat)), 
+                              proj="+proj=robin")
+embassies.to.plot <- bind_cols(embassies, as.data.frame(embassies.robinson)) %>%
+  rename(long.robinson = V1, lat.robinson = V2) %>%
+  filter(!(is.na(iso)))
+
+
+# --------------------------
+# Finally plot everything!
+# --------------------------
 # Map of proportions with a gradient fill
 effort.map <- ggplot(effort.full, aes(fill=avg.effort, map_id=id)) +
   geom_map(map=countries.ggmap, size=0.15, colour="black") + 
+  geom_point(data=embassies.to.plot, 
+             aes(x=long.robinson, y=lat.robinson, fill=NULL, map_id=NULL), 
+             colour="black", size=0.75, show_guide=FALSE) + 
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
   scale_fill_gradient(high="black", low="white", na.value="white",
@@ -159,6 +172,9 @@ effort.map.binned <- ggplot(effort.full, aes(fill=bin.clean, map_id=id)) +
   geom_map(map=countries.ggmap) + 
   # Second layer to add borders and slash-less legend
   geom_map(map=countries.ggmap, size=0.15, colour="black", show_guide=FALSE) + 
+  geom_point(data=embassies.to.plot, 
+             aes(x=long.robinson, y=lat.robinson, fill=NULL, map_id=NULL), 
+             colour="black", size=0.75, show_guide=FALSE) + 
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
   scale_fill_manual(values=c("grey90", "grey60", "grey30", "black"), name="") +
