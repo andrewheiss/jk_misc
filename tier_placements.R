@@ -5,32 +5,9 @@ library(dplyr)
 library(lubridate)
 library(haven)
 library(readr)
-library(ggplot2)
-library(scales)
-library(grid)
-library(Cairo)
+library(countrycode)
 
-
-# ------------------
-# Useful functions
-# ------------------
-theme_clean <- function(base_size=12, base_family="Source Sans Pro Light") {
-  ret <- theme_bw(base_size, base_family) + 
-    theme(panel.background = element_rect(fill="#ffffff", colour=NA),
-          axis.title.x=element_text(vjust=-0.2), axis.title.y=element_text(vjust=1.5),
-          title=element_text(vjust=1.2, family="Source Sans Pro Semibold"),
-          panel.border = element_blank(), 
-          axis.line=element_line(colour="grey50", size=0.2),
-          #panel.grid=element_blank(), 
-          axis.ticks=element_blank(),
-          legend.position="bottom", 
-          axis.title=element_text(size=rel(0.8), family="Source Sans Pro Semibold"),
-          strip.text=element_text(size=rel(1), family="Source Sans Pro Semibold"),
-          strip.background=element_rect(fill="#ffffff", colour=NA),
-          panel.margin.y=unit(1.5, "lines"))
-  
-  ret
-}
+source("shared_functions.R")
 
 
 # -----------

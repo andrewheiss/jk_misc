@@ -16,10 +16,7 @@
 # ----------------
 library(dplyr)
 library(readr)
-library(ggplot2)
 library(countrycode)
-library(grid)
-library(Cairo)
 
 # Map stuff
 # You must install geos (http://trac.osgeo.org/geos/) and 
@@ -29,21 +26,7 @@ library(Cairo)
 # install.packages(c("rgeos", "rgdal"), type="source")
 library(rgdal)
 
-
-# ------------------
-# Useful functions
-# ------------------
-theme_blank_map <- function(base_size=12, base_family="Source Sans Pro Light") {
-  ret <- theme_bw(base_size, base_family) + 
-    theme(panel.background = element_rect(fill="#ffffff", colour=NA),
-          title=element_text(vjust=1.2, family="Source Sans Pro Semibold"),
-          panel.border=element_blank(), axis.line=element_blank(),
-          panel.grid=element_blank(), axis.ticks=element_blank(),
-          axis.title=element_blank(), axis.text=element_blank(),
-          legend.text=element_text(size=rel(0.7), family="Source Sans Pro Light"),
-          legend.title=element_text(size=rel(0.9), family="Source Sans Pro Semibold"))
-  ret
-}
+source("shared_functions.R")
 
 
 # -----------
