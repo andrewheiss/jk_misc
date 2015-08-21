@@ -5,8 +5,6 @@ library(dplyr)
 library(tidyr)
 library(readr)
 library(stringr)
-library(ggplot2)
-library(grid)
 library(ggmap)
 library(countrycode)
 

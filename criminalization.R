@@ -5,28 +5,14 @@ library(dplyr)
 library(tidyr)
 library(haven)
 library(countrycode)
-library(ggplot2)
-library(grid)
-library(Cairo)
 library(rgdal)
+
+source("shared_functions.R")
 
 
 # ------------------
 # Useful functions
 # ------------------
-theme_blank_map <- function(base_size=12, base_family="Source Sans Pro Light") {
-  ret <- theme_bw(base_size, base_family) + 
-    theme(panel.background = element_rect(fill="#ffffff", colour=NA),
-          title=element_text(vjust=1.2, family="Source Sans Pro Semibold"),
-          panel.border=element_blank(), axis.line=element_blank(),
-          panel.grid=element_blank(), axis.ticks=element_blank(),
-          axis.title=element_blank(), axis.text=element_blank(),
-          legend.text=element_text(size=rel(0.7), family="Source Sans Pro Light"),
-          legend.title=element_text(size=rel(0.9), family="Source Sans Pro Semibold"),
-          strip.text=element_text(size=rel(1), family="Source Sans Pro Semibold"))
-  ret
-}
-
 # Carry the most recent post-2011 value forward to 2014 if 2014 is missing
 impute.crim <- function(year, adjcrimlevel) {
   df <- data_frame(year, adjcrimlevel)

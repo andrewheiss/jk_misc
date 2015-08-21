@@ -9,37 +9,8 @@ library(haven)
 library(foreign)
 library(countrycode)
 library(rgdal)
-library(ggplot2)
-library(grid)
-library(scales)
-library(Cairo)
 
-
-# ------------------
-# Useful functions
-# ------------------
-# Rather than fight with lapply or dplyr::mutate_each, just use a dumb for loop 
-# to add label attributes to each column
-add_labels <- function(df, labs) {
-  for (i in 1:ncol(df)) {
-    attr(df[[i]], "label") <- labs[i]
-  }
-  
-  df
-}
-
-theme_blank_map <- function(base_size=12, base_family="Source Sans Pro Light") {
-  ret <- theme_bw(base_size, base_family) + 
-    theme(panel.background = element_rect(fill="#ffffff", colour=NA),
-          title=element_text(vjust=1.2, family="Source Sans Pro Semibold"),
-          panel.border=element_blank(), axis.line=element_blank(),
-          panel.grid=element_blank(), axis.ticks=element_blank(),
-          axis.title=element_blank(), axis.text=element_blank(),
-          legend.text=element_text(size=rel(0.7), family="Source Sans Pro Light"),
-          legend.title=element_text(size=rel(0.9), family="Source Sans Pro Semibold"),
-          strip.text=element_text(size=rel(1), family="Source Sans Pro Semibold"))
-  ret
-}
+source("shared_functions.R")
 
 
 # ---------------------
