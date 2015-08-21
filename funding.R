@@ -38,3 +38,16 @@ labs <- c("Country name", "Year of grant", "Year (formatted as date)",
           "Region (alternate)", "Type of recipient")
 
 write.dta(raw.data, "~/Desktop/example.dta")
+
+
+# --------------
+# Stats to run
+# --------------
+# the number of grants and the total amount that the US Office to Combat Trafficking in Persons has awarded to various intergovernmental organizations
+# the above, broken down by IGOs
+# 
+# share of all grants awarded to IGOs
+# 
+# breakdown of purpose of grants awarded to IGOs
+# 
+# the breakdown of IGO funding by country. 
