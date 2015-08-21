@@ -39,6 +39,19 @@ impute.crim <- function(year, adjcrimlevel) {
   }
 }
 
+# If a country has criminalization laws in 2014 but has missing data for 2001, 
+# we can assume that they did not have laws then, so retroactively assign a 0.
+# Function expects a two-value vector, after 
+#   filter(year %in% c(2001, 2014)) %>% group_by(id))
+# in a dplyr chain
+retroactively.criminalize <- function(crim) {
+  if (is.na(crim[1] && !(is.na(crim[2])))) {
+    return(c(0, crim[2]))
+  } else {
+    return(as.numeric(crim))
+  }
+}
+
 
 # -----------
 # Load data
@@ -57,7 +70,8 @@ crim.all <- crim %>%
   filter(year %in% c(2001, 2014)) %>%
   # Use the imputed level if needed
   mutate(crim.imputed = ifelse(is.na(adjcrimlevel) & year == 2014, 
-                               crim.imputed, adjcrimlevel)) %>%
+                               crim.imputed, adjcrimlevel),
+         crim.imputed = retroactively.criminalize(crim.imputed)) %>%
   select(id, year, crim = adjcrimlevel, crim.imputed)
 
 # Load map information
