@@ -29,3 +29,12 @@ raw.data <- read.csv("original_files/funding_master.csv", stringsAsFactors=FALSE
          subgrantee = Subgrantee, prevention = Prevention, protection, 
          prosecution, research, amount, region1 = Regional., 
          region2 = Regional..1, recipient_type = recipient.1)
+
+# Write to Stata
+# TODO: Take care of empty strings, long strings
+labs <- c("Country name", "Year of grant", "Year (formatted as date)", 
+          "COW code", "Grant", "Grant recipient", "Subgrantee", "Prevention", 
+          "Protection", "Prosecution", "Research", "Amount given", "Region", 
+          "Region (alternate)", "Type of recipient")
+
+write.dta(raw.data, "~/Desktop/example.dta")
