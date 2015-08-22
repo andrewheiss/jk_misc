@@ -28,7 +28,7 @@ raw.years <- read.csv("original_files/funding_original.csv",
                       stringsAsFactors=FALSE) %>%
   select(grant_year = fiscal.year)
 
-raw.data <- read.csv("original_files/funding_master.csv", stringsAsFactors=FALSE) %>%
+funding.clean <- read.csv("original_files/funding_master.csv", stringsAsFactors=FALSE) %>%
   slice(-c(1000, 3157)) %>%  # Remove these two extra rows
   bind_cols(raw.years) %>%  # Bring in years from other CSV
   mutate(amount = as.numeric(gsub("\\D", "", amount)),
@@ -54,7 +54,7 @@ raw.data <- read.csv("original_files/funding_master.csv", stringsAsFactors=FALSE
 # Write to Stata
 # ----------------
 # Stata (or at least write.dta?) gets mad at long character columns
-raw.data.stata <- raw.data %>%
+funding.clean.stata <- funding.clean %>%
   select(-year_actual) %>%
   rowwise() %>%
   mutate(recipient = truncate(recipient),
@@ -65,9 +65,9 @@ labs <- c("Row ID", "Country name", "Year of grant",
           "COW code", "Grant", "Grant recipient", "Subgrantee", "Prevention", 
           "Protection", "Prosecution", "Research", "Amount given", "Region", 
           "Region (alternate)", "Type of recipient")
-attr(raw.data.stata, "var.labels") <- labs
+attr(funding.clean.stata, "var.labels") <- labs
 
-write.dta(raw.data.stata, "data/funding_clean.dta")
+write.dta(funding.clean.stata, "data/funding_clean.dta")
 system("stata-se -b do funding_clean_stata.do")
 system("rm funding_clean_stata.log")
 
