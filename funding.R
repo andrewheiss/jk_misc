@@ -55,12 +55,13 @@ raw.data <- read.csv("original_files/funding_master.csv", stringsAsFactors=FALSE
 # ----------------
 # Stata (or at least write.dta?) gets mad at long character columns
 raw.data.stata <- raw.data %>%
+  select(-year_actual) %>%
   rowwise() %>%
   mutate(recipient = truncate(recipient),
          subgrantee = truncate(subgrantee)) %>%
   ungroup()
   
-labs <- c("Row ID", "Country name", "Year of grant", "Year (formatted as date)", 
+labs <- c("Row ID", "Country name", "Year of grant", 
           "COW code", "Grant", "Grant recipient", "Subgrantee", "Prevention", 
           "Protection", "Prosecution", "Research", "Amount given", "Region", 
           "Region (alternate)", "Type of recipient")
