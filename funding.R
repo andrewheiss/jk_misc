@@ -77,7 +77,12 @@ system("rm funding_clean_stata.log")
 # --------------
 # the number of grants and the total amount that the US Office to Combat Trafficking in Persons has awarded to various intergovernmental organizations
 # the above, broken down by IGOs
-# 
+funding.igos <- funding.clean %>%
+  filter(recipient_type == "IGO") %>%
+  group_by(recipient) %>%
+  summarise(total = sum(amount, na.rm=TRUE))
+# ISSUE: Variations in IGO name, multiple IGOs
+
 # share of all grants awarded to IGOs
 # 
 # breakdown of purpose of grants awarded to IGOs

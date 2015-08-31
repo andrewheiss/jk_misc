@@ -64,3 +64,4 @@ report.map <- ggplot(joined.full, aes(fill=year.level, map_id=id)) +
         strip.background=element_rect(colour="#FFFFFF", fill="#FFFFFF"))
 report.map
 ggsave(report.map, filename="figures/map_joined_report.pdf", device=cairo_pdf)
+ggsave(report.map, filename="figures/map_joined_report.png")

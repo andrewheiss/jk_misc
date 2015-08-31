@@ -139,6 +139,7 @@ effort.map <- ggplot(effort.full, aes(fill=avg.effort, map_id=id)) +
   theme(legend.position="bottom")
 effort.map
 ggsave(effort.map, filename="figures/map_avg_tip_effort.pdf", device=cairo_pdf)
+ggsave(effort.map, filename="figures/map_avg_tip_effort.png")
 
 # Map of proportions with bins
 effort.map.binned <- ggplot(effort.full, aes(fill=bin.clean, map_id=id)) +
@@ -157,3 +158,5 @@ effort.map.binned
 ggsave(effort.map.binned, 
        filename="figures/map_avg_tip_effort_binned.pdf", 
        device=cairo_pdf)
+ggsave(effort.map.binned, 
+       filename="figures/map_avg_tip_effort_binned.png")

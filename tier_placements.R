@@ -69,3 +69,5 @@ tier.plot <- ggplot(tiers.summary,
 tier.plot
 ggsave(tier.plot, filename="figures/tier_percents.pdf", 
        width=6, height=3, units="in", device=cairo_pdf)
+ggsave(tier.plot, filename="figures/tier_percents.png", 
+       width=6, height=3, units="in")

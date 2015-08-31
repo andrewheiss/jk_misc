@@ -113,3 +113,4 @@ crim.map <- ggplot(all.countries, aes(fill=crim.level, map_id=id)) +
         strip.background=element_rect(colour="#FFFFFF", fill="#FFFFFF"))
 crim.map
 ggsave(crim.map, filename="figures/map_criminalization.pdf", device=cairo_pdf)
+ggsave(crim.map, filename="figures/map_criminalization.png")
