@@ -71,3 +71,18 @@ ggsave(tier.plot, filename="figures/tier_percents.pdf",
        width=6, height=3, units="in", device=cairo_pdf)
 ggsave(tier.plot, filename="figures/tier_percents.png", 
        width=6, height=3, units="in")
+
+
+# ------------------------------------
+# Export underlying plot data to CSV
+# ------------------------------------
+tiers.to.csv <- tiers %>%
+  select(countryname, iso, year, ccode = cow, tier)
+
+write_csv(tiers.to.csv, path="data/map_tiers.csv")
+
+tiers.summary.to.csv <- tiers.summary %>%
+  arrange(year, tier) %>%
+  select(year, tier, num_countries = n, percent = pct)
+
+write_csv(tiers.summary.to.csv, path="data/map_tiers_summary.csv")

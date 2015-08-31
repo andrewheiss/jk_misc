@@ -65,3 +65,14 @@ report.map <- ggplot(joined.full, aes(fill=year.level, map_id=id)) +
 report.map
 ggsave(report.map, filename="figures/map_joined_report.pdf", device=cairo_pdf)
 ggsave(report.map, filename="figures/map_joined_report.png")
+
+
+# ------------------------------------
+# Export underlying plot data to CSV
+# ------------------------------------
+to.csv <- joined.full %>%
+  mutate(ccode = countrycode(id, "iso3c", "cown")) %>%
+  arrange(start_year) %>%
+  select(iso3 = id, ccode, start_year)
+
+write_csv(to.csv, path="data/map_year_joined.csv")

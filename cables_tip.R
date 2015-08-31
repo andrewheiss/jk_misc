@@ -160,3 +160,20 @@ ggsave(effort.map.binned,
        device=cairo_pdf)
 ggsave(effort.map.binned, 
        filename="figures/map_avg_tip_effort_binned.png")
+
+
+# ------------------------------------
+# Export underlying plot data to CSV
+# ------------------------------------
+to.csv <- effort.full %>%
+  mutate(ccode = countrycode(id, "iso3c", "cown")) %>%
+  select(iso3 = id, ccode, avg_effort = avg.effort, 
+         median_effort = med.effort, bin = bin.clean)
+
+write_csv(to.csv, path="data/map_avg_tip_effort.csv")
+
+embassies.to.csv <- embassies.to.plot %>%
+  mutate(ccode = countrycode(iso, "iso3c", "cown")) %>%
+  select(embassy_name_in_cable = Embassy, country, iso, ccode, city, lat, long)
+
+write_csv(embassies.to.csv, path="data/map_approximate_embassy_locations.csv")

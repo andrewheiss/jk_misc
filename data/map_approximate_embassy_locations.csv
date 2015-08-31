@@ -1,0 +1,253 @@
+"embassy_name_in_cable","country","iso","ccode","city","lat","long"
+"Abudhabi","United Arab Emirates","ARE",696,"Abu Dhabi",24.2992,54.6973
+"Abuja","Nigeria","NGA",475,"Abuja",9.07648,7.39857
+"Accra","Ghana","GHA",452,"Accra",5.60372,-0.186964
+"Adana","Turkey","TUR",640,"Adana",36.9914,35.3308
+"Addisababa","Ethiopia","ETH",530,"Addis Ababa",8.9806,38.7578
+"Aittaipei","Taiwan, Province of China","TWN",713,"Taipei City",25.0344,121.561
+"Alexandria","Egypt","EGY",651,"Alexandria",31.2001,29.9187
+"Algiers","Algeria","DZA",615,"Algiers",36.7529,3.04205
+"Almaty","Kazakhstan","KAZ",705,"Almaty",43.222,76.8512
+"Amman","Jordan","JOR",663,"Amman",31.9566,35.9457
+"Amsterdam","Netherlands","NLD",210,"Amsterdam",52.3702,4.89517
+"Ankara","Turkey","TUR",640,"Ankara",39.9334,32.8597
+"Antananarivo","Madagascar","MDG",580,"Antananarivo",-18.8792,47.5079
+"Apia","Samoa","WSM",990,"Apia",-13.8507,-171.751
+"Ashgabat","Turkmenistan","TKM",701,"Ashgabat",37.9601,58.3261
+"Asmara","Eritrea","ERI",531,"Asmara",15.3229,38.9251
+"Astana","Kazakhstan","KAZ",705,"Astana",51.1605,71.4704
+"Asuncion","Paraguay","PRY",150,"Asuncion",-25.2637,-57.5759
+"Athens","Greece","GRC",350,"Athens",37.9839,23.7294
+"Auckland","New Zealand","NZL",920,"Auckland",-36.8485,174.763
+"Baghdad","Iraq","IRQ",645,"Baghdad",33.3128,44.3615
+"Baku","Azerbaijan","AZE",373,"Baku",40.4093,49.8671
+"Bamako","Mali","MLI",432,"Bamako",12.6392,-8.00289
+"Bandarseribegawan","Brunei Darussalam","BRN",835,"Bandar Seri Begawan",4.90305,114.94
+"Bangkok","Thailand","THA",800,"Bangkok",13.7563,100.502
+"Bangui","Central African Republic","CAF",482,"Bangui",4.39467,18.5582
+"Banjul","Gambia","GMB",420,"Banjul",13.4549,-16.579
+"Barcelona","Spain","ESP",230,"Barcelona",41.3851,2.1734
+"Basrah","Iraq","IRQ",645,"Basrah",30.5081,47.7835
+"Beijing","China","CHN",710,"Beijing",39.9042,116.407
+"Beirut","Lebanon","LBN",660,"Beirut",33.8886,35.4955
+"Belfast","United Kingdom","GBR",200,"Belfast",54.5973,-5.93012
+"Belgrade","Serbia","SRB",NA,"Belgrade",44.7866,20.4489
+"Belize","Belize","BLZ",80,"Belmopan",17.251,-88.759
+"Belmopan","Belize","BLZ",80,"Belmopan",17.251,-88.759
+"Berlin","Germany","DEU",255,"Berlin",52.52,13.405
+"Bern","Switzerland","CHE",225,"Bern",46.9479,7.44461
+"Bishkek","Kyrgyzstan","KGZ",703,"Bishkek",42.8746,74.5698
+"Bogota","Colombia","COL",100,"Bogota",4.71099,-74.0721
+"Bonn","Germany","DEU",255,"Bonn",50.7374,7.09821
+"Brasilia","Brazil","BRA",140,"Brasília",-15.7942,-47.8822
+"Bratislava","Slovakia","SVK",317,"Bratislava",48.1459,17.1071
+"Brazzaville","Congo","COG",484,"Brazzaville",-4.26336,15.2429
+"Bridgetown","Barbados","BRB",53,"Bridgetown",13.1132,-59.5988
+"Brussels","Belgium","BEL",211,"Brussels",50.8503,4.35171
+"Bucharest","Romania","ROU",360,"Bucharest",44.4268,26.1025
+"Budapest","Hungary","HUN",310,"Budapest",47.4979,19.0402
+"Buenosaires","Argentina","ARG",160,"Buenos Aires",-34.6037,-58.3816
+"Bujumbura","Burundi","BDI",516,"Bujumbura",-3.36138,29.3599
+"Cairo","Egypt","EGY",651,"Cairo",30.0444,31.2357
+"Calcutta","India","IND",750,"Kolkata",22.5726,88.3639
+"Canberra","Australia","AUS",900,"Canberra",-35.282,149.129
+"Capetown","South Africa","ZAF",560,"Cape Town",-33.9249,18.4241
+"Caracas","Venezuela, Bolivarian Republic of","VEN",101,"Caracas",10.4696,-66.8037
+"Casablanca","Morocco","MAR",600,"Casablanca",33.5731,-7.58984
+"Chengdu","China","CHN",710,"Chengdu",30.5723,104.067
+"Chennai","India","IND",750,"Chennai",13.0827,80.2707
+"Chiangmai","Thailand","THA",800,"Chiang Mai",18.7061,98.9817
+"Chisinau","Moldova, Republic of","MDA",359,"Chisinau",47.0105,28.8638
+"Colombo","Sri Lanka","LKA",780,"Colombo",6.92708,79.8612
+"Conakry","Guinea","GIN",438,"Conakry",9.64119,-13.5784
+"Copenhagen","Denmark","DNK",390,"Copenhagen",55.6761,12.5683
+"Cotonou","Benin","BEN",434,"Cotonou",6.37029,2.39124
+"Curacao","Curacao","CUW",NA,"Willemstad",12.1224,-68.8824
+"Dakar","Senegal","SEN",433,"Dakar",14.7645,-17.366
+"Damascus","Syrian Arab Republic","SYR",652,"Damascus",33.4935,36.2848
+"Daressalaam","Tanzania, United Republic of","TZA",510,"Dar es Salaam",-6.76631,39.196
+"Dhahran","Saudi Arabia","SAU",670,"Dhahran",26.2361,50.0393
+"Dhaka","Bangladesh","BGD",771,"Dhaka",23.8103,90.4125
+"Dili","Timor-Leste","TLS",860,"Díli",-8.55686,125.56
+"Djibouti","Djibouti","DJI",522,"Djibouti",11.5721,43.1456
+"Doha","Qatar","QAT",694,"Doha",25.2916,51.5304
+"Dubai","United Arab Emirates","ARE",696,"Dubai",25.2048,55.2708
+"Dublin","Ireland","IRL",205,"Dublin",53.3498,-6.26031
+"Durban","South Africa","ZAF",560,"Durban",-29.8587,31.0218
+"Dushanbe","Tajikistan","TJK",702,"Dushanbe",38.5598,68.787
+"Dusseldorf","Germany","DEU",255,"Düsseldorf",51.2277,6.77346
+"Eftobandarseribegawan","Brunei Darussalam","BRN",835,"Bandar Seri Begawan",4.90305,114.94
+"Eftobrussels","Belgium","BEL",211,"Brussels",50.8503,4.35171
+"Eftocaracas","Venezuela, Bolivarian Republic of","VEN",101,"Caracas",10.4696,-66.8037
+"Eftolondon","United Kingdom","GBR",200,"London",51.5074,-0.127758
+"Eftoportmoresby","Papua New Guinea","PNG",910,"Port Moresby",-9.4438,147.18
+"Eftorabat","Morocco","MAR",600,"Rabat",33.9716,-6.84981
+"Frankfurt","Germany","DEU",255,"Frankfurt",50.1109,8.68213
+"Freetown","Sierra Leone","SLE",451,"Freetown",8.46568,-13.2317
+"Gaborone","Botswana","BWA",571,"Gaborone",-24.6282,25.9231
+"Geneva","Switzerland","CHE",225,"Geneva",46.1984,6.1423
+"Georgetown","Guyana","GUY",110,"Georgetown",6.80128,-58.1551
+"Grenada","Grenada","GRD",55,"Saint Georges",12.0561,-61.7488
+"Guadalajara","Mexico","MEX",70,"Guadalajara",20.6597,-103.35
+"Guangzhou","China","CHN",710,"Guangzhou",23.1291,113.264
+"Guatemala","Guatemala","GTM",90,"Guatemala City",14.6349,-90.5069
+"Guayaquil","Ecuador","ECU",130,"Guayaquil",-2.171,-79.9224
+"Halifax","United Kingdom","GBR",200,"Halifax",53.727,-1.85754
+"Hamburg","Germany","DEU",255,"Hamburg",53.5511,9.99368
+"Hamilton","Bermuda","BMU",NA,"Hamilton",32.2948,-64.7814
+"Hanoi","Viet Nam","VNM",816,"Hanoi",21.0278,105.834
+"Harare","Zimbabwe","ZWE",552,"Harare",-17.8252,31.0335
+"Havana","Cuba","CUB",40,"Havana",23.0541,-82.3452
+"Helsinki","Finland","FIN",375,"Helsinki",60.1733,24.941
+"Hermosillo","Mexico","MEX",70,"Hermosillo",29.073,-110.956
+"Hillah","Iraq","IRQ",645,"Hillah",32.4773,44.4276
+"Hochiminhcity","Viet Nam","VNM",816,"Ho Chi Minh",10.8185,106.659
+"Hongkong","Hong Kong","HKG",NA,"Hong Kong",22.2783,114.175
+"Iranrpodubai","Iran, Islamic Republic of","IRN",630,"Tehran",35.6892,51.389
+"Islamabad","Pakistan","PAK",770,"Islamabad",33.7294,73.0931
+"Istanbul","Turkey","TUR",640,"Istanbul",41.0082,28.9784
+"Izmir","Turkey","TUR",640,"Izmir",38.4237,27.1428
+"Jakarta","Indonesia","IDN",850,"Jakarta",-6.20876,106.846
+"Jeddah","Saudi Arabia","SAU",670,"Jeddah",21.2854,39.2376
+"Jerusalem","Israel","ISR",666,"Jerusalem",31.7683,35.2137
+"Johannesburg","South Africa","ZAF",560,"Johannesburg",-26.2041,28.0473
+"Kabul","Afghanistan","AFG",700,"Kabul",34.5755,69.2401
+"Kaduna","Nigeria","NGA",475,"Kaduna",10.5105,7.41651
+"Kampala","Uganda","UGA",500,"Kampala",0.347596,32.5825
+"Karachi","Pakistan","PAK",770,"Karachi",24.8615,67.0099
+"Kathmandu","Nepal","NPL",790,"Kathmandu",27.7172,85.324
+"Khartoum","Sudan","SDN",625,"Khartoum",15.5007,32.5599
+"Kiev","Ukraine","UKR",369,"Kyiv",50.4501,30.5234
+"Kigali","Rwanda","RWA",517,"Kigali",-1.95788,30.1127
+"Kingston","Canada","CAN",20,"Kingston",44.2312,-76.486
+"Kinshasa","Congo, the Democratic Republic of the","COD",490,"Kinshasa",-4.44193,15.2663
+"Kirkuk","Iraq","IRQ",645,"Kirkuk",35.4656,44.3804
+"Kolkata","India","IND",750,"Kolkata",22.5726,88.3639
+"Kolonia","Micronesia, Federated States of","FSM",987,"Kolonia",6.95994,158.212
+"Koror","Palau","PLW",986,"Koror",7.34106,134.477
+"Kualalumpur","Malaysia","MYS",820,"Kuala Lumpur",3.139,101.687
+"Kuwait","Kuwait","KWT",690,"Kuwait City",29.3759,47.9774
+"Kyiv","Ukraine","UKR",369,"Kyiv",50.4501,30.5234
+"Lagos","Nigeria","NGA",475,"Lagos",6.52438,3.37921
+"Lahore","Pakistan","PAK",770,"Lahore",31.5546,74.3572
+"Lapaz","Bolivia, Plurinational State of","BOL",145,"Nuestra Señora de La Paz",-16.4897,-68.1193
+"Leipzig","Germany","DEU",255,"Leipzig",51.3397,12.3731
+"Leningrad","Russian Federation","RUS",365,"Leningrad Oblast",60.0793,31.8927
+"Libreville","Gabon","GAB",481,"Libreville",0.416198,9.46727
+"Lilongwe","Malawi","MWI",553,"Lilongwe",-13.9626,33.7741
+"Lima","Peru","PER",135,"Lima",-12.0464,-77.0428
+"Lisbon","Portugal","PRT",235,"Lisbon",38.7223,-9.13934
+"Ljubljana","Slovenia","SVN",349,"Ljubljana",46.0569,14.5058
+"Lome","Togo","TGO",461,"Lome",6.1725,1.23136
+"London","United Kingdom","GBR",200,"London",51.5074,-0.127758
+"Luanda","Angola","AGO",540,"Luanda",-8.83999,13.2894
+"Lusaka","Zambia","ZMB",551,"Lusaka",-15.3875,28.3228
+"Luxembourg","Luxembourg","LUX",212,"Luxembourg City",49.6116,6.13193
+"Madras","India","IND",750,"Chennai",13.0827,80.2707
+"Madrid","Spain","ESP",230,"Madrid",40.4168,-3.70379
+"Majuro","Marshall Islands","MHL",983,"Majuro Atoll",7.11642,171.186
+"Malabo","Equatorial Guinea","GNQ",411,"Malabo",3.75041,8.7371
+"Managua","Nicaragua","NIC",93,"Managua",12.115,-86.2362
+"Manama","Bahrain","BHR",692,"Manama",26.2285,50.586
+"Manila","Philippines","PHL",840,"Manila",14.5995,120.984
+"Maputo","Mozambique","MOZ",541,"Maputo",-25.892,32.6051
+"Maseru","Lesotho","LSO",570,"Maseru",-29.3632,27.5144
+"Matamoros","Mexico","MEX",70,"Matamoros",25.869,-97.5027
+"Mbabane","Swaziland","SWZ",572,"Mbabane",-26.3054,31.1367
+"Melbourne","Australia","AUS",900,"Melbourne",-37.8141,144.963
+"Mexico","Mexico","MEX",70,"Mexico City",19.4326,-99.1332
+"Milan","Italy","ITA",325,"Milan",45.4654,9.18592
+"Minsk","Belarus","BLR",370,"Minsk",53.9045,27.5615
+"Mogadishu","Somalia","SOM",520,"Mogadishu",2.04693,45.3182
+"Monrovia","Liberia","LBR",450,"Monrovia",6.29074,-10.7605
+"Monterrey","Mexico","MEX",70,"Monterrey",25.6866,-100.316
+"Montevideo","Uruguay","URY",165,"Montevideo",-34.9011,-56.1645
+"Montreal","Canada","CAN",20,"Montreal",45.5017,-73.5673
+"Moscow","Russian Federation","RUS",365,"Moscow",55.7558,37.6173
+"Mumbai","India","IND",750,"Mumbai",19.076,72.8777
+"Munich","Germany","DEU",255,"Munich",48.1351,11.582
+"Muscat","Oman","OMN",698,"Muscat",23.5859,58.4059
+"Nairobi","Kenya","KEN",501,"Nairobi",-1.29207,36.8219
+"Naples","Italy","ITA",325,"Naples",40.8518,14.2681
+"Nassau","Bahamas","BHS",31,"Nassau",25.048,-77.3554
+"Ndjamena","Chad","TCD",483,"N'Djamena",12.1348,15.0557
+"Newdelhi","India","IND",750,"New Delhi",28.6139,77.209
+"Niamey","Niger","NER",436,"Niamey",13.5116,2.12539
+"Nicosia","Cyprus","CYP",352,"Egkomi",35.1682,33.3464
+"Nofornmogadishu","Somalia","SOM",520,"Mogadishu",2.04693,45.3182
+"Nogales","United States","USA",2,"Nogales",31.3404,-110.934
+"Nouakchott","Mauritania","MRT",435,"Nouakchott",18.0735,-15.9582
+"Nssau","Bahamas","BHS",31,"Nassau",25.048,-77.3554
+"Oslo","Norway","NOR",385,"Oslo",59.9139,10.7522
+"Ottawa","Canada","CAN",20,"Ottawa",45.4215,-75.6972
+"Ouagadougou","Burkina Faso","BFA",439,"Ouagadougou",12.365,-1.54023
+"Panama","Panama","PAN",95,"Panama",9.10118,-79.4029
+"Paramaribo","Suriname","SUR",115,"Paramaribo",5.85204,-55.2038
+"Paris","France","FRA",220,"Paris",48.8566,2.35222
+"Peshawar","Pakistan","PAK",770,"Peshawar",34.015,71.5805
+"Phnompenh","Cambodia","KHM",811,"Phnom Penh",11.5449,104.892
+"Podgorica","Montenegro","MNE",341,"Podgorica",42.4304,19.2594
+"Portauprince","Haiti","HTI",41,"Port-au-Prince",18.5944,-72.3074
+"Portlouis","Mauritius","MUS",590,"Port Louis",-20.1669,57.5023
+"Portmoresby","Papua New Guinea","PNG",910,"Port Moresby",-9.4438,147.18
+"Portofspain","Trinidad and Tobago","TTO",52,"Port of Spain",10.6549,-61.5019
+"Prague","Czech Republic","CZE",316,"Prague",50.0755,14.4378
+"Praia","Cabo Verde","CPV",402,"Praia",14.933,-23.5133
+"Pretoria","South Africa","ZAF",560,"Pretoria",-25.7479,28.2293
+"Pristina","Kosovo","KOS",NA,"Prishtinë",42.6591,21.1472
+"Quebec","Canada","CAN",20,"Québec",52.9399,-73.5491
+"Quito","Ecuador","ECU",130,"Quito",-0.180653,-78.4678
+"Rabat","Morocco","MAR",600,"Rabat",33.9716,-6.84981
+"Rangoon","Myanmar","MMR",775,"Yangon",16.8661,96.1951
+"Recife","Brazil","BRA",140,"Recife",-8.05784,-34.8829
+"Reykjavik","Iceland","ISL",395,"Reykjavík",64.1357,-21.8462
+"Riga","Latvia","LVA",367,"Rīga",56.9496,24.1052
+"Riodejaneiro","Brazil","BRA",140,"Rio de Janeiro",-22.9068,-43.1729
+"Riyadh","Saudi Arabia","SAU",670,"Riyadh",24.7494,46.9028
+"Rome","Italy","ITA",325,"Rome",41.9028,12.4964
+"Rpodubai","Iran, Islamic Republic of","IRN",630,"Tehran",35.6892,51.389
+"Sanaa","Yemen","YEM",679,"Sana'a",15.3694,44.191
+"Sanjose","Costa Rica","CRI",94,"San Jose",9.92807,-84.0907
+"Sansalvador","El Salvador","SLV",92,"San Salvador",13.6929,-89.2182
+"Santiago","Chile","CHL",155,"Santiago",-33.4489,-70.6693
+"Santodomingo","Dominican Republic","DOM",42,"Santo Domingo",18.4861,-69.9312
+"Saopaulo","Brazil","BRA",140,"São Paulo",-23.5505,-46.6333
+"Sarajevo","Bosnia and Herzegovina","BIH",346,"Sarajevo",43.8563,18.4131
+"Seoul","Korea, Republic of","KOR",732,"Seoul",37.5665,126.978
+"Shanghai","China","CHN",710,"Shanghai",31.2304,121.474
+"Singapore","Singapore","SGP",830,"Singapore",1.28009,103.851
+"Skopje","Macedonia, the former Yugoslav Republic of","MKD",343,"Skopje",41.9973,21.428
+"Sofia","Bulgaria","BGR",355,"Sofia",42.6977,23.3219
+"Stockholm","Sweden","SWE",380,"Stockholm",59.3293,18.0686
+"Stpetersburg","Russian Federation","RUS",365,"Saint Petersburg",59.9343,30.3351
+"Strasbourg","France","FRA",220,"Strasbourg",48.5734,7.75211
+"Surabaya","Indonesia","IDN",850,"Surabaya",-7.25747,112.752
+"Suva","Fiji","FJI",950,"Suva",-18.1248,178.45
+"Taipei","Taiwan, Province of China","TWN",713,"Taipei",25.033,121.565
+"Tallinn","Estonia","EST",366,"Tallinn",59.437,24.7536
+"Tashkent","Uzbekistan","UZB",704,"Tashkent",41.2995,69.2401
+"Tbilisi","Georgia","GEO",372,"Tbilisi",41.7151,44.8271
+"Tegucigalpa","Honduras","HND",91,"Tegucigalpa",14.0723,-87.1921
+"Tehran","Iran, Islamic Republic of","IRN",630,"Tehran",35.6892,51.389
+"Telaviv","Israel","ISR",666,"Tel Aviv-Yafo",32.0853,34.7818
+"Thehague","Netherlands","NLD",210,"The Hague",52.0705,4.3007
+"Thessaloniki","Greece","GRC",350,"Thessaloniki",40.6401,22.9444
+"Tirana","Albania","ALB",339,"Tirana",41.3275,19.8187
+"Tokyo","Japan","JPN",740,"Tokyo",35.6895,139.692
+"Toronto","Canada","CAN",20,"Toronto",43.6532,-79.3832
+"Tripoli","Libya","LBY",620,"Tripoli",32.8872,13.1913
+"Tunis","Tunisia","TUN",616,"Tunis",36.8065,10.1815
+"Ulaanbaatar","Mongolia","MNG",712,"Ulaanbaatar",47.8864,106.906
+"Valletta","Malta","MLT",338,"Valletta",35.8989,14.5146
+"Vancouver","Canada","CAN",20,"Vancouver",49.2827,-123.121
+"Vatican","Holy See (Vatican City State)","VAT",327,"Vatican City",41.9022,12.4536
+"Vienna","Austria","AUT",305,"Vienna",48.2082,16.3738
+"Vientiane","Lao People's Democratic Republic","LAO",812,"Vientiane",17.9757,102.633
+"Vilnius","Lithuania","LTU",368,"Vilnius",54.6872,25.2797
+"Warsaw","Poland","POL",290,"Warsaw",52.2297,21.0122
+"Wellington","New Zealand","NZL",920,"Wellington",-41.2865,174.776
+"Windhoek","Namibia","NAM",565,"Windhoek",-22.5609,17.0658
+"Yaounde","Cameroon","CMR",471,"Yaounde",3.84803,11.5021
+"Yekaterinburg","Russian Federation","RUS",365,"Yekaterinburg",56.8389,60.6057
+"Yerevan","Armenia","ARM",371,"Yerevan",40.1792,44.4991
+"Zagreb","Croatia","HRV",344,"Zagreb",45.815,15.9819

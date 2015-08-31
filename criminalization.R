@@ -114,3 +114,13 @@ crim.map <- ggplot(all.countries, aes(fill=crim.level, map_id=id)) +
 crim.map
 ggsave(crim.map, filename="figures/map_criminalization.pdf", device=cairo_pdf)
 ggsave(crim.map, filename="figures/map_criminalization.png")
+
+
+# ------------------------------------
+# Export underlying plot data to CSV
+# ------------------------------------
+to.csv <- all.countries %>%
+  mutate(ccode = countrycode(id, "iso3c", "cown")) %>%
+  select(iso3 = id, year, ccode, crim, crim_level = crim.level)
+
+write_csv(to.csv, path="data/map_criminalization.csv")
