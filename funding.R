@@ -3,9 +3,16 @@
 # ----------------
 library(dplyr)
 library(tidyr)
+library(magrittr)
+library(readr)
+library(stringr)
 library(lubridate)
 library(foreign)
 library(countrycode)
+library(pander)
+library(rgdal)
+
+source("shared_functions.R")
 
 
 # ------------------
@@ -72,19 +79,158 @@ system("stata-se -b do funding_clean_stata.do")
 system("rm funding_clean_stata.log")
 
 
-# --------------
-# Stats to run
-# --------------
-# the number of grants and the total amount that the US Office to Combat Trafficking in Persons has awarded to various intergovernmental organizations
-# the above, broken down by IGOs
-funding.igos <- funding.clean %>%
-  filter(recipient_type == "IGO") %>%
-  group_by(recipient) %>%
-  summarise(total = sum(amount, na.rm=TRUE))
-# ISSUE: Variations in IGO name, multiple IGOs
+# ---------------
+# Summary plots
+# ---------------
+# Clean IGO names
+igo.names <- funding.clean %>% 
+  filter(recipient_type == "IGO") %>% select(recipient) %>%
+  unique() %>%
+  arrange(recipient) %T>%
+  # Manually choose which IGO counts
+  write_csv(path="data/igo_abbreviations_NEW.csv")
 
-# share of all grants awarded to IGOs
-# 
-# breakdown of purpose of grants awarded to IGOs
-# 
-# the breakdown of IGO funding by country. 
+# Merge manual decicions into full dataset
+funding.clean.abbrev <- funding.clean %>%
+  left_join(read_csv("data/igo_abbreviations.csv"), by="recipient")
+
+
+# Number of grants + total amount granted to IGOs, by individual IGO
+funding.igos.indiv <- funding.clean.abbrev %>%
+  filter(recipient_type == "IGO",
+         recipient_clean != "NGO") %>%
+  group_by(recipient_clean) %>%
+  summarise(total = sum(amount, na.rm=TRUE),
+            number = n()) %>%
+  arrange(desc(total)) %>%
+  mutate(recipient_factor = factor(recipient_clean, 
+                                   levels=rev(recipient_clean), ordered=TRUE)) %>%
+  arrange(desc(number)) %>%
+  mutate(recipient_factor_n = factor(recipient_clean, 
+                                   levels=rev(recipient_clean), ordered=TRUE))
+
+fig.total.to.igos <- ggplot(funding.igos.indiv, aes(x = recipient_factor, y = total)) + 
+  geom_bar(stat="identity") + 
+  scale_y_continuous(labels = dollar) + 
+  labs(x = "Primary IGO recipient", y = "Total grant amount") + 
+  coord_flip() + 
+  theme_clean()
+fig.total.to.igos
+ggsave(fig.total.to.igos, filename="figures/fig_total_to_igos.pdf", 
+       width=6, height=4, units="in", device=cairo_pdf)
+ggsave(fig.total.to.igos, filename="figures/fig_total_to_igos.png",
+       width=6, height=4, units="in")
+
+
+fig.n.to.igos <- ggplot(funding.igos.indiv, aes(x = recipient_factor_n, y = number)) + 
+  geom_bar(stat="identity") + 
+  labs(x = "Primary IGO recipient", y = "Total number of grants") + 
+  coord_flip() + 
+  theme_clean()
+fig.n.to.igos
+ggsave(fig.n.to.igos, filename="figures/fig_n_to_igos.pdf", 
+       width=6, height=4, units="in", device=cairo_pdf)
+ggsave(fig.n.to.igos, filename="figures/fig_n_to_igos.png",
+       width=6, height=4, units="in")
+
+
+# Share of all grants awarded to IGOs
+funding.igos <- funding.clean.abbrev %>%
+  group_by(recipient_type) %>%
+  summarise(total = sum(amount, na.rm=TRUE),
+            number = n()) %>%
+  ungroup() %>%
+  arrange(total) %>%
+  mutate(prop = total / sum(total)) %>%
+  mutate(recipient_type = gsub("^$", "Not specified", recipient_type),
+         recipient_type_factor = factor(recipient_type, 
+                                        levels=recipient_type, ordered=TRUE)) %>%
+  arrange(number) %>%
+  mutate(recipient_type_factor_n = factor(recipient_type, 
+                                          levels=recipient_type, ordered=TRUE))
+
+fig.total.all.sectors <- ggplot(funding.igos, aes(x = recipient_type_factor, y = total)) + 
+  geom_bar(stat="identity") + 
+  scale_y_continuous(labels = dollar) + 
+  coord_flip() + 
+  theme_clean()
+fig.total.all.sectors
+ggsave(fig.total.all.sectors, filename="figures/fig_total_all_sectors.pdf", 
+       width=6, height=4, units="in", device=cairo_pdf)
+ggsave(fig.total.all.sectors, filename="figures/fig_total_all_sectors.png",
+       width=6, height=4, units="in")
+
+
+# Purpose of grants awarded to IGOs
+funding.purpose <- funding.clean.abbrev %>%
+  filter(recipient_type == "IGO") %>%
+  summarise_each(funs(sum(., na.rm=TRUE)), 
+                 c(prevention, protection, prosecution, research)) %>%
+  gather(grant_purpose, count) %>%
+  arrange(count) %>%
+  mutate(purpose_factor = factor(grant_purpose, 
+                                 levels=grant_purpose, 
+                                 labels=str_to_title(grant_purpose), ordered=TRUE))
+
+fig.grant.purpose <- ggplot(funding.purpose, aes(x = purpose_factor, y=count)) + 
+  geom_bar(stat="identity") + 
+  labs(x=NULL, y="Number of grants awarded") + 
+  coord_flip() + 
+  theme_clean()
+fig.grant.purpose
+ggsave(fig.grant.purpose, filename="figures/fig_grant_purpose.pdf", 
+       width=6, height=2.5, units="in", device=cairo_pdf)
+ggsave(fig.grant.purpose, filename="figures/fig_grant_purpose.png",
+       width=6, height=2.5, units="in")
+
+
+# IGO funding by country
+regions <- c("Africa", "East Asia and Pacific Islands", "Europe", "Global", 
+             "Near East Asia", "South and Central Asia", "Western Hemisphere")
+funding.igos.countries <- funding.clean.abbrev %>%
+  mutate(id = countrycode(cowcode, "cown", "iso3c"),
+         clean.name = countrycode(cowcode, "cown", "country.name"),
+         clean.name = ifelse(is.na(clean.name), country, clean.name)) %>%
+  filter(recipient_type == "IGO") %>%
+  mutate(region = ifelse(clean.name %in% regions, TRUE, FALSE)) %>%
+  filter(!region) %>%
+  group_by(id) %>%
+  summarise(total = sum(amount, na.rm=TRUE)) %>%
+  arrange(desc(total))
+
+funding.igos.countries.print <- funding.igos.countries %>%
+  filter(region) %>%
+  mutate(total = dollar(total)) %>%
+  select(-region) %>%
+  set_colnames(c("Country", "Total awarded"))
+
+pandoc.table(head(funding.igos.countries.print, 20))
+
+# Load map information
+countries.map <- readOGR("map_data", "ne_110m_admin_0_countries")
+countries.robinson <- spTransform(countries.map, CRS("+proj=robin"))
+countries.ggmap <- fortify(countries.robinson, region="iso_a3") %>%
+  filter(!(id %in% c("ATA", -99))) %>%  # Get rid of Antarctica and NAs
+  mutate(id = ifelse(id == "GRL", "DNK", id))  # Greenland is part of Denmark
+
+# All possible countries (to fix the South Sudan issue)
+possible.countries <- data_frame(id = unique(as.character(countries.ggmap$id)))
+
+all.countries <- possible.countries %>% 
+  left_join(funding.igos.countries, by=c("id"))
+
+# Map of proportions with a gradient fill
+map.igo.country <- ggplot(all.countries, aes(fill=total, map_id=id)) +
+  geom_map(map=countries.ggmap) + 
+  # Second layer to add borders and slash-less legend
+  geom_map(map=countries.ggmap, size=0.15, colour="black", show_guide=FALSE) + 
+  expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
+  coord_equal() +
+  scale_fill_gradient(high="black", low="white", na.value="white",
+                      labels=dollar, name="", limits=c(0, max(all.countries$total)),
+                      guide=guide_colorbar(draw.llim=TRUE, barwidth=15, barheight=0.5, ticks=FALSE)) +
+  theme_blank_map() + 
+  theme(legend.position="bottom")
+map.igo.country
+ggsave(map.igo.country, filename="figures/map_igo_funding.pdf", device=cairo_pdf)
+ggsave(map.igo.country, filename="figures/map_igo_funding.png")
