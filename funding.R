@@ -35,7 +35,8 @@ raw.years <- read.csv("original_files/funding_original.csv",
                       stringsAsFactors=FALSE) %>%
   select(grant_year = fiscal.year)
 
-funding.clean <- read.csv("original_files/funding_master.csv", stringsAsFactors=FALSE) %>%
+funding.clean <- read.csv("original_files/funding_master.csv", 
+                          stringsAsFactors=FALSE) %>%
   slice(-c(1000, 3157)) %>%  # Remove these two extra rows
   bind_cols(raw.years) %>%  # Bring in years from other CSV
   mutate(amount = as.numeric(gsub("\\D", "", amount)),
@@ -96,6 +97,7 @@ funding.clean.abbrev <- funding.clean %>%
 
 
 # Number of grants + total amount granted to IGOs, by individual IGO
+# TODO: Combine amount and number
 funding.igos.indiv <- funding.clean.abbrev %>%
   filter(recipient_type == "IGO",
          recipient_clean != "NGO") %>%
@@ -135,6 +137,8 @@ ggsave(fig.n.to.igos, filename="figures/fig_n_to_igos.png",
 
 
 # Share of all grants awarded to IGOs
+# TODO: Amount and count
+# TODO: Add percents
 funding.igos <- funding.clean.abbrev %>%
   group_by(recipient_type) %>%
   summarise(total = sum(amount, na.rm=TRUE),
@@ -162,6 +166,8 @@ ggsave(fig.total.all.sectors, filename="figures/fig_total_all_sectors.png",
 
 
 # Purpose of grants awarded to IGOs
+# TODO: Pie chart
+# TODO: Amount too
 funding.purpose <- funding.clean.abbrev %>%
   filter(recipient_type == "IGO") %>%
   summarise_each(funs(sum(., na.rm=TRUE)), 
@@ -185,6 +191,7 @@ ggsave(fig.grant.purpose, filename="figures/fig_grant_purpose.png",
 
 
 # IGO funding by country
+# TODO: All TIP funding
 regions <- c("Africa", "East Asia and Pacific Islands", "Europe", "Global", 
              "Near East Asia", "South and Central Asia", "Western Hemisphere")
 funding.igos.countries <- funding.clean.abbrev %>%
@@ -199,9 +206,7 @@ funding.igos.countries <- funding.clean.abbrev %>%
   arrange(desc(total))
 
 funding.igos.countries.print <- funding.igos.countries %>%
-  filter(region) %>%
   mutate(total = dollar(total)) %>%
-  select(-region) %>%
   set_colnames(c("Country", "Total awarded"))
 
 pandoc.table(head(funding.igos.countries.print, 20))
