@@ -103,20 +103,32 @@ funding.clean.abbrev <- funding.clean %>%
 # --------------------------------------------------------------------
 # Number of grants + total amount granted to IGOs, by individual IGO
 # --------------------------------------------------------------------
-funding.igos.indiv <- funding.clean.abbrev %>%
+funding.igos.indiv.full <- funding.clean.abbrev %>%
   filter(recipient_type == "IGO",
          recipient_clean != "NGO") %>%
   group_by(recipient_clean) %>%
   summarise(total = sum(amount, na.rm=TRUE),
             number = n()) %>%
+  arrange(desc(number))
+
+funding.igos.indiv.full %>% select(recipient_clean) %>% 
+  slice(1:6) %>% c() %>% unlist() -> igos.to.keep
+
+funding.igos.indiv <- funding.igos.indiv.full %>%
+  mutate(recipient_collapsed = ifelse(recipient_clean %in% igos.to.keep, 
+                                      recipient_clean, "Other")) %>%
+  group_by(recipient_collapsed) %>%
+  summarise(total = sum(total), number = sum(number)) %>%
   mutate(prop_n = sprintf("%.1f%%", number / sum(number) * 100),
          prop_grants = sprintf("%.1f%%", total / sum(total) * 100)) %>%
   arrange(desc(total)) %>%
-  mutate(recipient_factor = factor(recipient_clean, 
-                                   levels=rev(recipient_clean), ordered=TRUE)) %>%
+  mutate(recipient_factor = factor(recipient_collapsed, 
+                                   levels=rev(c(igos.to.keep, "Other")), 
+                                   ordered=TRUE)) %>%
   arrange(desc(number)) %>%
-  mutate(recipient_factor_n = factor(recipient_clean, 
-                                   levels=rev(recipient_clean), ordered=TRUE))
+  mutate(recipient_factor_n = factor(recipient_collapsed, 
+                                   levels=rev(c(igos.to.keep, "Other")), 
+                                   ordered=TRUE))
 
 fig.total.to.igos <- ggplot(funding.igos.indiv, 
                             aes(x = recipient_factor_n, y = total)) + 
@@ -152,24 +164,43 @@ ggsave(grants.to.igos, filename="figures/fig_grants_to_igos.pdf",
 ggsave(grants.to.igos, filename="figures/fig_grants_to_igos.png",
        width=5, height=2.5, units="in", scale=2.5)
 
+funding.igos.indiv.full %>% select(recipient_clean) %>%
+  filter(!(recipient_clean %in% igos.to.keep)) %>% 
+  c() %>% unlist() %>% unname() %>% sort() -> collapsed.igos
+
+cat("Collapsed IGOs:", paste(collapsed.igos, collapse=", "),
+    file="figures/fig_grants_to_igos_collapsed_igos.txt")
+
 
 # -------------------------------------
 # Share of all grants awarded to IGOs
 # -------------------------------------
-funding.igos <- funding.clean.abbrev %>%
+funding.igos.full <- funding.clean.abbrev %>%
+  mutate(recipient_type = gsub("^$", "Not specified", recipient_type)) %>%
   group_by(recipient_type) %>%
   summarise(total = sum(amount, na.rm=TRUE),
             number = n()) %>%
+  arrange(desc(number))
+
+funding.igos.full %>% select(recipient_type) %>% 
+  slice(1:6) %>% c() %>% unlist() -> sectors.to.keep
+
+funding.igos <- funding.igos.full %>%
+  mutate(recipient_collapsed = ifelse(recipient_type %in% sectors.to.keep, 
+                                      recipient_type, "Other")) %>%
+  group_by(recipient_collapsed) %>%
+  summarise(total = sum(total), number = sum(number)) %>%
   mutate(prop_n = sprintf("%.1f%%", number / sum(number) * 100),
          prop_grants = sprintf("%.1f%%", total / sum(total) * 100)) %>%
   arrange(total) %>%
   mutate(prop = total / sum(total)) %>%
-  mutate(recipient_type = gsub("^$", "Not specified", recipient_type),
-         recipient_type_factor = factor(recipient_type, 
-                                        levels=recipient_type, ordered=TRUE)) %>%
+  mutate(recipient_type_factor = factor(recipient_collapsed, 
+                                        levels=rev(c(sectors.to.keep, "Other")), 
+                                        ordered=TRUE)) %>%
   arrange(number) %>%
-  mutate(recipient_type_factor_n = factor(recipient_type, 
-                                          levels=recipient_type, ordered=TRUE))
+  mutate(recipient_type_factor_n = factor(recipient_collapsed, 
+                                          levels=rev(c(sectors.to.keep, "Other")), 
+                                          ordered=TRUE))
 
 fig.total.all.sectors <- ggplot(funding.igos, 
                                 aes(x = recipient_type_factor_n, y = total)) + 
@@ -202,6 +233,13 @@ ggsave(grants.to.all.sectors, filename="figures/fig_grants_to_all_sectors.pdf",
        width=5, height=2, units="in", device=cairo_pdf, scale=2.5)
 ggsave(grants.to.all.sectors, filename="figures/fig_grants_to_all_sectors.png",
        width=5, height=2, units="in", scale=2.5)
+
+funding.igos.full %>% select(recipient_type) %>%
+  filter(!(recipient_type %in% sectors.to.keep)) %>% 
+  c() %>% unlist() %>% unname() %>% sort() -> collapsed.sectors
+
+cat("Collapsed sectors:", paste(collapsed.sectors, collapse=", "),
+    file="figures/fig_grants_to_all_sectors_collapsed_sectors.txt")
 
 
 # -----------------------------------
