@@ -118,7 +118,7 @@ funding.igos.indiv <- funding.clean.abbrev %>%
                                    levels=rev(recipient_clean), ordered=TRUE))
 
 fig.total.to.igos <- ggplot(funding.igos.indiv, 
-                            aes(x = recipient_factor, y = total)) + 
+                            aes(x = recipient_factor_n, y = total)) + 
   geom_bar(stat="identity") + 
   geom_text(aes(label = prop_grants), size=3.5, hjust=-0.3, 
             family="Source Sans Pro Light") + 
@@ -132,7 +132,7 @@ fig.total.to.igos <- ggplot(funding.igos.indiv,
 fig.total.to.igos
 
 fig.n.to.igos <- ggplot(funding.igos.indiv, 
-                        aes(x = recipient_factor, y = number)) + 
+                        aes(x = recipient_factor_n, y = number)) + 
   geom_bar(stat="identity") + 
   geom_text(aes(label = prop_n), size=3.5, hjust=1.3, 
             family="Source Sans Pro Light") + 
@@ -161,7 +161,8 @@ funding.igos <- funding.clean.abbrev %>%
   group_by(recipient_type) %>%
   summarise(total = sum(amount, na.rm=TRUE),
             number = n()) %>%
-  ungroup() %>%
+  mutate(prop_n = sprintf("%.1f%%", number / sum(number) * 100),
+         prop_grants = sprintf("%.1f%%", total / sum(total) * 100)) %>%
   arrange(total) %>%
   mutate(prop = total / sum(total)) %>%
   mutate(recipient_type = gsub("^$", "Not specified", recipient_type),
@@ -171,16 +172,37 @@ funding.igos <- funding.clean.abbrev %>%
   mutate(recipient_type_factor_n = factor(recipient_type, 
                                           levels=recipient_type, ordered=TRUE))
 
-fig.total.all.sectors <- ggplot(funding.igos, aes(x = recipient_type_factor, y = total)) + 
+fig.total.all.sectors <- ggplot(funding.igos, 
+                                aes(x = recipient_type_factor_n, y = total)) + 
   geom_bar(stat="identity") + 
-  scale_y_continuous(labels = dollar) + 
+  geom_text(aes(label = prop_grants), size=3.5, hjust=-0.3, 
+            family="Source Sans Pro Light") + 
+  scale_y_continuous(labels = dollar, expand = c(.15, .15)) + 
+  labs(x = NULL, y = "Total grant amount") + 
   coord_flip() + 
-  theme_clean()
-fig.total.all.sectors
-ggsave(fig.total.all.sectors, filename="figures/fig_total_all_sectors.pdf", 
-       width=6, height=4, units="in", device=cairo_pdf)
-ggsave(fig.total.all.sectors, filename="figures/fig_total_all_sectors.png",
-       width=6, height=4, units="in")
+  theme_clean() + 
+  theme(axis.text.y = element_text(hjust=0.5), 
+        axis.line.y = element_blank(),
+        plot.margin = unit(c(1,1,1,0), "lines"))
+
+fig.n.all.sectors <- ggplot(funding.igos, 
+                        aes(x = recipient_type_factor_n, y = number)) + 
+  geom_bar(stat="identity") + 
+  geom_text(aes(label = prop_n), size=3.5, hjust=1.3, 
+            family="Source Sans Pro Light") + 
+  scale_y_reverse(expand = c(.1, .1)) + 
+  labs(x = NULL, y = "Total number of grants") + 
+  coord_flip() + 
+  theme_clean() + 
+  theme(axis.text.y = element_blank(), 
+        axis.line.y = element_blank(),
+        plot.margin = unit(c(1,0.5,1,1), "lines"))
+
+grants.to.all.sectors <- arrangeGrob(fig.n.all.sectors, fig.total.all.sectors, nrow=1)
+ggsave(grants.to.all.sectors, filename="figures/fig_grants_to_all_sectors.pdf",
+       width=5, height=2, units="in", device=cairo_pdf, scale=2.5)
+ggsave(grants.to.all.sectors, filename="figures/fig_grants_to_all_sectors.png",
+       width=5, height=2, units="in", scale=2.5)
 
 
 # Purpose of grants awarded to IGOs
