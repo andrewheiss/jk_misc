@@ -168,7 +168,7 @@ funding.igos.indiv.full %>% select(recipient_clean) %>%
   filter(!(recipient_clean %in% igos.to.keep)) %>% 
   c() %>% unlist() %>% unname() %>% sort() -> collapsed.igos
 
-cat("Collapsed IGOs:", paste(collapsed.igos, collapse=", "),
+cat("Collapsed IGOs:", paste(collapsed.igos, collapse=", "), "\n",
     file="figures/fig_grants_to_igos_collapsed_igos.txt")
 
 
@@ -238,7 +238,7 @@ funding.igos.full %>% select(recipient_type) %>%
   filter(!(recipient_type %in% sectors.to.keep)) %>% 
   c() %>% unlist() %>% unname() %>% sort() -> collapsed.sectors
 
-cat("Collapsed sectors:", paste(collapsed.sectors, collapse=", "),
+cat("Collapsed sectors:", paste(collapsed.sectors, collapse=", "), "\n", 
     file="figures/fig_grants_to_all_sectors_collapsed_sectors.txt")
 
 
