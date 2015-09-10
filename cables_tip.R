@@ -8,6 +8,7 @@ library(magrittr)
 library(haven)
 library(foreign)
 library(countrycode)
+library(maptools)
 library(rgdal)
 
 source("shared_functions.R")

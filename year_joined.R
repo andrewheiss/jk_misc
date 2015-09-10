@@ -4,6 +4,7 @@
 library(dplyr)
 library(readr)
 library(countrycode)
+library(maptools)
 library(rgdal)
 
 source("shared_functions.R")
