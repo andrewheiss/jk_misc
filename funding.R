@@ -10,6 +10,7 @@ library(lubridate)
 library(foreign)
 library(countrycode)
 library(pander)
+library(maptools)
 library(rgdal)
 library(gridExtra)
 
@@ -155,8 +156,6 @@ ggsave(grants.to.igos, filename="figures/fig_grants_to_igos.png",
 # -------------------------------------
 # Share of all grants awarded to IGOs
 # -------------------------------------
-# TODO: Amount and count
-# TODO: Add percents
 funding.igos <- funding.clean.abbrev %>%
   group_by(recipient_type) %>%
   summarise(total = sum(amount, na.rm=TRUE),
@@ -205,7 +204,9 @@ ggsave(grants.to.all.sectors, filename="figures/fig_grants_to_all_sectors.png",
        width=5, height=2, units="in", scale=2.5)
 
 
+# -----------------------------------
 # Purpose of grants awarded to IGOs
+# -----------------------------------
 # TODO: Pie chart
 # TODO: Amount too
 library(magrittr)
@@ -247,7 +248,9 @@ ggsave(fig.grant.purpose, filename="figures/fig_grant_purpose.png",
        width=6, height=2.5, units="in")
 
 
+# ------------------------
 # IGO funding by country
+# ------------------------
 # TODO: All TIP funding
 regions <- c("Africa", "East Asia and Pacific Islands", "Europe", "Global", 
              "Near East Asia", "South and Central Asia", "Western Hemisphere")
@@ -285,7 +288,7 @@ all.countries <- possible.countries %>%
 map.igo.country <- ggplot(all.countries, aes(fill=total, map_id=id)) +
   geom_map(map=countries.ggmap) + 
   # Second layer to add borders and slash-less legend
-  geom_map(map=countries.ggmap, size=0.15, colour="black", show_guide=FALSE) + 
+  geom_map(map=countries.ggmap, size=0.15, colour="black", show.legend=FALSE) + 
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
   scale_fill_gradient(high="black", low="white", na.value="white",
