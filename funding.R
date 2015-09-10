@@ -11,6 +11,7 @@ library(foreign)
 library(countrycode)
 library(pander)
 library(rgdal)
+library(gridExtra)
 
 source("shared_functions.R")
 
@@ -80,9 +81,11 @@ system("stata-se -b do funding_clean_stata.do")
 system("rm funding_clean_stata.log")
 
 
+# --------------------------------------------------------------------
 # ---------------
 # Summary plots
 # ---------------
+# --------------------------------------------------------------------
 # Clean IGO names
 igo.names <- funding.clean %>% 
   filter(recipient_type == "IGO") %>% select(recipient) %>%
@@ -96,14 +99,17 @@ funding.clean.abbrev <- funding.clean %>%
   left_join(read_csv("data/igo_abbreviations.csv"), by="recipient")
 
 
+# --------------------------------------------------------------------
 # Number of grants + total amount granted to IGOs, by individual IGO
-# TODO: Combine amount and number
+# --------------------------------------------------------------------
 funding.igos.indiv <- funding.clean.abbrev %>%
   filter(recipient_type == "IGO",
          recipient_clean != "NGO") %>%
   group_by(recipient_clean) %>%
   summarise(total = sum(amount, na.rm=TRUE),
             number = n()) %>%
+  mutate(prop_n = sprintf("%.1f%%", number / sum(number) * 100),
+         prop_grants = sprintf("%.1f%%", total / sum(total) * 100)) %>%
   arrange(desc(total)) %>%
   mutate(recipient_factor = factor(recipient_clean, 
                                    levels=rev(recipient_clean), ordered=TRUE)) %>%
@@ -111,32 +117,44 @@ funding.igos.indiv <- funding.clean.abbrev %>%
   mutate(recipient_factor_n = factor(recipient_clean, 
                                    levels=rev(recipient_clean), ordered=TRUE))
 
-fig.total.to.igos <- ggplot(funding.igos.indiv, aes(x = recipient_factor, y = total)) + 
+fig.total.to.igos <- ggplot(funding.igos.indiv, 
+                            aes(x = recipient_factor, y = total)) + 
   geom_bar(stat="identity") + 
-  scale_y_continuous(labels = dollar) + 
-  labs(x = "Primary IGO recipient", y = "Total grant amount") + 
+  geom_text(aes(label = prop_grants), size=3.5, hjust=-0.3, 
+            family="Source Sans Pro Light") + 
+  scale_y_continuous(labels = dollar, expand = c(.1, .1)) + 
+  labs(x = NULL, y = "Total grant amount") + 
   coord_flip() + 
-  theme_clean()
+  theme_clean() + 
+  theme(axis.text.y = element_text(hjust=0.5), 
+        axis.line.y = element_blank(),
+        plot.margin = unit(c(1,1,1,0), "lines"))
 fig.total.to.igos
-ggsave(fig.total.to.igos, filename="figures/fig_total_to_igos.pdf", 
-       width=6, height=4, units="in", device=cairo_pdf)
-ggsave(fig.total.to.igos, filename="figures/fig_total_to_igos.png",
-       width=6, height=4, units="in")
 
-
-fig.n.to.igos <- ggplot(funding.igos.indiv, aes(x = recipient_factor_n, y = number)) + 
+fig.n.to.igos <- ggplot(funding.igos.indiv, 
+                        aes(x = recipient_factor, y = number)) + 
   geom_bar(stat="identity") + 
-  labs(x = "Primary IGO recipient", y = "Total number of grants") + 
+  geom_text(aes(label = prop_n), size=3.5, hjust=1.3, 
+            family="Source Sans Pro Light") + 
+  scale_y_reverse(expand = c(.1, .1)) + 
+  labs(x = NULL, y = "Total number of grants") + 
   coord_flip() + 
-  theme_clean()
+  theme_clean() + 
+  theme(axis.text.y = element_blank(), 
+        axis.line.y = element_blank(),
+        plot.margin = unit(c(1,0.5,1,1), "lines"))
 fig.n.to.igos
-ggsave(fig.n.to.igos, filename="figures/fig_n_to_igos.pdf", 
-       width=6, height=4, units="in", device=cairo_pdf)
-ggsave(fig.n.to.igos, filename="figures/fig_n_to_igos.png",
-       width=6, height=4, units="in")
+
+grants.to.igos <- arrangeGrob(fig.n.to.igos, fig.total.to.igos, nrow=1)
+ggsave(grants.to.igos, filename="figures/fig_grants_to_igos.pdf",
+       width=5, height=2.5, units="in", device=cairo_pdf, scale=2.5)
+ggsave(grants.to.igos, filename="figures/fig_grants_to_igos.png",
+       width=5, height=2.5, units="in", scale=2.5)
 
 
+# -------------------------------------
 # Share of all grants awarded to IGOs
+# -------------------------------------
 # TODO: Amount and count
 # TODO: Add percents
 funding.igos <- funding.clean.abbrev %>%
@@ -168,6 +186,23 @@ ggsave(fig.total.all.sectors, filename="figures/fig_total_all_sectors.png",
 # Purpose of grants awarded to IGOs
 # TODO: Pie chart
 # TODO: Amount too
+library(magrittr)
+bloop <- funding.clean.abbrev %>%
+  filter(recipient_type == "IGO") %>%
+  select(prevention, protection, prosecution, research) %>%
+  na.omit()
+
+asdf <- bloop %>% left_join(possible.combinations) %>% 
+  group_by(id) %>% summarise(total = n()) %>%
+  left_join(possible.combinations, by="id")
+
+sum((asdf %>% filter(prevention == 1))$total)
+
+possible.combinations <- expand.grid(rep(list(0:1), 4)) %>% 
+  set_colnames(c("prevention", "protection", "prosecution", "research")) %>%
+  mutate(id=1:n())
+
+
 funding.purpose <- funding.clean.abbrev %>%
   filter(recipient_type == "IGO") %>%
   summarise_each(funs(sum(., na.rm=TRUE)), 
@@ -179,7 +214,7 @@ funding.purpose <- funding.clean.abbrev %>%
                                  labels=str_to_title(grant_purpose), ordered=TRUE))
 
 fig.grant.purpose <- ggplot(funding.purpose, aes(x = purpose_factor, y=count)) + 
-  geom_bar(stat="identity") + 
+  geom_bar(stat="identity", position="dodge") + 
   labs(x=NULL, y="Number of grants awarded") + 
   coord_flip() + 
   theme_clean()
