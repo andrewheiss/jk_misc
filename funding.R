@@ -266,24 +266,53 @@ possible.combinations <- expand.grid(rep(list(0:1), 4)) %>%
 
 funding.purpose <- funding.clean.abbrev %>%
   filter(recipient_type == "IGO") %>%
-  summarise_each(funs(sum(., na.rm=TRUE)), 
-                 c(prevention, protection, prosecution, research)) %>%
-  gather(grant_purpose, count) %>%
-  arrange(count) %>%
+  select(country, grant_year, recipient, prevention, 
+         protection, prosecution, research, amount) %>%
+  gather(grant_purpose, given_for_purpose, 
+         c(prevention, protection, prosecution, research)) %>%
+  filter(given_for_purpose == 1) %>%
+  mutate(grant_purpose = str_to_title(grant_purpose)) %>%
+  group_by(grant_purpose) %>%
+  summarise(total = sum(amount, na.rm=TRUE), number = n()) %>%
+  arrange(desc(total)) %>%
   mutate(purpose_factor = factor(grant_purpose, 
-                                 levels=grant_purpose, 
-                                 labels=str_to_title(grant_purpose), ordered=TRUE))
+                                   levels=rev(grant_purpose), 
+                                   ordered=TRUE)) %>%
+  arrange(desc(number)) %>%
+  mutate(purpose_factor_n = factor(grant_purpose, 
+                                     levels=rev(grant_purpose), 
+                                     ordered=TRUE))
 
-fig.grant.purpose <- ggplot(funding.purpose, aes(x = purpose_factor, y=count)) + 
+fig.grant.purpose.total <- ggplot(funding.purpose, 
+                                  aes(x=purpose_factor_n, y=total)) + 
   geom_bar(stat="identity", position="dodge") + 
-  labs(x=NULL, y="Number of grants awarded") + 
+  scale_y_continuous(labels = dollar, expand = c(.1, .1)) + 
+  labs(x = NULL, y = "Total grant amount") + 
   coord_flip() + 
-  theme_clean()
-fig.grant.purpose
-ggsave(fig.grant.purpose, filename="figures/fig_grant_purpose.pdf", 
-       width=6, height=2.5, units="in", device=cairo_pdf)
-ggsave(fig.grant.purpose, filename="figures/fig_grant_purpose.png",
-       width=6, height=2.5, units="in")
+  theme_clean() + 
+  theme(axis.text.y = element_text(hjust=0.5), 
+        axis.line.y = element_blank(),
+        plot.margin = unit(c(1,1,1,0), "lines"))
+fig.grant.purpose.total
+
+fig.n.grant.purpose <- ggplot(funding.purpose, 
+                              aes(x=purpose_factor_n, y=number)) + 
+  geom_bar(stat="identity") + 
+  scale_y_reverse(expand = c(.1, .1)) + 
+  labs(x = NULL, y = "Total number of grants") + 
+  coord_flip() + 
+  theme_clean() + 
+  theme(axis.text.y = element_blank(), 
+        axis.line.y = element_blank(),
+        plot.margin = unit(c(1,0.5,1,1), "lines"))
+fig.n.grant.purpose
+
+grants.purpose <- arrangeGrob(fig.n.grant.purpose, 
+                              fig.grant.purpose.total, nrow=1)
+ggsave(grants.purpose, filename="figures/fig_grants_purpose.pdf",
+       width=5, height=1.5, units="in", device=cairo_pdf, scale=2.5)
+ggsave(grants.purpose, filename="figures/fig_grants_purpose.png",
+       width=5, height=1.5, units="in", scale=2.5)
 
 
 # ------------------------
