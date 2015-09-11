@@ -35,14 +35,13 @@ possible.countries <- data_frame(id = unique(as.character(countries.ggmap$id)))
 year.levels <- data_frame(start_year = 2001, year.level = 1) %>%
   bind_rows(data_frame(start_year = 2002:2004, year.level = 2)) %>%
   bind_rows(data_frame(start_year = 2005:2007, year.level = 3)) %>%
-  bind_rows(data_frame(start_year = 2007:2013, year.level = 4)) %>%
-  bind_rows(data_frame(start_year = NA, year.level = 5))
+  bind_rows(data_frame(start_year = 2007:2013, year.level = 4))
 
 joined <- read_csv("data/year_joined.csv") %>%
   select(id = iso, start_year)
 
 year.labels <- c("Initial 2001 report    ", "2002-2004    ", "2005-2007    ",
-                 "2007-2013    ", "Not in report")
+                 "2007-2013")
 
 joined.full <- possible.countries %>% 
   left_join(joined, by="id") %>%
@@ -56,12 +55,13 @@ joined.full <- possible.countries %>%
 report.map <- ggplot(joined.full, aes(fill=year.level, map_id=id)) +
   geom_map(map=countries.ggmap) + 
   # Second layer to add borders and slash-less legend
-  geom_map(map=countries.ggmap, size=0.15, colour="black", show_guide=FALSE) + 
+  geom_map(map=countries.ggmap, size=0.15, colour="black", show.legend=FALSE) + 
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
   scale_fill_manual(values=c("grey85", "grey65", "grey30", "grey5", "white"), name="") +
   theme_blank_map() + 
   theme(legend.position="top", legend.key.size=unit(0.5, "lines"),
+        legend.key = element_blank(),
         strip.background=element_rect(colour="#FFFFFF", fill="#FFFFFF"))
 report.map
 ggsave(report.map, filename="figures/map_joined_report.pdf", device=cairo_pdf)
