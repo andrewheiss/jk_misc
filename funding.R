@@ -297,27 +297,25 @@ ggsave(grants.purpose, filename="figures/fig_grants_purpose.png",
 
 
 # ------------------------
-# IGO funding by country
+# TIP funding by country
 # ------------------------
-# TODO: All TIP funding
 regions <- c("Africa", "East Asia and Pacific Islands", "Europe", "Global", 
              "Near East Asia", "South and Central Asia", "Western Hemisphere")
-funding.igos.countries <- funding.clean.abbrev %>%
+funding.all.countries <- funding.clean.abbrev %>%
   mutate(id = countrycode(cowcode, "cown", "iso3c"),
          clean.name = countrycode(cowcode, "cown", "country.name"),
          clean.name = ifelse(is.na(clean.name), country, clean.name)) %>%
-  filter(recipient_type == "IGO") %>%
   mutate(region = ifelse(clean.name %in% regions, TRUE, FALSE)) %>%
-  filter(!region) %>%
+  filter(!region, id != "USA") %>%
   group_by(id) %>%
   summarise(total = sum(amount, na.rm=TRUE)) %>%
   arrange(desc(total))
 
-funding.igos.countries.print <- funding.igos.countries %>%
+funding.all.countries.print <- funding.all.countries %>%
   mutate(total = dollar(total)) %>%
   set_colnames(c("Country", "Total awarded"))
 
-pandoc.table(head(funding.igos.countries.print, 20))
+pandoc.table(head(funding.all.countries.print, 20))
 
 # Load map information
 countries.map <- readOGR("map_data", "ne_110m_admin_0_countries")
@@ -330,10 +328,10 @@ countries.ggmap <- fortify(countries.robinson, region="iso_a3") %>%
 possible.countries <- data_frame(id = unique(as.character(countries.ggmap$id)))
 
 all.countries <- possible.countries %>% 
-  left_join(funding.igos.countries, by=c("id"))
+  left_join(funding.all.countries, by=c("id"))
 
 # Map of proportions with a gradient fill
-map.igo.country <- ggplot(all.countries, aes(fill=total, map_id=id)) +
+map.funding <- ggplot(all.countries, aes(fill=total, map_id=id)) +
   geom_map(map=countries.ggmap) + 
   # Second layer to add borders and slash-less legend
   geom_map(map=countries.ggmap, size=0.15, colour="black", show.legend=FALSE) + 
@@ -341,9 +339,10 @@ map.igo.country <- ggplot(all.countries, aes(fill=total, map_id=id)) +
   coord_equal() +
   scale_fill_gradient(high="black", low="white", na.value="white",
                       labels=dollar, name="", limits=c(0, max(all.countries$total)),
-                      guide=guide_colorbar(draw.llim=TRUE, barwidth=15, barheight=0.5, ticks=FALSE)) +
+                      guide=guide_colorbar(draw.llim=TRUE, barwidth=15, 
+                                           barheight=0.5, ticks=FALSE)) +
   theme_blank_map() + 
   theme(legend.position="bottom")
-map.igo.country
-ggsave(map.igo.country, filename="figures/map_igo_funding.pdf", device=cairo_pdf)
-ggsave(map.igo.country, filename="figures/map_igo_funding.png")
+map.funding
+ggsave(map.funding, filename="figures/map_funding.pdf", device=cairo_pdf)
+ggsave(map.funding, filename="figures/map_funding.png")
