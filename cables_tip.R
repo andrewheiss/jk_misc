@@ -166,22 +166,6 @@ embassies.to.plot <- bind_cols(embassies, as.data.frame(embassies.robinson)) %>%
 # --------------------------
 # Finally plot everything!
 # --------------------------
-# Map of proportions with a gradient fill
-effort.map <- ggplot(effort.full, aes(fill=avg.effort, map_id=id)) +
-  geom_map(map=countries.ggmap, size=0.15, colour="black") + 
-  geom_point(data=embassies.to.plot, 
-             aes(x=long.robinson, y=lat.robinson, fill=NULL, map_id=NULL), 
-             colour="black", size=0.5, show.legend=FALSE) + 
-  expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
-  coord_equal() +
-  scale_fill_gradient(high="black", low="white", na.value="white",
-                      guide="colorbar", labels=percent, name="") +
-  theme_blank_map() + 
-  theme(legend.position="bottom")
-effort.map
-ggsave(effort.map, filename="figures/map_avg_tip_effort.pdf", device=cairo_pdf)
-ggsave(effort.map, filename="figures/map_avg_tip_effort.png")
-
 # Map of proportions with bins
 effort.map.binned <- ggplot(effort.full, aes(fill=bin.clean, map_id=id)) +
   geom_map(map=countries.ggmap) + 
