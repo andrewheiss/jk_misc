@@ -55,6 +55,8 @@ Output:
 * [`figures/fig_grants_to_igos_collapsed_igos.txt`](figures/fig_grants_to_igos_collapsed_igos.txt)
 * [`figures/fig_grants_to_igos.pdf`](figures/fig_grants_to_igos.pdf)
 * [`figures/fig_grants_to_igos.png`](figures/fig_grants_to_igos.png)
+* [`figures/map_funding.pdf`](figures/map_funding.pdf)
+* [`figures/map_funding.png`](figures/map_funding.png)
 
 
 ## ⭕️ Improvements
