@@ -26,10 +26,8 @@ Scripts:
 Output: 
 
 * `data/cables_panel.dta`
-* [`figures/map_avg_tip_effort.pdf`](figures/map_avg_tip_effort.pdf)
-* [`figures/map_avg_tip_effort.png`](figures/map_avg_tip_effort.png)
-* [`figures/map_avg_tip_effort_binned.pdf`](figures/map_avg_tip_effort_binned.pdf)
-* [`figures/map_avg_tip_effort_binned.png`](figures/map_avg_tip_effort_binned.png)
+* [`figures/map_avg_tip_effort_adjusted.pdf`](figures/map_avg_tip_effort_adjusted.pdf)
+* [`figures/map_avg_tip_effort_adjusted.png`](figures/map_avg_tip_effort_adjusted.png)
 
 
 ## ⭕️ Funding
