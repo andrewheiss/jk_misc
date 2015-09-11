@@ -25,7 +25,12 @@ cables.geocoded <- cables %>%
   rename(cables.month = `Actual number of cables that month`,
          trafficking.cables.year = `Trafficking cables this year`) %>%
   left_join(embassies, by="Embassy") %>%
-  filter(!is.na(country))
+  filter(!is.na(country)) %>%
+  rename(mrn = `Full MRN of last cable of that month`) %>%
+  # Sometimes the first or last cable of the year gets put in the previous year. 
+  # Extract the actual year from the MRN record and use *that* as the year.
+  mutate(mrn.year = as.integer(substr(mrn, 1, 2)),
+         Year = ifelse(mrn.year < 50, mrn.year + 2000, mrn.year + 1900))
 
 # Get the predicted cables per day for each country-year
 # TODO: Some of these are way off, like Egypt 2008, because of weirdness in the estimate
@@ -130,24 +135,26 @@ possible.countries <- data_frame(id = unique(as.character(countries.ggmap$id)))
 # Calculate aggregate proportions of TIP cables for each country and cut into bins
 tip.effort <- cables.tip %>%
   group_by(country) %>%
-  summarize(avg.effort = mean(prop.tip.estimated),
-            med.effort = median(prop.tip.estimated)) %>%
+  summarize(avg.effort = mean(prop.tip.estimated) * 1000,
+            med.effort = median(prop.tip.estimated) * 1000) %>%
   mutate(id = countrycode(country, "country.name", "iso3c"),
-         bins = cut(avg.effort, c(0, 0.00001, seq(0.05, .25, .05)), 
-         # bins = cut(avg.effort, 5, 
-                    include.lowest=TRUE, ordered_result=TRUE))
+         # Make intervals with about the same number of obs. in groups
+         bins.raw = cut_number(avg.effort, 5, ordered_result=TRUE),
+         bins = cut(avg.effort, c(0, 1.5, 2.5, 4, 6.5, 50),
+                    ordered_result=TRUE))
 
-# Extract the ranges from cut(), increase the lower bound by 1, and make a nice label
+# Extract the ranges from cut_number(), increase the lower bound by 1, and 
+# make a nice label
 # Converts [0,0.05] to 0-5% and (0.05,0.1] to 6-10%
 bins.df <- data_frame(bins = levels(tip.effort$bins),
                       lower = as.numeric(gsub("[\\(\\[](.+),.*", "\\1", bins)),
                       upper = as.numeric(gsub("[^,]*,([^]]*)\\]", "\\1", bins)),
-                      lower.clean = ifelse(grepl("^\\(", bins), lower + .01, lower),
-                      bin.clean = paste0(lower.clean * 100, "-", 
-                                         upper * 100, "%    ")) %>%
-  mutate(bin.clean = ifelse(lower >= 0.15, "> 15%", bin.clean),
-         bin.clean = ifelse(lower == 0, "0%    ", bin.clean),
-         bin.clean = ifelse(upper == 0.05, "0.01-5%    ", bin.clean),
+                      lower.clean = ifelse(grepl("^\\(", bins), lower + .1, lower),
+                      bin.clean = paste0(lower.clean, "-", 
+                                         upper, "    ")) %>%
+  mutate(bin.clean = ifelse(lower >= 6.5, "6.5+", bin.clean),
+         bin.clean = ifelse(lower == 0, "0    ", bin.clean),
+         bin.clean = ifelse(upper == 1.5, "0-1.5    ", bin.clean),
          bin.clean = factor(bin.clean, levels=unique(bin.clean), ordered=TRUE))
 
 # Merge all the data together
@@ -167,24 +174,28 @@ embassies.to.plot <- bind_cols(embassies, as.data.frame(embassies.robinson)) %>%
 # Finally plot everything!
 # --------------------------
 # Map of proportions with bins
+# TIP-related cables per 1,000 estimated/imputed cables
 effort.map.binned <- ggplot(effort.full, aes(fill=bin.clean, map_id=id)) +
   geom_map(map=countries.ggmap) + 
   # Second layer to add borders and slash-less legend
   geom_map(map=countries.ggmap, size=0.15, colour="black", show.legend=FALSE) + 
   geom_point(data=embassies.to.plot, 
              aes(x=long.robinson, y=lat.robinson, fill=NULL, map_id=NULL), 
-             colour="black", size=0.5, show.legend=FALSE) + 
+             colour="black", size=0.15, show.legend=FALSE, alpha=0.35) + 
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
-  scale_fill_manual(values=c("white", "grey90", "grey60", "grey30", "black"), name="") +
+  scale_fill_manual(values=c("white", "grey90", "grey60", "grey30", "black"),
+                    guide = guide_legend(title=NULL,
+                                         override.aes=list(size = 0.1),
+                                         keywidth=0.75, keyheight=0.75)) +
   theme_blank_map() + 
-  theme(legend.position="bottom", legend.key.size=unit(0.5, "lines"))
+  theme(legend.position="bottom")
 effort.map.binned
 ggsave(effort.map.binned, 
-       filename="figures/map_avg_tip_effort_binned.pdf", 
+       filename="figures/map_avg_tip_effort_adjusted.pdf", 
        device=cairo_pdf)
 ggsave(effort.map.binned, 
-       filename="figures/map_avg_tip_effort_binned.png")
+       filename="figures/map_avg_tip_effort_adjusted.png")
 
 
 # ------------------------------------
