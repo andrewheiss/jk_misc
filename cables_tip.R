@@ -29,6 +29,9 @@ cables.geocoded <- cables %>%
 
 # Get the predicted cables per day for each country-year
 # TODO: Some of these are way off, like Egypt 2008, because of weirdness in the estimate
+# Imputation kind of based on Gill, Michael, and Arthur Spirling. 2014. 
+#  "Estimating the Severity of the WikiLeaks United States Diplomatic 
+#  Cables Disclosure."
 per.day <- cables.geocoded %>%
   group_by(Embassy, Year) %>%
   summarize(estimated.per.day = last(`Per day that year`)) %>%
