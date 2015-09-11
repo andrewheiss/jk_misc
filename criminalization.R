@@ -104,7 +104,7 @@ all.countries <- possible.countries %>%
 crim.map <- ggplot(all.countries, aes(fill=crim.level, map_id=id)) +
   geom_map(map=countries.ggmap) + 
   # Second layer to add borders and slash-less legend
-  geom_map(map=countries.ggmap, size=0.15, colour="black", show_guide=FALSE) + 
+  geom_map(map=countries.ggmap, size=0.15, colour="black", show.legend=FALSE) + 
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
   facet_wrap(~ year, ncol=1) + 
