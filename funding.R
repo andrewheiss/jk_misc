@@ -245,25 +245,6 @@ cat("Collapsed sectors:", paste(collapsed.sectors, collapse=", "), "\n",
 # -----------------------------------
 # Purpose of grants awarded to IGOs
 # -----------------------------------
-# TODO: Pie chart
-# TODO: Amount too
-library(magrittr)
-bloop <- funding.clean.abbrev %>%
-  filter(recipient_type == "IGO") %>%
-  select(prevention, protection, prosecution, research) %>%
-  na.omit()
-
-asdf <- bloop %>% left_join(possible.combinations) %>% 
-  group_by(id) %>% summarise(total = n()) %>%
-  left_join(possible.combinations, by="id")
-
-sum((asdf %>% filter(prevention == 1))$total)
-
-possible.combinations <- expand.grid(rep(list(0:1), 4)) %>% 
-  set_colnames(c("prevention", "protection", "prosecution", "research")) %>%
-  mutate(id=1:n())
-
-
 funding.purpose <- funding.clean.abbrev %>%
   filter(recipient_type == "IGO") %>%
   select(country, grant_year, recipient, prevention, 
