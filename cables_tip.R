@@ -27,35 +27,67 @@ cables.geocoded <- cables %>%
   left_join(embassies, by="Embassy") %>%
   filter(!is.na(country))
 
+# Get the predicted cables per day for each country-year
+# TODO: Some of these are way off, like Egypt 2008, because of weirdness in the estimate
+per.day <- cables.geocoded %>%
+  group_by(Embassy, Year) %>%
+  summarize(estimated.per.day = last(`Per day that year`)) %>%
+  left_join(select(embassies, Embassy, country), by="Embassy") %>%
+  group_by(country, Year) %>%
+  summarize(estimated.per.day = sum(estimated.per.day, na.rm=TRUE)) %>%
+  mutate(estimated.cables.year = estimated.per.day * 365)
+
 # Calculate the number of cables published each year for all countries
+estimated.per.year <- per.day %>%
+  group_by(Year) %>%
+  summarise(estimated.all.countries = sum(estimated.cables.year))
+
 cables.per.year <- cables.geocoded %>%
   group_by(Year) %>%
-  summarise(total.all.countries = sum(cables.month))
+  summarise(total.all.countries = sum(cables.month)) %>%
+  left_join(estimated.per.year, by="Year")
 
 # Calculate cable-related variables
 # Creates multiple variables:
-#   * cables: the total number of cables that year
-#   * tip.cables: the total number of TIP-related cables that year
-#   * prop.tip: tip.cables / cables
-#   * prop.cables.that.year: number of cables that year / total number of cables
+#   * cables.in.wl: the total number of cables that year present in the 
+#      Wikileaks dump
+#   * tip.cables.in.wl: the total number of TIP-related cables that year 
+#      from those in the Wikileaks dump
+#   * prop.tip.wl: cables.in.wl / tip.cables.in.wl
+#   * prop.cables.year.wl: number of cables that year / total number of cables
 #      for all countries (to get a sense of how much coverage a country-year got 
-#      in the Wikileak dump)
+#      in the Wikileaks dump)
+#   * estimated.per.day: the probable number of cables expected each day 
+#      from that country that year
+#   * estimated.cables.year: estimated.per.day * 365
+#   * prop.tip.estimated: tip.cables.in.wl / estimated.cables.year
+#   * prop.cables.year.estimated: estimated.cables.year / estimated.all.countries
 cables.tip <- cables.geocoded %>%
   group_by(country, Year) %>%
-  summarise(cables = sum(cables.month),
-            tip.cables = sum(trafficking.cables.year, na.rm=TRUE)) %>%
-  mutate(prop.tip = tip.cables / cables) %>%
+  summarise(cables.in.wl = sum(cables.month),
+            tip.cables.in.wl = sum(trafficking.cables.year, na.rm=TRUE)) %>%
+  left_join(per.day, by=c("country", "Year")) %>%
   left_join(cables.per.year, by="Year") %>%
-  mutate(prop.cables.that.year = cables / total.all.countries) %>%
-  select(-total.all.countries)
+  mutate(prop.tip.wl = tip.cables.in.wl / cables.in.wl,
+         prop.tip.estimated = tip.cables.in.wl / estimated.cables.year,
+         prop.cables.year.wl = cables.in.wl / total.all.countries,
+         prop.cables.year.estimated = 
+           estimated.cables.year / estimated.all.countries) %>%
+  select(-c(total.all.countries, estimated.all.countries))
 
 # Expand to full country-year panel format
 cables.panel <- cables.tip %>% 
   expand(country, Year) %>%  # Magic dataframe expansion
   left_join(cables.tip, by=c("country", "Year")) %>%
   mutate(cow = countrycode(country, "country.name", "cown")) %>%
-  select(country, cow, year = Year, cables, tip_cables = tip.cables, 
-         prop_tip = prop.tip, prop_cables_that_year = prop.cables.that.year)
+  select(country, cow, year = Year, cables_in_wl = cables.in.wl, 
+         tip_cables_in_wl = tip.cables.in.wl, 
+         estimated_per_day = estimated.per.day,
+         estimated_cables_year = estimated.cables.year,
+         prop_tip_wl = prop.tip.wl, 
+         prop_cables_year_wl = prop.cables.year.wl,
+         prop_tip_estimated = prop.tip.estimated,
+         prop_cables_year_estimated = prop.cables.year.estimated)
 
 
 # ----------------
@@ -63,10 +95,14 @@ cables.panel <- cables.tip %>%
 # ----------------
 # Add fancy Stata labels
 labs <- c("Country name", "COW code", "Year", 
-          "Number of cables originating from country", 
-          "Number of cables related to TIP", 
-          "Proportion of cables related to TIP", 
-          "Proportion of total number of cables that year")
+          "Number of cables originating from country (in Wikileaks)", 
+          "Number of cables related to TIP (in Wikileaks)", 
+          "Estimated number of cables per day",
+          "Estimated number of cables that year",
+          "Proportion of cables related to TIP (in Wikileaks)", 
+          "Proportion of total number of cables that year (in Wikileaks)",
+          "Proportion of cables related to TIP (estimated)", 
+          "Proportion of total number of cables that year (estimated)")
 
 cables.panel %<>% add_labels(labs)  # For haven and RStudio
 attr(cables.panel, "var.labels") <- labs  # For foreign
@@ -91,10 +127,11 @@ possible.countries <- data_frame(id = unique(as.character(countries.ggmap$id)))
 # Calculate aggregate proportions of TIP cables for each country and cut into bins
 tip.effort <- cables.tip %>%
   group_by(country) %>%
-  summarize(avg.effort = mean(prop.tip),
-            med.effort = median(prop.tip)) %>%
+  summarize(avg.effort = mean(prop.tip.estimated),
+            med.effort = median(prop.tip.estimated)) %>%
   mutate(id = countrycode(country, "country.name", "iso3c"),
          bins = cut(avg.effort, c(0, 0.00001, seq(0.05, .25, .05)), 
+         # bins = cut(avg.effort, 5, 
                     include.lowest=TRUE, ordered_result=TRUE))
 
 # Extract the ranges from cut(), increase the lower bound by 1, and make a nice label
@@ -131,7 +168,7 @@ effort.map <- ggplot(effort.full, aes(fill=avg.effort, map_id=id)) +
   geom_map(map=countries.ggmap, size=0.15, colour="black") + 
   geom_point(data=embassies.to.plot, 
              aes(x=long.robinson, y=lat.robinson, fill=NULL, map_id=NULL), 
-             colour="black", size=0.5, show_guide=FALSE) + 
+             colour="black", size=0.5, show.legend=FALSE) + 
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
   scale_fill_gradient(high="black", low="white", na.value="white",
@@ -146,10 +183,10 @@ ggsave(effort.map, filename="figures/map_avg_tip_effort.png")
 effort.map.binned <- ggplot(effort.full, aes(fill=bin.clean, map_id=id)) +
   geom_map(map=countries.ggmap) + 
   # Second layer to add borders and slash-less legend
-  geom_map(map=countries.ggmap, size=0.15, colour="black", show_guide=FALSE) + 
+  geom_map(map=countries.ggmap, size=0.15, colour="black", show.legend=FALSE) + 
   geom_point(data=embassies.to.plot, 
              aes(x=long.robinson, y=lat.robinson, fill=NULL, map_id=NULL), 
-             colour="black", size=0.5, show_guide=FALSE) + 
+             colour="black", size=0.5, show.legend=FALSE) + 
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
   scale_fill_manual(values=c("white", "grey90", "grey60", "grey30", "black"), name="") +
