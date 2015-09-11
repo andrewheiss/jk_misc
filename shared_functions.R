@@ -15,7 +15,8 @@ library(Cairo)
 theme_clean <- function(base_size=12, base_family="Source Sans Pro Light") {
   ret <- theme_bw(base_size, base_family) + 
     theme(panel.background = element_rect(fill="#ffffff", colour=NA),
-          axis.title.x=element_text(vjust=-0.2), axis.title.y=element_text(vjust=1.5),
+          axis.title.y = element_text(margin = margin(r = 10)),
+          axis.title.x = element_text(margin = margin(t = 10)),
           title=element_text(vjust=1.2, family="Source Sans Pro Semibold"),
           panel.border = element_blank(), 
           axis.line=element_line(colour="grey50", size=0.2),
