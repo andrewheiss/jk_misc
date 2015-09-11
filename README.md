@@ -27,7 +27,9 @@ Output:
 
 * `data/cables_panel.dta`
 * [`figures/map_avg_tip_effort.pdf`](figures/map_avg_tip_effort.pdf)
+* [`figures/map_avg_tip_effort.png`](figures/map_avg_tip_effort.png)
 * [`figures/map_avg_tip_effort_binned.pdf`](figures/map_avg_tip_effort_binned.pdf)
+* [`figures/map_avg_tip_effort_binned.png`](figures/map_avg_tip_effort_binned.png)
 
 
 ## ⭕️ Funding
@@ -36,15 +38,23 @@ Instructions: `Funding/Funding analysis.docx`
 
 TODO:
 
-* [ ] 5 figures
+* [x] Lots of figures
 * [ ] Load content into qualitative data software and find common themes
-* [ ] Clean database
+* [x] Clean database
 
 Script: None so far
 
 Output: 
 
-* None so far
+* `data/funding_clean.dta`
+* [`figures/fig_grants_purpose.pdf`](figures/fig_grants_purpose.pdf)
+* [`figures/fig_grants_purpose.png`](figures/fig_grants_purpose.png)
+* [`figures/fig_grants_to_all_sectors_collapsed_sectors.txt`](figures/fig_grants_to_all_sectors_collapsed_sectors.txt)
+* [`figures/fig_grants_to_all_sectors.pdf`](figures/fig_grants_to_all_sectors.pdf)
+* [`figures/fig_grants_to_all_sectors.png`](figures/fig_grants_to_all_sectors.png)
+* [`figures/fig_grants_to_igos_collapsed_igos.txt`](figures/fig_grants_to_igos_collapsed_igos.txt)
+* [`figures/fig_grants_to_igos.pdf`](figures/fig_grants_to_igos.pdf)
+* [`figures/fig_grants_to_igos.png`](figures/fig_grants_to_igos.png)
 
 
 ## ⭕️ Improvements
@@ -76,6 +86,7 @@ Script: [`criminalization.R`](criminalization.R)
 Output: 
 
 * [`figures/map_criminalization.pdf`](figures/map_criminalization.pdf)
+* [`figures/map_criminalization.png`](figures/map_criminalization.png)
 
 
 ## ✅ Map of flows
@@ -94,6 +105,7 @@ Output:
 
 * [`figures/unodc_base_map.pdf`](figures/unodc_base_map.pdf)
 * [`figures/unodc_new.pdf`](figures/unodc_new.pdf)
+* [`figures/unodc_new.png`](figures/unodc_new.png)
 * [`figures/unodc_new.ai`](figures/unodc_new.ai)
 
 
@@ -113,6 +125,7 @@ Output:
 
 * [`data/year_joined.csv`](data/year_joined.csv)
 * [`figures/map_joined_report.pdf`](figures/map_joined_report.pdf)
+* [`figures/map_joined_report.png`](figures/map_joined_report.png)
 
 
 ## ⭕️ Reactions
@@ -136,13 +149,18 @@ Instructions: `timeslines/Timeline.docx`
 
 TODO:
 
-* [ ] Make cool timelines for Indonesia 
+* [x] Make cool timelines for Indonesia 
+* [ ] Add meeting dots
+* [ ] Verify TIP recommendations happened in those years
 
-Script: None so far
+Script: [`indonesia_timeline.R`](indonesia_timeline.R)
 
 Output: 
 
-* None so far
+* [`figures/Indonesia timeline.pdf`](figures/Indonesia timeline.pdf)
+* [`figures/Indonesia timeline-01.png`](figures/Indonesia timeline-01.png)
+* [`figures/Indonesia timeline-02.png`](figures/Indonesia timeline-02.png)
+* [`figures/indonesia_raw.pdf`](figures/indonesia_raw.pdf)
 
 
 ## ✅ "Update this figure and add other stats…"
@@ -162,3 +180,4 @@ Output:
 
 * [`data/tiers_2015.csv`](data/tiers_2015.csv)
 * [`figures/tier_percents.pdf`](figures/tier_percents.pdf)
+* [`figures/tier_percents.png`](figures/tier_percents.png)
