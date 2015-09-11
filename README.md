@@ -42,7 +42,7 @@ TODO:
 * [ ] Load content into qualitative data software and find common themes
 * [x] Clean database
 
-Script: None so far
+Script: [`funding.R`](funding.R)
 
 Output: 
 
