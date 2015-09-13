@@ -8,6 +8,7 @@ library(readr)
 library(lubridate)
 library(ggplot2)
 library(grid)
+library(Cairo)
 
 
 # ---------------------
@@ -67,3 +68,32 @@ timeline.to.csv <- timeline.plot %>%
   select(recommendation = Recommendations, year, progress, included_in_report)
 
 write_csv(timeline.to.csv, path="data/timeline_recommendations_indonesia.csv")
+
+
+# ------------------
+# Meeting timeline
+# ------------------
+meetings <- read_csv("original_files/indonesia_meetings.csv") %>%
+  mutate(meeting_day = mdy(meeting_day),
+         flag = as.factor(flag)) 
+
+meeting.years <- data_frame(meeting.years = as.Date(ymd(paste0(2006:2011, "-01-01"))))
+
+faux.months = as.Date(seq(from=ymd("2006-01-01"), 
+                         to=ymd("2011-01-01"), by="1 month"))
+faux.years = as.Date(seq(from=ymd("2006-01-01"), 
+                         to=ymd("2011-01-01"), by="1 year"))
+
+
+timeline.raw <- ggplot(data=meetings, 
+                       aes(x=as.Date(meeting_day), colour=flag)) + 
+  geom_point(aes(y=1)) + 
+  geom_vline(xintercept=as.numeric(faux.years)) + 
+  geom_vline(xintercept=as.numeric(faux.months), size=0.25) + 
+  scale_x_date(limits=c(min(faux.years), 
+                        max(faux.years))) +
+  theme_void()
+timeline.raw
+
+ggsave(timeline.raw, filename="figures/meeting_timeline_raw.pdf", 
+       width=10, units="in", device=cairo_pdf)
