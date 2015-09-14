@@ -161,7 +161,6 @@ Output:
 * [`figures/Indonesia timeline-01.png`](figures/Indonesia timeline-01.png)
 * [`figures/Indonesia timeline-02.png`](figures/Indonesia timeline-02.png)
 * [`figures/indonesia_raw.pdf`](figures/indonesia_raw.pdf)
-
 * [`figures/Indonesia meeting timeline.pdf`](figures/Indonesia meeting timeline.pdf)
 * [`figures/Indonesia meeting timeline-01.png`](figures/Indonesia meeting timeline-01.png)
 * [`figures/Indonesia meeting timeline-02.png`](figures/Indonesia meeting timeline-02.png)
