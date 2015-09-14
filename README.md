@@ -150,7 +150,7 @@ Instructions: `timeslines/Timeline.docx`
 TODO:
 
 * [x] Make cool timelines for Indonesia 
-* [ ] Add meeting dots
+* [x] Add meeting dots
 * [ ] Verify TIP recommendations happened in those years
 
 Script: [`indonesia_timeline.R`](indonesia_timeline.R)
@@ -161,6 +161,11 @@ Output:
 * [`figures/Indonesia timeline-01.png`](figures/Indonesia timeline-01.png)
 * [`figures/Indonesia timeline-02.png`](figures/Indonesia timeline-02.png)
 * [`figures/indonesia_raw.pdf`](figures/indonesia_raw.pdf)
+
+* [`figures/Indonesia meeting timeline.pdf`](figures/Indonesia meeting timeline.pdf)
+* [`figures/Indonesia meeting timeline-01.png`](figures/Indonesia meeting timeline-01.png)
+* [`figures/Indonesia meeting timeline-02.png`](figures/Indonesia meeting timeline-02.png)
+* [`figures/meeting_timeline_raw.pdf`](figures/meeting_timeline_raw.pdf)
 
 
 ## ✅ "Update this figure and add other stats…"
