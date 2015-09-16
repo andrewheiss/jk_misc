@@ -105,7 +105,8 @@ funding.clean.abbrev <- funding.clean %>%
 # --------------------------------------------------------------------
 funding.igos.indiv.full <- funding.clean.abbrev %>%
   filter(recipient_type == "IGO",
-         recipient_clean != "NGO") %>%
+         recipient_clean != "NGO",
+         country != "USA") %>%
   group_by(recipient_clean) %>%
   summarise(total = sum(amount, na.rm=TRUE),
             number = n()) %>%
@@ -176,6 +177,7 @@ cat("Collapsed IGOs:", paste(collapsed.igos, collapse=", "), "\n",
 # Share of all grants awarded to IGOs
 # -------------------------------------
 funding.igos.full <- funding.clean.abbrev %>%
+  filter(country != "USA") %>%
   mutate(recipient_type = gsub("^$", "Not specified", recipient_type)) %>%
   group_by(recipient_type) %>%
   summarise(total = sum(amount, na.rm=TRUE),
@@ -246,7 +248,7 @@ cat("Collapsed sectors:", paste(collapsed.sectors, collapse=", "), "\n",
 # Purpose of grants awarded to IGOs
 # -----------------------------------
 funding.purpose <- funding.clean.abbrev %>%
-  filter(recipient_type == "IGO") %>%
+  filter(recipient_type == "IGO", country != "USA") %>% 
   select(country, grant_year, recipient, prevention, 
          protection, prosecution, research, amount) %>%
   gather(grant_purpose, given_for_purpose, 
