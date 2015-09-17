@@ -248,7 +248,7 @@ cat("Collapsed sectors:", paste(collapsed.sectors, collapse=", "), "\n",
 # Purpose of grants awarded to IGOs
 # -----------------------------------
 funding.purpose <- funding.clean.abbrev %>%
-  filter(recipient_type == "IGO", country != "USA") %>% 
+  filter(country != "USA") %>% 
   select(country, grant_year, recipient, prevention, 
          protection, prosecution, research, amount) %>%
   gather(grant_purpose, given_for_purpose, 
