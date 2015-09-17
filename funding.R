@@ -185,11 +185,15 @@ funding.igos.full <- funding.clean.abbrev %>%
   arrange(desc(number))
 
 funding.igos.full %>% select(recipient_type) %>% 
-  slice(1:6) %>% c() %>% unlist() -> sectors.to.keep
+  slice(1:6) %>% filter(recipient_type != "NPO") %>%
+  mutate(recipient_type = gsub("NGO", "NGO or NPO", recipient_type)) %>%
+  c() %>% unlist() -> sectors.to.keep
 
 funding.igos <- funding.igos.full %>%
-  mutate(recipient_collapsed = ifelse(recipient_type %in% sectors.to.keep, 
-                                      recipient_type, "Other")) %>%
+  mutate(recipient_collapsed = ifelse(recipient_type %in% c("NPO", "NGO"), 
+                                      "NGO or NPO", recipient_type),
+         recipient_collapsed = ifelse(recipient_collapsed %in% sectors.to.keep, 
+                                      recipient_collapsed, "Other")) %>%
   group_by(recipient_collapsed) %>%
   summarise(total = sum(total), number = sum(number)) %>%
   mutate(prop_n = sprintf("%.1f%%", number / sum(number) * 100),
