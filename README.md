@@ -1,6 +1,6 @@
 # Projects
 
-## ✅ Cables trafficking
+## :white_check_mark: Cables trafficking
 
 Instructions: `Cables Trafficking.csv`
 
@@ -73,7 +73,7 @@ Output:
 * None saved so far
 
 
-## ✅ Map of criminalization
+## :white_check_mark: Map of criminalization
 
 Instructions: `Map of criminalization.docx`
 
@@ -89,7 +89,7 @@ Output:
 * [`figures/map_criminalization.png`](figures/map_criminalization.png)
 
 
-## ✅ Map of flows
+## :white_check_mark: Map of flows
 
 Instructions: `Map of flows.docx`
 
@@ -109,7 +109,7 @@ Output:
 * [`figures/unodc_new.ai`](figures/unodc_new.ai)
 
 
-## ✅ Map of when in report
+## :white_check_mark: Map of when in report
 
 Instructions: `map of when in report.xlsx`
 
@@ -128,7 +128,7 @@ Output:
 * [`figures/map_joined_report.png`](figures/map_joined_report.png)
 
 
-## ⭕️ Reactions
+## :o: Reactions
 
 Instructions: `Reactions.docx`
 
@@ -167,7 +167,7 @@ Output:
 * [`figures/meeting_timeline_raw.pdf`](figures/meeting_timeline_raw.pdf)
 
 
-## ✅ "Update this figure and add other stats…"
+## :white_check_mark: "Update this figure and add other stats…"
 
 Instructions: `Update this figure and add other stats….docx`
 
