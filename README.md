@@ -30,7 +30,7 @@ Output:
 * [`figures/map_avg_tip_effort_adjusted.png`](figures/map_avg_tip_effort_adjusted.png)
 
 
-## 🚧 Funding
+## :construction: Funding
 
 Instructions: `Funding/Funding analysis.docx`
 
@@ -57,7 +57,7 @@ Output:
 * [`figures/map_funding.png`](figures/map_funding.png)
 
 
-## 🚧 Improvements
+## :construction: Improvements
 
 Instructions: `improvements/Statistics.docx`
 
@@ -143,7 +143,7 @@ Output:
 * Improve table
 
 
-## 🚧 Timelines
+## :construction: Timelines
 
 Instructions: `timeslines/Timeline.docx`
 
