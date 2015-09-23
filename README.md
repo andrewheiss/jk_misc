@@ -30,7 +30,7 @@ Output:
 * [`figures/map_avg_tip_effort_adjusted.png`](figures/map_avg_tip_effort_adjusted.png)
 
 
-## ⭕️ Funding
+## 🚧 Funding
 
 Instructions: `Funding/Funding analysis.docx`
 
@@ -57,20 +57,20 @@ Output:
 * [`figures/map_funding.png`](figures/map_funding.png)
 
 
-## ⭕️ Improvements
+## 🚧 Improvements
 
 Instructions: `improvements/Statistics.docx`
 
 TODO:
 
-* [ ] Generate data
-* [ ] Graph changes over time or make table 
+* [x] Generate data
+* [x] Graph changes over time or make table 
 
-Script: None so far
+Script: [`policy_index.R`](policy_index.R)
 
 Output: 
 
-* None so far
+* None saved so far
 
 
 ## ✅ Map of criminalization
@@ -143,7 +143,7 @@ Output:
 * Improve table
 
 
-## ⭕️ Timelines
+## 🚧 Timelines
 
 Instructions: `timeslines/Timeline.docx`
 

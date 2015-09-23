@@ -79,3 +79,8 @@ ggplot(plot.data, aes(x=year)) +
   facet_wrap(~ countryname, scales="free") + 
   theme_clean() + 
   theme(panel.grid.minor=element_blank(), strip.text=element_text(size=rel(0.8)))
+
+# TODO: Get correct case study countries
+# TODO: Verify measure of changes / time in report
+# TODO: Save new variable to CSV/Stata
+# TODO: Save plot
