@@ -17,7 +17,8 @@ source("shared_functions.R")
 # cleaned <- read_csv("data/year_joined_original.csv") %>%
 #   mutate(actual.name = countrycode(country_name, "country.name", "country.name"),
 #          cow = countrycode(actual.name, "country.name", "cown"),
-#          iso = countrycode(actual.name, "country.name", "iso3c")) %>%
+#          iso = countrycode(actual.name, "country.name", "iso3c"),
+#          iso = ifelse(cow == 347, "KOS", iso)) %>%
 #   select(country_name = actual.name, cow, iso, start_year)
 # write_csv(cleaned, "data/year_joined.csv")
 
