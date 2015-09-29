@@ -60,7 +60,9 @@ p.index <- cho.orig %>% left_join(year.joined, by="cow") %>%
 # -------------------
 # Plot changes in p
 # -------------------
-countries.to.plot <- c("IDN", "CAN", "DOM", "JOR")
+countries.to.plot <- c("ARG", "ARM", "HND", "JPN", "OMN", "ARE", "ZWE", 
+                       "MOZ", "KAZ", "IDN", "ECU", "TCD", "ISR")
+
 plot.data <- p.index %>% 
   filter(iso %in% countries.to.plot) %>% 
   mutate(p.while.in.tip = ifelse(in.report == TRUE, p, NA))
@@ -80,7 +82,6 @@ ggplot(plot.data, aes(x=year)) +
   theme_clean() + 
   theme(panel.grid.minor=element_blank(), strip.text=element_text(size=rel(0.8)))
 
-# TODO: Get correct case study countries
 # TODO: Verify measure of changes / time in report
 # TODO: Save new variable to CSV/Stata
 # TODO: Save plot
