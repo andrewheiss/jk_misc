@@ -128,19 +128,23 @@ Output:
 * [`figures/map_joined_report.png`](figures/map_joined_report.png)
 
 
-## :o: Reactions
+## :construction: Reactions
 
 Instructions: `Reactions.docx`
 
 TODO:
 
-* [ ] See file 
+* [x] Output nice Word table
+* [ ] Add more data to the figure?
 
-Script: None so far
+Script: [`reactions.R`](reactions.R)
 
 Output: 
 
-* Improve table
+* ['figures/reactions.pdf'](figures/reactions.pdf)
+* ['figures/reactions.png'](figures/reactions.png)
+* ['figures/reactions.md'](figures/reactions.md)
+* ['figures/reactions.docx'](figures/reactions.docx)
 
 
 ## :construction: Timelines
