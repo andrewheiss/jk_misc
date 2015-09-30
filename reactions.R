@@ -7,6 +7,7 @@ library(tidyr)
 library(readr)
 library(haven)
 library(ggplot2)
+library(pander)
 
 source("shared_functions.R")
 
@@ -85,25 +86,42 @@ reactions <- reactions.type %>%
   left_join(reactions.group, by="type.group") %>%
   select(type.group, everything())
 
+
+# --------------------
+# Save as Word table
+# --------------------
 reactions.print <- reactions %>%
   mutate_each(funs(sprintf("%.1f%%", . * 100)), starts_with("prop")) %>%
   mutate(type.name = as.character(type.name)) %>%
   group_by(type.group) %>%
   mutate(num.row = 1:n()) %>%
   ungroup() %>%
-  mutate(type.group = ifelse(num.row == 1, as.character(type.group), "—"),
+  mutate(type.group = ifelse(num.row == 1, as.character(type.group), ""),
          prop.all.reactions.group = ifelse(num.row == 1, 
-                                           prop.all.reactions.group, "—")) %>%
+                                           prop.all.reactions.group, "")) %>%
   select(-num.row) %>%
   set_colnames(c("Reaction type", "Reaction", "Total reactions", 
                  "Percent of all reactions", 
                  "Percent of reports with this reaction", 
                  "Percent of reports with at least one reaction of this type"))
 
-total.row <- c("—", "Total", sum(reactions.print$`Total reactions`), 
+total.row <- c("", "Total", sum(reactions.print$`Total reactions`), 
                "100%", "Not mutually exclusive", "Not mutually exclusive")
 
 reactions.print <- rbind(reactions.print, total.row)
+
+# Save as Markdown table
+cat(pandoc.table.return(reactions.print, 
+                        split.tables=Inf, justify="llcccc"), 
+    file="reactions.md")
+
+# Convert to Word
+Pandoc.convert(f="reactions.md", format="docx", 
+               footer=FALSE, open=FALSE)
+
+# Move files around, since Pandoc.convert apparently chokes on folder names?
+system("mv reactions.md figures/reactions.md")
+system("mv reactions.docx figures/reactions.docx")
 
 
 # ------------
