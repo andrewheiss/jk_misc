@@ -57,7 +57,7 @@ Output:
 * [`figures/map_funding.png`](figures/map_funding.png)
 
 
-## :construction: Improvements
+## :clock7: Improvements
 
 Instructions: `improvements/Statistics.docx`
 
