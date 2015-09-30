@@ -141,10 +141,10 @@ Script: [`reactions.R`](reactions.R)
 
 Output: 
 
-* ['figures/reactions.pdf'](figures/reactions.pdf)
-* ['figures/reactions.png'](figures/reactions.png)
-* ['figures/reactions.md'](figures/reactions.md)
-* ['figures/reactions.docx'](figures/reactions.docx)
+* [`figures/reactions.pdf`](figures/reactions.pdf)
+* [`figures/reactions.png`](figures/reactions.png)
+* [`figures/reactions.md`](figures/reactions.md)
+* [`figures/reactions.docx`](figures/reactions.docx)
 
 
 ## :construction: Timelines
