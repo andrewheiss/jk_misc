@@ -1,0 +1,24 @@
+{
+    "year": 2003,
+    "url": "http://2001-2009.state.gov/g/tip/rls/rpt/34182.htm",
+    "regions": [
+        "GLOBAL",
+        "AFRICA",
+        "EAST ASIA AND PACIFIC ISLANDS",
+        "SOUTH ASIA",
+        "EUROPE/EURASIA",
+        "LATIN AMERICA AND CARIBBEAN",
+        "MIDDLE EAST"
+    ],
+    "fields": {
+        "Country:": "country",
+        "Countries:": "country",
+        "Type of Program:": "type_of_program",
+        "Funding Agency:": "funding_agency",
+        "Recipient:": "recipient",
+        "Project Title:": "project_title",
+        "Description:": "description",
+        "Amount:": "amount"
+    },
+    "text": "state_2003.txt"
+}

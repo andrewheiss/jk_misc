@@ -1,0 +1,23 @@
+{
+    "year": 2004,
+    "url": "http://2001-2009.state.gov/g/tip/rls/rpt/51687.htm",
+    "regions": [
+        "GLOBAL",
+        "AFRICA",
+        "EAST ASIA AND PACIFIC ISLANDS",
+        "SOUTH ASIA",
+        "EUROPE AND EURASIA",
+        "NEAR EAST",
+        "WESTERN HEMISPHERE"
+    ],
+    "fields": {
+        "Tier": "tier",
+        "Type": "type_of_program",
+        "Agency": "funding_agency",
+        "Amount": "amount",
+        "Grantee(s)": "recipient",
+        "Subgrantees": "subrecipient",
+        "Purpose": "description"
+    },
+    "text": "state_2004.html"
+}

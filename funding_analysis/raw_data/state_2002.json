@@ -1,0 +1,28 @@
+{
+    "year": 2002,
+    "url": "http://2001-2009.state.gov/g/tip/rls/rpt/17858.htm",
+    "regions": [
+        "Global",
+        "Africa",
+        "East Asia and Pacific Islands",
+        "South Asia",
+        "Eurasia",
+        "Europe",
+        "Latin America and Caribbean",
+        "Middle East"
+    ],
+    "fields": {
+        "Type of Program:": "type_of_program",
+        "Type of program:": "type_of_program",
+        "Funding Agency/Bureau:": "funding_agency",
+        "Funding Agency:": "funding_agency",
+        "Project Title:": "project_title",
+        "Project title:": "project_title",
+        "Project Name:": "project_title",
+        "Recipient:": "recipient",
+        "Recipient and Amount:": "recipient",
+        "Subrecipient:": "subrecipient",
+        "Description:": "description"
+    },
+    "text": "state_2002.txt"
+}
