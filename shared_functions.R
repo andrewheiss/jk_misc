@@ -47,6 +47,15 @@ theme_blank_map <- function(base_size=12, base_family="Source Sans Pro Light") {
 }
 
 
+# Append two spaces to all elements in a character vector except the last one
+# Adds fake padding between legend keys in a horizontal legend
+add.legend.padding <- function(x) {
+  x.pad <- sapply(x, FUN=function(y) paste0(y, "  "))
+  x.pad[length(x.pad)] <- x[length(x)]  # Remove padding from last element
+  x.pad
+}
+
+
 # Add labels to individual columns for use with haven and RStudio
 # Rather than fight with lapply or dplyr::mutate_each, just use a dumb for loop 
 # to add label attributes to each column
