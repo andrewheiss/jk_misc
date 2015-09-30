@@ -8,6 +8,8 @@ library(readr)
 library(haven)
 library(ggplot2)
 
+source("shared_functions.R")
+
 
 # --------------------------------------------
 # Create lookup table for reaction variables
@@ -109,16 +111,22 @@ reactions.print <- rbind(reactions.print, total.row)
 # ------------
 reactions.plot <- reactions %>%
   mutate(type.name = factor(type.name, 
-                            levels=rev(levels(type.name)), ordered=TRUE))
+                            levels=rev(levels(type.name)), ordered=TRUE),
+         type.group = factor(type.group, 
+                             labels=add.legend.padding(levels(type.group))))
 
-ggplot(reactions.plot, aes(x=type.name, y=total, fill=type.group)) + 
-  geom_bar(stat="identity") + coord_flip()
-
-p1 <- ggplot(reactions.plot, aes(x=type.name, y=prop, fill=type.group)) + 
-  geom_bar(stat="identity") + coord_flip()
-
-p2 <- ggplot(reactions.plot, aes(x=type.name, y=prop.all.reactions, fill=type.group)) + 
-  geom_bar(stat="identity") + coord_flip()
-
-p1
-p2
+p.reactions <- ggplot(reactions.plot, 
+                      aes(x=type.name, y=prop.all.reactions, fill=type.group)) + 
+  geom_bar(stat="identity") + 
+  labs(x=NULL, y="Proportion of reports with reaction") + 
+  scale_fill_manual(values=c("black", "grey60", "grey40", "grey80"), 
+                    name="Type of reaction",
+                    guide = guide_legend(override.aes=list(size = 0.1))) + 
+  scale_y_continuous(labels=percent) + 
+  coord_flip() + theme_clean() + 
+  theme(legend.position="bottom", legend.key.size=unit(0.65, "lines"))
+p.reactions
+ggsave(p.reactions, filename="figures/reactions.pdf", 
+       width=6, height=4, units="in", device=cairo_pdf)
+ggsave(p.reactions, filename="figures/reactions.png", 
+       width=6, height=4, units="in")
