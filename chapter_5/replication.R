@@ -27,7 +27,12 @@ df.orig <- read_dta("original_files/kelley_simmons_ajps_2014_replication.dta") %
          fullwaiver = ifelse(fullwaiver != 1 | is.na(fullwaiver), 0, 1),
          notier = ifelse(tier != 555 | is.na(tier), 0, 1),
          logpop = log(data9),
-         crim1 = ifelse(adjbicrimlevel == 0, 0, 1))
+         crim1 = ifelse(adjbicrimlevel == 0, 0, 1),
+         uspressure = ifelse(tier %in% c(2.5, 3), 1, 0),
+         loggdp = log(data2),
+         econasstP = econasst * 1000000,
+         econasstP = ifelse(econasstP == 0 | is.na(econasstP), 1, econasstP),
+         logeconasstP = log(econasstP))
 
 # Calculate grouped summary statistics
 # Generate the mean tier rating for each country and mark when it's always 1 or 3
@@ -59,7 +64,7 @@ df.complete <- df.orig %>%
 df.complete.with.lags <- df.complete %>%
   # The lagged variables weren't done by country in original analysis, 
   # so values bleed into other countries. 
-  group_by(cowcode) %>%
+  # group_by(cowcode) %>%
   mutate(missinfo82_1 = lag(missinfo82, 1),
          missinfo82_2 = lag(missinfo82, 2),
          fullwaiver1 = lag(fullwaiver),
@@ -69,7 +74,11 @@ df.complete.with.lags <- df.complete %>%
          missinfo8_1 = lag(missinfo8, 1),
          missinfo8_2 = lag(missinfo8, 2),
          fh_cl1 = lag(fh_cl),
-         ratproto2000_1 = lag(ratproto2000)) %>%
+         ratproto2000_1 = lag(ratproto2000),
+         rule_of_law_1 = lag(rule_of_law),
+         corruption_1 = lag(corruption),
+         loggdp_1 = lag(loggdp),
+         logeconasstP_1 = lag(logeconasstP)) %>%
   # Deal with windowed criminalization variables
   mutate(crim1_minus1 = lag(crim1),
          crim1_plus1 = lead(crim1),
@@ -77,8 +86,8 @@ df.complete.with.lags <- df.complete %>%
          corrected_regcrim1_2 = lag(corrected_regcrim, 2),
          nocrimyrs = NA %>%
            as.numeric(ifelse(crim1_plus1 == 1, 0, .)) %>%
-           as.numeric(ifelse(crim1_plus1 == 0, 1, .))) %>%
-  ungroup()
+           as.numeric(ifelse(crim1_plus1 == 0, 1, .))) #%>%
+  # ungroup()
 
 # Given a sequence of years for a country, return 0 for all years before 
 # entering the report, 1 for the year added to the report, and NA for all 
@@ -120,9 +129,15 @@ df.hazardized <- df.complete.with.lags %>%
   arrange(cowcode, year)
 
 
+# ----------
 # --------
 # Models
 # --------
+# ----------
+#
+# ---------
+# Table 1
+# ---------
 # Stata Cox proportional hazards models
 # stset time, failure(fail)
 # stcox var1 var2
@@ -151,26 +166,45 @@ df.survivalized <- df.hazardized %>%
   mutate(start_time = 0:(n()-1))
 
 # Models
-model1 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 + 
+model1.1 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 + 
                   cluster(name), 
                 data=df.survivalized, ties="breslow") 
-summary(model1)
+summary(model1.1)
 
-model2 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 + 
+model1.2 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 + 
                   ngos_ave + fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 + 
                   cluster(name), 
                 data=df.survivalized, ties="breslow")
-summary(model2)
+summary(model1.2)
 
-model3 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 + 
+model1.3 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 + 
                   ngos_ave + fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 + 
                   ht_incidence_origin + ht_incidence_transit + 
                   ht_incidence_destination + cluster(name), 
                 data=df.survivalized, ties="breslow")
-summary(model3)
+summary(model1.3)
 
 # Pretty table
-ses <- list(sqrt(diag(model1$var)), sqrt(diag(model2$var)), sqrt(diag(model3$var)))
-stargazer(model1, model2, model3, type="text", apply.coef=exp, se=ses)
-stargazer(model1, model2, model3, type="text")
+ses <- list(sqrt(diag(model1.1$var)), sqrt(diag(model1.2$var)), sqrt(diag(model1.3$var)))
+stargazer(model1.1, model1.2, model1.3, type="text", apply.coef=exp, se=ses)
+stargazer(model1.1, model1.2, model1.3, type="text")
+# TODO: Make sure the *s, coefs, and SEs are all displayed correctly
+
+
+# ---------
+# Table 2
+# ---------
+model2.1 <- glm(uspressure ~ fh_cl1 + logeconasstP_1 + loggdp_1 + logpop + 
+                  ratproto2000_1 + ngos_ave + corruption_1,
+                data=df.complete.with.lags, 
+                family=binomial(link="logit"))
+summary(model2.1)
+
+model2.2 <- glm(uspressure ~ fh_cl1 + logeconasstP_1 + loggdp_1 + logpop + 
+                  ratproto2000_1 + ngos_ave + rule_of_law_1,
+                data=df.complete.with.lags, 
+                family=binomial(link="logit"))
+summary(model2.2)
+
+stargazer(model2.1, model2.2, apply.coef=exp, type="text")
 # TODO: Make sure the *s, coefs, and SEs are all displayed correctly
