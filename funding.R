@@ -59,6 +59,14 @@ funding.clean <- read.csv("original_files/funding_master.csv",
          region1 = ifelse(region1 == "", NA, region1),
          region2 = ifelse(region2 == "", NA, region2))
 
+# totals <- funding.clean %>%
+#   filter(cowcode != 2) %>%
+#   summarise(total = sum(amount, na.rm=TRUE), num.projects = n()) %>%
+#   mutate_each(funs(prettyNum(., big.mark=",", scientific=FALSE)))
+# 
+# sentence <- "Between 2001 and 2014 the US has given out a total of $%s to a total of %s anti-TIP projects."
+# sprintf(sentence, totals$total, totals$num.projects)
+
 
 # ----------------
 # Write to Stata
