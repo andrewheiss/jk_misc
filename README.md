@@ -156,6 +156,7 @@ TODO:
 * [x] Make cool timelines for Indonesia 
 * [x] Add meeting dots
 * [ ] Verify TIP recommendations happened in those years
+* [ ] Recode all the recommendations
 
 Script: [`indonesia_timeline.R`](indonesia_timeline.R)
 

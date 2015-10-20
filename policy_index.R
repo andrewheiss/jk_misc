@@ -43,6 +43,7 @@ year.joined <- read_csv("data/year_joined.csv")
 #   time.in.report = years present in report
 #   change.since.entering = p_t - p_{entered report}
 #   change/time
+# TODO: Take missing values into account (like Afghanistan)
 p.index <- cho.orig %>% left_join(year.joined, by="cow") %>%
   group_by(cow) %>%
   # Make boolean for if the country is in the report and cumulatively sum it
@@ -55,7 +56,7 @@ p.index <- cho.orig %>% left_join(year.joined, by="cow") %>%
          change.since.entering = as.numeric(ifelse(in.report, 
                                                    change.since.entering, NA)),
          change.time.report = change.since.entering / time.in.report)
-
+# write_csv(p.index, "data/policy_index.csv")
 
 # -------------------
 # Plot changes in p
