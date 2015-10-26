@@ -190,3 +190,21 @@ Output:
 * [`data/tiers_2015.csv`](data/tiers_2015.csv)
 * [`figures/tier_percents.pdf`](figures/tier_percents.pdf)
 * [`figures/tier_percents.png`](figures/tier_percents.png)
+
+
+---
+
+# More TODO: 
+
+
+## Graphic
+
+Is there a way of making a graphic that displays a country’s average TIP rating 2001-2015 (or while in the report) as well as its range?
+
+Or maybe we could have categories of different types of movement on the scale
+
+It might be too much info to contain in one graphic. I suppose a table might work with columns like: Country, current tier (2015), average tier while in report, range of tiers. It could be sorted based on column 1, current tier.
+
+## US effort
+
+We calculated US effort as TIP cables as % all cables issue by the embassy in a given year. However, another measure would be  TIP cables as % all cables released by wikileaks in a given year). Can you also calculate the latter?
