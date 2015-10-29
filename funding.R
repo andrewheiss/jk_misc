@@ -59,6 +59,7 @@ funding.clean <- read.csv("original_files/funding_master.csv",
          region1 = ifelse(region1 == "", NA, region1),
          region2 = ifelse(region2 == "", NA, region2))
 
+write_csv(funding.clean, path="data/funding_clean.csv")
 # totals <- funding.clean %>%
 #   filter(cowcode != 2) %>%
 #   summarise(total = sum(amount, na.rm=TRUE), num.projects = n()) %>%
