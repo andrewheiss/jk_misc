@@ -2,6 +2,7 @@ library(dplyr)
 library(haven)
 library(survival)
 library(stargazer)
+library(testthat)
 
 df.orig <- read_dta("original_files/kelley_simmons_ajps_2014_replication.dta") %>%
   arrange(cowcode, year) %>%
@@ -184,6 +185,20 @@ model1.3 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 +
                 data=df.survivalized, ties="breslow")
 summary(model1.3)
 
+# Verify replication
+test_that("all models in Table 1 replicate correctly", {
+  expect_equal(unname(exp(coef(model1.1))), 
+               c(1.1717, 0.7357), 
+               tolerance=0.001)
+  expect_equal(unname(exp(coef(model1.2))),
+               c(1.0755, 0.7383, 1.0855, 1.0961, 2.1008, 0.94375),
+               tolerance=0.001)
+  expect_equal(unname(exp(coef(model1.3))),
+               c(1.011469, 0.8305449, 1.06393, 1.102795, 1.358891,
+                 1.06361, 1.100245, 1.132697, 1.184096),
+               tolerance=0.001)
+})
+
 # Pretty table
 ses <- list(sqrt(diag(model1.1$var)), sqrt(diag(model1.2$var)), sqrt(diag(model1.3$var)))
 stargazer(model1.1, model1.2, model1.3, type="text", apply.coef=exp, se=ses)
@@ -206,5 +221,18 @@ model2.2 <- glm(uspressure ~ fh_cl1 + logeconasstP_1 + loggdp_1 + logpop +
                 family=binomial(link="logit"))
 summary(model2.2)
 
+# Verify replication
+test_that("all models in Table 2 replicate correctly", {
+  expect_equal(unname(exp(coef(model2.1))), 
+               c(0.0001443, 1.719672, 1.063219, 1.636929, 0.6071656, 
+                 2.60628, 1.188164, 0.5675854), 
+               tolerance=0.001)
+  expect_equal(unname(exp(coef(model2.2))),
+               c(0.0002061, 1.766067, 1.068525, 1.540463, 0.6428639, 
+                 2.636396, 1.194137, 0.6978541),
+               tolerance=0.001)
+})
+
+# Pretty table
 stargazer(model2.1, model2.2, apply.coef=exp, type="text")
 # TODO: Make sure the *s, coefs, and SEs are all displayed correctly
