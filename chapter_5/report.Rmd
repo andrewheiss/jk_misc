@@ -1,0 +1,12 @@
+---
+title: "Replication and extention report"
+author: "Andrew Heiss"
+date: "November 2, 2015"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Report goes here
