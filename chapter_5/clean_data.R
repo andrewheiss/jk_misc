@@ -1,6 +1,8 @@
 library(dplyr)
 library(tidyr)
 library(haven)
+library(readr)
+library(countrycode)
 
 # Load and clean original Stata file
 df.orig <- read_dta("../original_files/kelley_simmons_ajps_2014_replication.dta") %>%
@@ -66,8 +68,39 @@ econ.asst <- df.orig %>%
   summarise(totalaidave = mean(econasst0))
 
 
-# Merge in grouped summary statistics
+# Load new variables
+funding.raw <- read_csv("../data/funding_clean.csv") %>%
+  mutate(cowcode = ifelse(country == "Serbia", 555, cowcode),
+         countryname = countrycode(cowcode, "cown", "country.name"),
+         countryname = ifelse(cowcode == 555, "Serbia", countryname)) %>%
+  filter(!is.na(countryname)) 
+
+funding.all <- funding.raw %>%
+  group_by(cowcode, grant_year) %>%
+  summarise(total.funding = sum(amount, na.rm=TRUE),
+            avg.funding = mean(amount, na.rm=TRUE)) 
+
+funding.ngos <- funding.raw %>%
+  filter(recipient_type %in% c("NGO", "NPO")) %>%
+  group_by(cowcode, grant_year) %>%
+  summarise(total.funding.ngos = sum(amount, na.rm=TRUE),
+            avg.funding.ngos = mean(amount, na.rm=TRUE)) 
+
+# TODO: Grant purpose?
+
+cables.raw <- read_dta("../data/cables_panel.dta") %>%
+  mutate(cow = as.numeric(cow)) %>%
+  select(cow, year, prop_tip_wl, prop_tip_estimated)
+
+ngo.count <- read_csv("../data/ngo_count.csv")
+
+
+# Merge in grouped summary statistics and new variables
 df.complete <- df.orig %>%
+  left_join(funding.all, by=c("cowcode", "year"="grant_year")) %>%
+  left_join(funding.ngos, by=c("cowcode", "year"="grant_year")) %>%
+  left_join(cables.raw, by=c("cowcode"="cow", "year")) %>%
+  left_join(ngo.count, by="cowcode") %>%
   left_join(mean.tiers, by="cowcode") %>%
   left_join(regional.density, by=c("subregion", "year")) %>%
   left_join(econ.asst, by=c("name")) %>%
@@ -174,6 +207,13 @@ df.complete.with.lags.correct <- df.complete %>%
          women1 = lag(women_par),
          fh_cl1 = lag(fh_cl),
          protection_1 = lag(protection)) %>%
+  # Deal with new variables
+  mutate(total.funding1 = lag(total.funding),
+         avg.funding1 = lag(avg.funding),
+         total.funding.ngos1 = lag(total.funding.ngos),
+         avg.funding.ngos1 = lag(avg.funding.ngos),
+         prop_tip_wl1 = lag(prop_tip_wl),
+         prop_tip_estimated1 = lag(prop_tip_estimated)) %>%
   # Deal with windowed tier variables
   mutate(tier1_1 = ifelse(tier1 != 1 | is.na(tier1), 0, 1),
          tier1_2 = ifelse(tier1 != 2 | is.na(tier1), 0, 1),
