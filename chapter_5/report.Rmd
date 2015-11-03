@@ -20,7 +20,7 @@ library(stargazer)
 
 Before merging in the new funding, engagement, and NGO data, I wanted to ensure that the models from the original AJPS article were correct and that they replicated in R instead of just Stata. While doing this, I discovered a couple minor issues with the data and the modeling methods.
 
-Beyond these issues, however, the AJPS article is 100% reproducible (except for standard errors, which use a slightly different algorithm). 
+Beyond these issues, however, the AJPS article is 100% reproducible (except for the robust standard errors, since Stata and R use slightly different algorithms). 
 
 ## Bleeding lags
 
