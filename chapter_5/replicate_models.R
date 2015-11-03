@@ -1,8 +1,39 @@
 library(dplyr)
+library(broom)
 library(survival)
 # library(stargazer)
 
 source("clean_data.R")
+
+# Calculate a pseudo R-squared measure using
+# 1-\frac{\text{Residual Deviance}}{\text{Null Deviance}}
+calc.pseudo.r.squared <- function(x.model) {
+  return(round(1 - (x.model$deviance / x.model$null.deviance), 4))
+}
+
+# Format pretty in-text parenthetical statistics and p-values
+# Example:
+#   get.parenthetical.stats(model5.8, "L.totalfreedom", "z")
+#   # [1] "z = -0.778, p = 0.437"
+#
+# Example in R Markdown:
+#   Lorem ipsum dolor sit amet (`r I(get.parenthetical.stats(model, "x1", "t"))`).
+#
+#   Lorem ipsum dolor sit amet (t = 5.34, p < 0.001).
+#
+get.parenthetical.stats <- function(model, variable, statistic) {
+  df <- model %>% tidy() %>%
+    filter(term == variable) %>%
+    select(statistic, p.value)
+  
+  if (df$p.value > 0.001) {
+    out <- sprintf("%s = %.3f, p = %.3f", statistic, df$statistic, df$p.value)
+  } else {
+    out <- sprintf("%s = %.3f, p < 0.001", statistic, df$statistic)
+  }
+  
+  return(out)
+}
 
 # ---------
 # Table 1
@@ -274,3 +305,75 @@ model4.4.good.fit <- summary(survfit(model4.4.good))$table
 # Verify that all the models replicate correctly
 # source("chapter_5/tests/test-data.R")
 # source("chapter_5/tests/test-models.R")
+
+
+# Table 5
+# Models of criminalization
+df.table5 <- reactions %>%
+  filter(lag(adjbicrimlevel) == 0 & year > 2001 & year < 2011) %>%
+  group_by(cowcode) %>%
+  mutate(L.reactionnomedia = lag(reactionnomedia),
+         L.totalreactionnomedia = lag(totalreactionnomedia),
+         L.women_par = lag(women_par),
+         L.totalfreedom = lag(totalfreedom),
+         L.adj_ratproto2000 = lag(adj_ratproto2000),
+         L.bigaid = lag(bigaid),
+         L.corrected_regcrim = lag(corrected_regcrim)) %>%
+  mutate(total.funding1 = lag(total.funding),
+         avg.funding1 = lag(avg.funding),
+         total.funding.ngos1 = lag(total.funding.ngos),
+         avg.funding.ngos1 = lag(avg.funding.ngos),
+         prop_tip_wl1 = lag(prop_tip_wl),
+         prop_tip_estimated1 = lag(prop_tip_estimated))
+
+model5.1 <- glm(crim1 ~ L.reactionnomedia + L.women_par + L.totalfreedom + 
+                  L.adj_ratproto2000 + L.bigaid + as.factor(year),
+                data=df.table5,
+                family=binomial(link="logit"))
+# summary(model5.1)
+
+model5.2 <- glm(crim1 ~ L.reactionnomedia + L.women_par + L.totalfreedom + 
+                  L.adj_ratproto2000 + L.bigaid + L.corrected_regcrim + as.factor(year),
+                data=df.table5,
+                family=binomial(link="logit"))
+# summary(model5.2)
+
+model5.3 <- glm(crim1 ~ L.totalreactionnomedia + L.women_par + L.totalfreedom + 
+                  L.adj_ratproto2000 + L.bigaid + as.factor(year),
+                data=df.table5,
+                family=binomial(link="logit"))
+# summary(model5.3)
+
+model5.4 <- glm(crim1 ~ L.totalreactionnomedia + L.women_par + L.totalfreedom + 
+                  L.adj_ratproto2000 + L.bigaid + L.corrected_regcrim + as.factor(year),
+                data=df.table5,
+                family=binomial(link="logit"))
+# summary(model5.4)
+
+model5.5 <- glm(crim1 ~ L.totalreactionnomedia + L.women_par + L.totalfreedom + 
+                  L.adj_ratproto2000 + L.bigaid + L.corrected_regcrim + 
+                  total.funding1 + as.factor(year),
+                data=df.table5,
+                family=binomial(link="logit"))
+# summary(model5.5)
+
+model5.6 <- glm(crim1 ~ L.totalreactionnomedia + L.women_par + L.totalfreedom + 
+                  L.adj_ratproto2000 + L.bigaid + L.corrected_regcrim + 
+                  prop_tip_wl1 + as.factor(year),
+                data=df.table5,
+                family=binomial(link="logit"))
+# summary(model5.6)
+
+model5.7 <- glm(crim1 ~ L.totalreactionnomedia + L.women_par + L.totalfreedom + 
+                  L.adj_ratproto2000 + L.bigaid + L.corrected_regcrim + 
+                  prop_tip_estimated1 + as.factor(year),
+                data=df.table5,
+                family=binomial(link="logit"))
+# summary(model5.7)
+
+model5.8 <- glm(crim1 ~ L.totalreactionnomedia + L.women_par + L.totalfreedom + 
+                  L.adj_ratproto2000 + L.bigaid + L.corrected_regcrim + 
+                  ht_ngos + as.factor(year),
+                data=df.table5,
+                family=binomial(link="logit"))
+# summary(model5.8)

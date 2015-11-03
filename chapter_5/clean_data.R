@@ -373,3 +373,58 @@ df.survivalized.crim.correct <- df.hazardized.crim.correct %>%
   group_by(name) %>%
   mutate(start_time = lag(yrfromj2, default=0)) %>% 
   filter(year > 1999)
+
+
+# Deal with reactions data
+reactions <- read_dta("../original_files/mergedreaction8_new.dta") %>%
+  left_join(select(df.complete, year, cowcode, tier=dostier, crim1, 
+                   adjbicrimlevel, corrected_regcrim, corrected_regcrim100,
+                   total.funding, avg.funding, total.funding.ngos, 
+                   avg.funding.ngos, prop_tip_wl, prop_tip_estimated, ht_ngos), 
+            by=c("year", "cowcode")) %>%
+  # Clean up variables to account for missing tiers
+  mutate(howimprove = ifelse(tier == 555, NA, howimprove),
+         negative = ifelse(tier == 555, NA, negative),
+         image = ifelse(tier == 555, NA, image),
+         usarrogance = ifelse(tier == 555, NA, usarrogance),
+         movinggoal = ifelse(tier == 555, NA, movinggoal),
+         comparisonsratingnotfair = ifelse(tier == 555, NA, comparisonsratingnotfair),
+         anger = ifelse(tier == 555, NA, anger),
+         publicfacesaving = ifelse(tier == 555, NA, publicfacesaving),
+         disappointment = ifelse(tier == 555, NA, disappointment),
+         embassment = ifelse(tier == 555, NA, embassment),
+         funding = ifelse(tier == 555, NA, funding),
+         mediabacklash = ifelse(tier == 555, NA, mediabacklash),
+         objection = ifelse(tier == 555, NA, objection),
+         appreciation = ifelse(tier == 555, NA, appreciation),
+         bragging = ifelse(tier == 555, NA, bragging),
+         cooperative = ifelse(tier == 555, NA, cooperative),
+         ignoring = ifelse(tier == 555, NA, ignoring),
+         harmingrelations = ifelse(tier == 555, NA, harmingrelations)) %>%
+  # Create new variable that doesn't use media reactions
+  mutate(totalreactionnomedia = harmingrelations + cooperative + bragging +
+           appreciation + objection + funding + howimprove + embassment + 
+           disappointment + publicfacesaving + anger + comparisonsratingnotfair +
+           movinggoal + usarrogance + negative,
+         totalreactionnomedia = ifelse(is.na(totalreactionnomedia) & 
+                                         year > 2000 & year < 2011, 
+                                       0, totalreactionnomedia),
+         totalreactionnomedia = ifelse(tier == 555 | is.na(tier), 
+                                       NA, totalreactionnomedia),
+         totalreactionnomedia = ifelse(year< 2001 | year > 2010, 
+                                       NA, totalreactionnomedia)) %>%
+  # New reaction without media
+  mutate(reactionnomedia = ifelse(totalreactionnomedia > 0, 1, NA),
+         reactionnomedia = ifelse(is.na(reactionnomedia) & !is.na(tier) & 
+                                    tier != 555 & !is.na(totalreactionnomedia), 
+                                  0, reactionnomedia),
+         reactionnomedia = ifelse(year == 2011, NA, reactionnomedia)) %>%
+  # Positive variable
+  mutate(positive11 = ifelse(cooperative == 1 | appreciation == 1 | 
+                               howimprove == 1, 1, 0),
+         positive11 = ifelse(tier < 4 & is.na(positive11), 0, positive11)) %>%
+  # Image variable
+  mutate(image11 = ifelse(embassment == 1 | comparisonsratingnotfair == 1 | 
+                            publicfacesaving == 1, 1, 0),
+         image11 = ifelse(tier < 4 & is.na(image11), 0, image11)) %>%
+  mutate(totalfreedom = fh_pr + fh_cl)

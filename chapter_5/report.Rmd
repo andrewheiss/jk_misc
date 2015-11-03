@@ -241,12 +241,73 @@ stargazer(model3.2, model3.6, model3.7, model3.8, model3.9,
           notes=c("Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+# Predicting time to criminalization
+
+The current draft of the chapter uses descriptive statistics to show that countries with documented reactions to the TIP report are more likely to follow up with legislative action in the following year. This conclusion is borne out with multivariate statistical analysis. As seen in the models below, countries with a recorded non-media reaction are 77–88% more likely to criminalize human trafficking (model 5.1: `r I(get.parenthetical.stats(model5.1, "L.reactionnomedia", "z"))`; model 5.2: `r I(get.parenthetical.stats(model5.2, "L.reactionnomedia", "z"))`). The intensity of reactions to the report also has an effect—for every additional type of reaction, countries are approximately 20% more likely to criminalize trafficking (`r I(get.parenthetical.stats(model5.3, "L.totalreactionnomedia", "z"))`).
+
+```{r, results='asis', echo=FALSE}
+var.labs <- c("Reactions (no media)", "Total reactions (no media)", 
+              "Share of women in parliament", 
+              "Total freedom (political rights + civil liberties)", 
+              "2000 TIP protocol ratification", "Big aid", 
+              "Regional density of criminalization")
+col.labs <- c("Model 5.1", "Model 5.2", "Model 5.3", "Model 5.4")
+
+extra.lines <- list(c("Year fixed effects",
+                      rep("Yes", 4)),
+                    c("Pseudo R-squared",
+                      sapply(list(model5.1, model5.2, 
+                                  model5.3, model5.4), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model5.1, model5.2, model5.3, model5.4,
+          covariate.labels=var.labs, column.labels=col.labs,
+          model.numbers=FALSE, dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+&nbsp;
+
+When combined with the reactions data, none of the additional variables help explain the variance in time to criminalization. US TIP funding still suffers from the inexplicable math problem. Observed (`r I(get.parenthetical.stats(model5.6, "prop_tip_wl1", "z"))`) and estimated (`r I(get.parenthetical.stats(model5.7, "prop_tip_estimated1", "z"))`) State Department cables on TIP-related matters have no effect, and more human trafficking NGOs in a country does little to influence the passage of criminalization legislation (`r I(get.parenthetical.stats(model5.8, "ht_ngos", "z"))`).
+
+```{r, results='asis', echo=FALSE}
+var.labs <- c("Total reactions (no media)", 
+              "Share of women in parliament", 
+              "Total freedom (political rights + civil liberties)", 
+              "2000 TIP protocol ratification", "Big aid", 
+              "Regional density of criminalization", 
+              "Total US funding for TIP", 
+              "Proportion of TIP-related cables (observed in Wikileaks)", 
+              "Proportion of TIP-related cables (estimated)", 
+              "Number of NGOs (survey database)")
+col.labs <- c("Model 5.5", "Model 5.6", "Model 5.7", "Model 5.8")
+
+extra.lines <- list(c("Year fixed effects",
+                      rep("Yes", 4)),
+                    c("Pseudo R-squared",
+                      sapply(list(model5.5, model5.6, 
+                                  model5.7, model5.8), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model5.5, model5.6, model5.7, model5.8,
+          covariate.labels=var.labs, column.labels=col.labs,
+          model.numbers=FALSE, dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
 # To do
 
 * Figure out what's going on with useless funding variable
 * Figure out what's going on with semi-useless cable variables
 * Figure out most theoretically appropriate combinations of explanatory variables for new models
-* Replicate duration models from chapter and add new variables
 * Check this claim in the "Who cares" section: "Statistical modeling (see Appendix X) that accounts for other factors (similar to the above models) also shows that the relationship between being included in the report and time to criminalization depends on the level of democracy. The models reinforce that the relationship between inclusion in the report and time to criminalization appears to be stronger for less democratic countries. TRUE? No?"
 * Do this with both polity and UDS
 * Improve, standardize graphics
