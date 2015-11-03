@@ -1,0 +1,9 @@
+#header h1 {
+    font-weight: bold;
+    border-bottom: #cccccc 4px solid;
+    padding-bottom: 10px;
+}
+
+table {
+    font-size: 85%;
+}

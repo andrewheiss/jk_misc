@@ -2,11 +2,141 @@
 title: "Replication and extention report"
 author: "Andrew Heiss"
 date: "November 2, 2015"
-output: html_document
+output: 
+  html_document: 
+    css: fixes.css
+    highlight: pygments
+    theme: flatly
+    toc: yes
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+source("replicate_models.R")
+library(stargazer)
 ```
 
-## Report goes here
+# Replication results
+
+Before merging in the new funding, engagement, and NGO data, I wanted to ensure that the models from the original AJPS article were correct and that they replicated in R instead of just Stata. While doing this, I discovered a couple minor issues with the data and the modeling methods.
+
+Beyond these issues, however, the AJPS article is 100% reproducible (except for standard errors, which use a slightly different algorithm). 
+
+## Bleeding lags
+
+In the original AJPS article, lagged variables were not calculated by country, so values at the boundaries between countries incorrectly bleed over into adjacent countries. For example, here's an excerpt from the US-Canadian border (note: not the *actual* international border), where the logged population for the US in 2011 gets put into Canada 1991:
+
+    name    year    logpop    logpop_1
+    US      2010    19.54998  19.54161
+    US      2011    19.55720  19.54998
+    Canada  1991    NA        19.55720
+    Canada  1992    NA        NA
+
+This doesn't cause any problems for the TIP report models in Table 1, since those models are limited to observations after 2000—the incorrect rows are dropped. However, the models for the correlates of shaming and time to criminalization *are* affected, since they include all post-1991 observations. Models 2.1, 2.2, 3.2, 3.5, 4.2, and 4.4 are all affected by this issue.
+
+### Differences in lagging: models 2.1 and 2.2
+
+```{r, results='asis', echo=FALSE}
+var.labs <- c("Worse civil liberties", "US aid (logged)", "GDP (logged)", 
+              "Total population (logged)", "2000 TIP protocol ratification", 
+              "NGO density", "Corruption", "Rule of law", "Constant")
+col.labs <- c("Model 2.1<br>(original; bleeding lags)", "Model 2.1<br>(corrected lags)", 
+              "Model 2.2<br>(original; bleeding lags)", "Model 2.2<br>(corrected lags)")
+stargazer(model2.1, model2.1.good, model2.2, model2.2.good, 
+          apply.coef=exp, covariate.labels=var.labs, column.labels=col.labs, 
+          keep.stat=c("n"), model.numbers=FALSE, dep.var.labels.include=FALSE,
+          dep.var.caption="US Pressure", type="html",
+          notes.align="l",
+          notes=c("Logit model; odds ratios reported. Non-robust standard errors in parentheses. All explanatory variables are lagged one period."))
+```
+
+### Differences in lagging: models 3.2 and 3.5
+
+```{r, results='asis', echo=FALSE}
+var.labs <- c("In report", "Share of women in parliament", "Worse civil liberties",
+              "Regional density of criminalization", "2000 TIP protocol ratification",
+              "Missing information (t−2)", "Total population (logged)",
+              "NGO density", "GDP per capita (logged)", "Corruption", 
+              "US aid as share of GDP", "US aid as share of GDP × In report")
+col.labs <- c("Model 3.2<br>(original; bleeding lags)", "Model 3.2<br>(corrected lags)", 
+              "Model 3.5<br>(original; bleeding lags)", "Model 3.5<br>(corrected lags)")
+
+ses <- list(sqrt(diag(model3.2$var)), sqrt(diag(model3.2.good$var)), 
+            sqrt(diag(model3.5$var)), sqrt(diag(model3.5.good$var)))
+
+extra.lines <- list(c("Number of countries", 
+                      c(model3.2.fit["n.max"], model3.2.good.fit["n.max"]),
+                      c(model3.5.fit["n.max"], model3.5.good.fit["n.max"])),
+                    c("Number of criminalizations", 
+                      c(model3.2.fit["events"], model3.2.good.fit["events"]),
+                      c(model3.5.fit["events"], model3.5.good.fit["events"])))
+
+stargazer(model3.2, model3.2.good, model3.5, model3.5.good, 
+          apply.coef=exp, covariate.labels=var.labs, column.labels=col.labs, 
+          keep.stat=c("n", "ll"), model.numbers=FALSE, dep.var.labels.include=FALSE,
+          dep.var.caption="Time to Criminalization", 
+          se=ses, p.auto=FALSE, type="html",
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Robust standard errors in parentheses; values differ from published article because of differences in the robustness algorithms Stata and R use. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Differences in lagging: models 4.2 and 4.4
+
+```{r, results='asis', echo=FALSE}
+var.labs <- c("Tier 1", "Tier 2", "Watch list", "Tier 3", "In report", 
+              "First demotion (t−3)", "First demotion (t−2)", 
+              "First demotion (t−1)", "Share of women in parliament", 
+              "Worse civil liberties", "Regional density of criminalization", 
+              "2000 TIP protocol ratification", "Missing information", 
+              "Total population (logged)", "NGO density", "US aid (logged)", 
+              "GDP per capita (logged)", "Corruption")
+col.labs <- c("Model 4.2<br>(original; bleeding lags)", "Model 4.2<br>(corrected lags)",
+              "Model 4.4<br>(original; bleeding lags)", "Model 4.4<br>(corrected lags)")
+
+ses <- list(sqrt(diag(model4.2$var)), sqrt(diag(model4.2.good$var)),
+            sqrt(diag(model4.4$var)), sqrt(diag(model4.4.good$var)))
+
+extra.lines <- list(c("Number of countries", 
+                      c(model4.2.fit["n.max"], model4.2.good.fit["n.max"]),
+                      c(model4.4.fit["n.max"], model4.4.good.fit["n.max"])),
+                    c("Number of criminalizations", 
+                      c(model4.2.fit["events"], model4.2.good.fit["events"]),
+                      c(model4.4.fit["events"], model4.4.good.fit["events"])))
+
+stargazer(model4.2, model4.2.good, model4.4, model4.4.good, 
+          apply.coef=exp, covariate.labels=var.labs, column.labels=col.labs, 
+          keep.stat=c("n", "ll"), model.numbers=FALSE, dep.var.labels.include=FALSE,
+          dep.var.caption="Time to Criminalization", 
+          se=ses, p.auto=FALSE, type="html",
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Robust standard errors in parentheses; values differ from published article because of differences in the robustness algorithms Stata and R use. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+## Under-the-hood improvements
+
+By default, Stata and most other statistical packages use the Breslow approximation for handling tied event times. This is because it is the easiest to program and because it works well on older computers. However, according to Terry Therneau,^[Personal correspondence, October 19, 2015.] one of the main inventors of Cox modeling, it is less accurate. With gains in computing power and theoretical statistical work, the Efron approximation is more accurate and more computationally efficient, so in the extensions of the models I use it instead of Breslow. Here's an example of the (fairly minor) differences in the results:
+
+### Differences in tie algorithms, model 1.2
+
+```{r, results='asis', echo=FALSE}
+var.labs <- c("Total population (logged)", "Missing information", 
+              "NGO density", "Worse civil liberties", 
+              "Regional density of criminalization", 
+              "2000 TIP protocol ratification")
+col.labs <- c("Model 1.2<br>(original; Breslow ties)", "Model 1.2<br>(Efron ties)")
+
+ses <- list(sqrt(diag(model1.2$var)), sqrt(diag(model1.2.good$var)))
+
+extra.lines <- list(c("Number of countries", 
+                      c(model1.2.fit["n.max"], model1.2.good.fit["n.max"])),
+                    c("Number of inclusions", 
+                      c(model1.2.fit["events"], model1.2.good.fit["events"])))
+
+stargazer(model1.2, model1.2.good,
+          apply.coef=exp, covariate.labels=var.labs, column.labels=col.labs, 
+          keep.stat=c("n", "ll"), model.numbers=FALSE, dep.var.labels.include=FALSE,
+          dep.var.caption="Time to Inclusion in Report", 
+          se=ses, p.auto=FALSE, type="html",
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Robust standard errors in parentheses; values differ from published article because of differences in the robustness algorithms Stata and R use. All explanatory variables are lagged one period unless otherwise noted."))
+```

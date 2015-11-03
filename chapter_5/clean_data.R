@@ -3,7 +3,7 @@ library(tidyr)
 library(haven)
 
 # Load and clean original Stata file
-df.orig <- read_dta("original_files/kelley_simmons_ajps_2014_replication.dta") %>%
+df.orig <- read_dta("../original_files/kelley_simmons_ajps_2014_replication.dta") %>%
   arrange(cowcode, year) %>%
   filter(year >= 1991) %>%
   # Deal with missing human trafficking data
@@ -64,7 +64,7 @@ econ.asst <- df.orig %>%
   filter(year > 2000 & year < 2011) %>%
   group_by(name) %>%
   summarise(totalaidave = mean(econasst0))
-  
+
 
 # Merge in grouped summary statistics
 df.complete <- df.orig %>%
@@ -80,7 +80,7 @@ df.complete <- df.orig %>%
   select(-num_crim_1)
 
 # Lag a bunch of stuff
-df.complete.with.lags <- df.complete %>%
+df.complete.with.lags.orig <- df.complete %>%
   # The lagged variables weren't done by country in original analysis, 
   # so values bleed into other countries. 
   # group_by(un_ccode) %>%
@@ -145,6 +145,74 @@ df.complete.with.lags <- df.complete %>%
          new_watch2 = ifelse(new_watch2 != 1 | is.na(new_watch2), 0, new_watch2),
          new_watch3 = ifelse(new_watch3 != 1 | is.na(new_watch3), 0, new_watch3))
 
+# Lag a bunch of stuff
+df.complete.with.lags.correct <- df.complete %>%
+  # The lagged variables weren't done by country in original analysis, 
+  # so values bleed into other countries. 
+  group_by(un_ccode) %>%
+  mutate(missinfo82_1 = lag(missinfo82, 1),
+         missinfo82_2 = lag(missinfo82, 2),
+         fullwaiver1 = lag(fullwaiver),
+         notier1 = lag(notier),
+         inreport1 = ifelse(notier1 == 0, 1, 0),
+         notinreport1 = lag(notinreport),
+         special1 = lag(special),
+         dostier1 = lag(dostier),
+         tier1 = lag(tier),
+         logpop_1 = lag(logpop),
+         missinfo8_1 = lag(missinfo8, 1),
+         missinfo8_2 = lag(missinfo8, 2),
+         fh_cl1 = lag(fh_cl),
+         ratproto2000_1 = lag(ratproto2000),
+         rule_of_law_1 = lag(rule_of_law),
+         corruption_1 = lag(corruption),
+         loggdp_1 = lag(loggdp),
+         econasst1 = lag(econasst),
+         logeconasstP_1 = lag(logeconasstP),
+         loggdppercap_1 = log(lag(data4, 1)),
+         loggdppercap_2 = log(lag(data4, 2)),
+         women1 = lag(women_par),
+         fh_cl1 = lag(fh_cl),
+         protection_1 = lag(protection)) %>%
+  # Deal with windowed tier variables
+  mutate(tier1_1 = ifelse(tier1 != 1 | is.na(tier1), 0, 1),
+         tier1_2 = ifelse(tier1 != 2 | is.na(tier1), 0, 1),
+         tier1_25 = ifelse(tier1 != 2.5 | is.na(tier1), 0, 1),
+         tier1_3 = ifelse(tier1 != 3 | is.na(tier1), 0, 1),
+         waivers1_tier1_3 = tier1_3 * fullwaiver1) %>%
+  # Deal with windowed criminalization variables
+  mutate(crim1_minus1 = lag(crim1),
+         crim1_plus1 = lead(crim1),
+         corrected_regcrim1_1 = lag(corrected_regcrim, 1),
+         corrected_regcrim1_2 = lag(corrected_regcrim, 2),
+         # Convert 0/1 data to logical, negate it, and convert back to numeric
+         nocrimyrs = as.numeric(!as.logical(crim1_plus1))) %>%
+  # Fix miscellaneous lagged variables
+  mutate(econasst1 = ifelse(econasst1 == 0 | is.na(econasst1), 0.001, econasst1),
+         logeconasst1 = log(econasst1)) %>%
+  # Create some more miscellaneous variables 
+  mutate(chtier = tier - tier1,
+         improve_tier = ifelse(chtier >= 0, 0, 1),
+         worsen_tier = ifelse(chtier > 0, 1, 0),
+         econasstPgdp = econasstP / data2,
+         logeconasstPgdp = log(econasstPgdp)) %>%
+  # More lagging...
+  mutate(chtier1 = lag(chtier),
+         improve_tier1 = lag(improve_tier),
+         worsen_tier1 = lag(worsen_tier),
+         new_watch1 = lag(new_watch, 1),
+         new_watch2 = lag(new_watch, 2),
+         new_watch3 = lag(new_watch, 3),
+         econasstPgdp_1 = lag(econasstPgdp),
+         logeconasstPgdp_1 = lag(logeconasstPgdp)) %>%
+  mutate(new_watch1 = ifelse(new_watch1 != 1 | is.na(new_watch1), 0, new_watch1),
+         new_watch2 = ifelse(new_watch2 != 1 | is.na(new_watch2), 0, new_watch2),
+         new_watch3 = ifelse(new_watch3 != 1 | is.na(new_watch3), 0, new_watch3))
+
+# library(testthat)
+# print(expect_equal(df.complete.with.lags.orig$logpop_1,
+#                    df.complete.with.lags.correct$logpop_1, tolerance=0.001,
+#                    check.attributes = FALSE))
 
 # --------------------------------------------------
 # Generate speical variables for the hazard models
@@ -176,7 +244,7 @@ generate.failure <- function(years.to.report) {
   }
 }
 
-df.hazardized.report <- df.complete.with.lags %>%
+df.hazardized.report <- df.complete.with.lags.orig %>%
   mutate(yr2fail2 = tier_date - year,  # Years before "failing" (entering report)
          yrfromj2 = year - 2000) %>%  # Years since possible to be in report (post 2000)
   group_by(name) %>%
@@ -188,7 +256,7 @@ df.hazardized.report <- df.complete.with.lags %>%
   ungroup() %>%
   arrange(cowcode, year)
 
-df.hazardized.crim <- df.complete.with.lags %>%
+df.hazardized.crim <- df.complete.with.lags.orig %>%
   mutate(yr2fail2 = crim1date - year,  # Years before "failing" (criminalization)
          yrfromj2 = year - 1991) %>%  # Years since possible to be in report (post 1991)
   group_by(name) %>%
@@ -211,6 +279,52 @@ df.survivalized.report <- df.hazardized.report %>%
   filter(year > 2000)
 
 df.survivalized.crim <- df.hazardized.crim %>%
+  filter(!is.na(yrfromj2)) %>%
+  mutate(inreport1 = as.numeric(!as.logical(notier1)),
+         test00 = inreport1 * logeconasstP_1,
+         econasstPgdp_1_1000 = econasstPgdp_1 * 1000,
+         test_gdp_1_1000 = econasstPgdp_1_1000 * inreport1) %>%
+  group_by(name) %>%
+  mutate(start_time = lag(yrfromj2, default=0)) %>% 
+  filter(year > 1999)
+
+
+# Use correct lags
+df.hazardized.report.correct <- df.complete.with.lags.correct %>%
+  mutate(yr2fail2 = tier_date - year,  # Years before "failing" (entering report)
+         yrfromj2 = year - 2000) %>%  # Years since possible to be in report (post 2000)
+  group_by(name) %>%
+  mutate(endstate_inreport = mean(notier, na.rm=TRUE),
+         endstate_inreport = ifelse(endstate_inreport > 0, 1, 0),
+         fail = generate.failure(yr2fail2)) %>%
+  filter(yr2fail2 >= 0 | is.na(yr2fail2)) %>%
+  filter(yrfromj2 >= 0) %>%
+  ungroup() %>%
+  arrange(cowcode, year)
+
+df.hazardized.crim.correct <- df.complete.with.lags.correct %>%
+  mutate(yr2fail2 = crim1date - year,  # Years before "failing" (criminalization)
+         yrfromj2 = year - 1991) %>%  # Years since possible to be in report (post 1991)
+  group_by(name) %>%
+  mutate(endstate1 = mean(crim1, na.rm=TRUE),
+         endstate1 = as.numeric(ifelse(endstate1 > 0, 1, 0)),
+         fail = generate.failure(yr2fail2)) %>% 
+  filter(yr2fail2 >= 0 | is.na(yr2fail2)) %>%
+  filter(yrfromj2 >= 0) %>%
+  ungroup() %>%
+  arrange(cowcode, year)
+
+# Generate start time variable.
+# Stata does this behind the scenes when running stset ..., id(name)
+# coxph needs an explicit column
+# See Q&A here: http://stats.stackexchange.com/q/177560/3025
+df.survivalized.report.correct <- df.hazardized.report.correct %>%
+  filter(!is.na(yrfromj2)) %>%
+  group_by(name) %>%
+  mutate(start_time = lag(yrfromj2, default=0)) %>%
+  filter(year > 2000)
+
+df.survivalized.crim.correct <- df.hazardized.crim.correct %>%
   filter(!is.na(yrfromj2)) %>%
   mutate(inreport1 = as.numeric(!as.logical(notier1)),
          test00 = inreport1 * logeconasstP_1,
