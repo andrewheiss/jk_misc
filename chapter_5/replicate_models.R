@@ -27,9 +27,9 @@ get.parenthetical.stats <- function(model, variable, statistic) {
     select(statistic, p.value)
   
   if (df$p.value > 0.001) {
-    out <- sprintf("%s = %.3f, p = %.3f", statistic, df$statistic, df$p.value)
+    out <- sprintf("%s = %.2f, p = %.3f", statistic, df$statistic, df$p.value)
   } else {
-    out <- sprintf("%s = %.3f, p < 0.001", statistic, df$statistic)
+    out <- sprintf("%s = %.2f, p < 0.001", statistic, df$statistic)
   }
   
   return(out)
