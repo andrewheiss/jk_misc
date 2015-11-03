@@ -53,11 +53,37 @@ model1.3 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 +
 # summary(model1.3)
 model1.3.fit <- summary(survfit(model1.3))$table
 
-# Pretty table
-# ses <- list(sqrt(diag(model1.1$var)), sqrt(diag(model1.2$var)), sqrt(diag(model1.3$var)))
-# stargazer(model1.1, model1.2, model1.3, type="text", apply.coef=exp, se=ses)
-# stargazer(model1.1, model1.2, model1.3, type="text")
-# TODO: Make sure the *s, coefs, and SEs are all displayed correctly
+model1.4 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 +
+                    ngos_ave + fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
+                    ht_incidence_origin + ht_incidence_transit +
+                    ht_incidence_destination + total.funding1 + cluster(name),
+                  data=df.survivalized.report.correct, ties="efron")
+summary(model1.4)
+model1.4.fit <- summary(survfit(model1.4))$table
+
+model1.5 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 +
+                    ngos_ave + fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
+                    ht_incidence_origin + ht_incidence_transit +
+                    ht_incidence_destination + prop_tip_wl1 + cluster(name),
+                  data=df.survivalized.report.correct, ties="efron")
+summary(model1.5)
+model1.5.fit <- summary(survfit(model1.5))$table
+
+model1.6 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 +
+                    ngos_ave + fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
+                    ht_incidence_origin + ht_incidence_transit +
+                    ht_incidence_destination + prop_tip_estimated1 + cluster(name),
+                  data=df.survivalized.report.correct, ties="efron")
+summary(model1.6)
+model1.6.fit <- summary(survfit(model1.6))$table
+
+model1.7 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 +
+                    fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
+                    ht_incidence_origin + ht_incidence_transit +
+                    ht_incidence_destination + ht_ngos + cluster(name),
+                  data=df.survivalized.report.correct, ties="efron")
+summary(model1.7)
+model1.7.fit <- summary(survfit(model1.7))$table
 
 
 # ---------
@@ -150,10 +176,37 @@ model3.5.good <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 +
 # summary(model3.5)
 model3.5.good.fit <- summary(survfit(model3.5.good))$table
 
-# Pretty table
-# stargazer(model3.1, model3.2, model3.3, model3.4, model3.5, 
-#           apply.coef=exp, type="text")
-# TODO: Make sure the *s, coefs, and SEs are all displayed correctly
+model3.6 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 + 
+                    fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 + 
+                    missinfo8_2 + logpop_1 + ngos_ave + loggdppercap_1 + 
+                    corruption_1 + total.funding1 + cluster(name),
+                  data=df.survivalized.crim.correct, ties="efron")
+# summary(model3.6)
+model3.6.fit <- summary(survfit(model3.6))$table
+
+model3.7 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 + 
+                    fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 + 
+                    missinfo8_2 + logpop_1 + ngos_ave + loggdppercap_1 + 
+                    corruption_1 + prop_tip_wl1 + cluster(name),
+                  data=df.survivalized.crim.correct, ties="efron")
+# summary(model3.7)
+model3.7.fit <- summary(survfit(model3.7))$table
+
+model3.8 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 + 
+                    fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 + 
+                    missinfo8_2 + logpop_1 + ngos_ave + loggdppercap_1 + 
+                    corruption_1 + prop_tip_estimated1 + cluster(name),
+                  data=df.survivalized.crim.correct, ties="efron")
+# summary(model3.8)
+model3.8.fit <- summary(survfit(model3.8))$table
+
+model3.9 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 + 
+                    fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 + 
+                    missinfo8_2 + logpop_1 + loggdppercap_1 + 
+                    corruption_1 + ht_ngos + cluster(name),
+                  data=df.survivalized.crim.correct, ties="efron")
+# summary(model3.9)
+model3.9.fit <- summary(survfit(model3.9))$table
 
 
 # ---------
