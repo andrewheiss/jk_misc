@@ -1,7 +1,7 @@
 ---
 title: "Replication and extension report"
 author: "Andrew Heiss"
-date: "November 2, 2015"
+date: "November 3, 2015"
 output: 
   html_document: 
     css: fixes.css
@@ -241,9 +241,11 @@ stargazer(model3.2, model3.6, model3.7, model3.8, model3.9,
           notes=c("Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
-# Predicting time to criminalization
+## Predicting time to criminalization
 
 The current draft of the chapter uses descriptive statistics to show that countries with documented reactions to the TIP report are more likely to follow up with legislative action in the following year. This conclusion is borne out with multivariate statistical analysis. As seen in the models below, countries with a recorded non-media reaction are 77–88% more likely to criminalize human trafficking (model 5.1: `r I(get.parenthetical.stats(model5.1, "L.reactionnomedia", "z"))`; model 5.2: `r I(get.parenthetical.stats(model5.2, "L.reactionnomedia", "z"))`). The intensity of reactions to the report also has an effect—for every additional type of reaction, countries are approximately 20% more likely to criminalize trafficking (`r I(get.parenthetical.stats(model5.3, "L.totalreactionnomedia", "z"))`).
+
+### Table: The effect of reactions to TIP report on criminalization
 
 ```{r, results='asis', echo=FALSE}
 var.labs <- c("Reactions (no media)", "Total reactions (no media)", 
@@ -274,6 +276,8 @@ stargazer(model5.1, model5.2, model5.3, model5.4,
 
 When combined with the reactions data, none of the additional variables help explain the variance in time to criminalization. US TIP funding still suffers from the inexplicable math problem. Observed (`r I(get.parenthetical.stats(model5.6, "prop_tip_wl1", "z"))`) and estimated (`r I(get.parenthetical.stats(model5.7, "prop_tip_estimated1", "z"))`) State Department cables on TIP-related matters have no effect, and more human trafficking NGOs in a country does little to influence the passage of criminalization legislation (`r I(get.parenthetical.stats(model5.8, "ht_ngos", "z"))`).
 
+### Table: The effect of reactions to the TIP report *and* funding, engagement, and NGO density on criminalization
+
 ```{r, results='asis', echo=FALSE}
 var.labs <- c("Total reactions (no media)", 
               "Share of women in parliament", 
@@ -303,11 +307,34 @@ stargazer(model5.5, model5.6, model5.7, model5.8,
           notes=c("Standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+## The effect of democracy on criminalization
+
+The chapter draft currently claims that the "relationship between being included in the report and time to criminalization depends on the level of democracy" and that "the models reinforce that the relationship between inclusion in the report and time to criminalization appears to be stronger for less democratic countries." 
+
+Main explanatory variables:
+
+* Scrutiny (in report) (*models 3.1–3.5*)
+* Tier 1/2/2.5/3 + demotions (*models 4.1–4.4*)
+* Reactions (*models 5.1–5.4*)
+* Funding, engagement, NGO density (*models 1.4–1.7; 3.6–3.9; 5.5–5.8*)
+* Democracy (*models 6.x–6.x*)
+
+Standard controls:
+
+* women in parliament
+* civil liberties
+* regional density of criminalization
+* 2000 TIP protocol
+* missing information
+* population | GDP/cap
+
+---
+
+
 # To do
 
 * Figure out what's going on with useless funding variable
 * Figure out what's going on with semi-useless cable variables
 * Figure out most theoretically appropriate combinations of explanatory variables for new models
-* Check this claim in the "Who cares" section: "Statistical modeling (see Appendix X) that accounts for other factors (similar to the above models) also shows that the relationship between being included in the report and time to criminalization depends on the level of democracy. The models reinforce that the relationship between inclusion in the report and time to criminalization appears to be stronger for less democratic countries. TRUE? No?"
-* Do this with both polity and UDS
+* Check the effect of democracy with both polity and UDS
 * Improve, standardize graphics
