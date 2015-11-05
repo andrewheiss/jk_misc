@@ -2,6 +2,7 @@ library(dplyr)
 library(tidyr)
 library(haven)
 library(readr)
+library(readxl)
 library(countrycode)
 
 # Load and clean original Stata file
@@ -433,3 +434,22 @@ reactions <- read_dta("../original_files/mergedreaction8_new.dta") %>%
                             publicfacesaving == 1, 1, 0),
          image11 = ifelse(tier < 4 & is.na(image11), 0, image11)) %>%
   mutate(totalfreedom = fh_pr + fh_cl)
+
+
+# # Democracy data
+# polity.url <- "http://www.systemicpeace.org/inscr/p4v2014.xls"
+# polity.tmp <- paste0(tempdir(), basename(polity.url))
+# download.file(polity.url, polity.tmp)
+# 
+# uds.url <- "http://www.unified-democracy-scores.org/files/20140312/z/uds_summary.csv.gz"
+# uds.tmp <- paste0(tempdir(), basename(uds.url))
+# download.file(uds.url, uds.tmp, method="internal")
+# 
+# polity <- read_excel(polity.tmp) %>%
+#   filter(year > 1989) %>%
+#   select(cowcode = ccode, year, democ, autoc, polity2, durable)
+# 
+# uds <- read_csv(uds.tmp) %>%
+#   filter(year > 1989)
+# 
+# colnames(reactions)
