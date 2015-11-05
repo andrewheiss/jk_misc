@@ -44,7 +44,8 @@ df.orig <- read_dta("../original_files/kelley_simmons_ajps_2014_replication.dta"
          econasst0 = ifelse(is.na(econasst), 0, econasst),
          econasstP = econasst * 1000000,
          econasstP = ifelse(econasstP == 0 | is.na(econasstP), 1, econasstP),
-         logeconasstP = log(econasstP))
+         logeconasstP = log(econasstP),
+         totalfreedom = fh_pr + fh_cl)
 
 # Calculate grouped summary statistics
 # Generate the mean tier rating for each country and mark when it's always 1 or 3
@@ -130,6 +131,7 @@ df.complete.with.lags.orig <- df.complete %>%
          missinfo8_1 = lag(missinfo8, 1),
          missinfo8_2 = lag(missinfo8, 2),
          fh_cl1 = lag(fh_cl),
+         totalfreedom1 = lag(totalfreedom),
          ratproto2000_1 = lag(ratproto2000),
          rule_of_law_1 = lag(rule_of_law),
          corruption_1 = lag(corruption),
@@ -140,6 +142,7 @@ df.complete.with.lags.orig <- df.complete %>%
          loggdppercap_2 = log(lag(data4, 2)),
          women1 = lag(women_par),
          fh_cl1 = lag(fh_cl),
+         totalfreedom1 = lag(totalfreedom),
          protection_1 = lag(protection)) %>%
   # Deal with windowed tier variables
   mutate(tier1_1 = ifelse(tier1 != 1 | is.na(tier1), 0, 1),
@@ -196,6 +199,7 @@ df.complete.with.lags.correct <- df.complete %>%
          missinfo8_1 = lag(missinfo8, 1),
          missinfo8_2 = lag(missinfo8, 2),
          fh_cl1 = lag(fh_cl),
+         totalfreedom1 = lag(totalfreedom),
          ratproto2000_1 = lag(ratproto2000),
          rule_of_law_1 = lag(rule_of_law),
          corruption_1 = lag(corruption),
@@ -206,6 +210,7 @@ df.complete.with.lags.correct <- df.complete %>%
          loggdppercap_2 = log(lag(data4, 2)),
          women1 = lag(women_par),
          fh_cl1 = lag(fh_cl),
+         totalfreedom1 = lag(totalfreedom),
          protection_1 = lag(protection)) %>%
   # Deal with new variables
   mutate(total.funding1 = lag(total.funding),
