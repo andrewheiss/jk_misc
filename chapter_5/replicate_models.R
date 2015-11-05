@@ -85,7 +85,7 @@ model1.3 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 +
 model1.3.fit <- summary(survfit(model1.3))$table
 
 model1.4 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 +
-                    ngos_ave + fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
+                    ngos_ave + totalfreedom1 + corrected_regcrim1_1 + ratproto2000_1 +
                     ht_incidence_origin + ht_incidence_transit +
                     ht_incidence_destination + total.funding1 + cluster(name),
                   data=df.survivalized.report.correct, ties="efron")
@@ -93,7 +93,7 @@ summary(model1.4)
 model1.4.fit <- summary(survfit(model1.4))$table
 
 model1.5 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 +
-                    ngos_ave + fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
+                    ngos_ave + totalfreedom1 + corrected_regcrim1_1 + ratproto2000_1 +
                     ht_incidence_origin + ht_incidence_transit +
                     ht_incidence_destination + prop_tip_wl1 + cluster(name),
                   data=df.survivalized.report.correct, ties="efron")
@@ -101,7 +101,7 @@ summary(model1.5)
 model1.5.fit <- summary(survfit(model1.5))$table
 
 model1.6 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 +
-                    ngos_ave + fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
+                    ngos_ave + totalfreedom1 + corrected_regcrim1_1 + ratproto2000_1 +
                     ht_incidence_origin + ht_incidence_transit +
                     ht_incidence_destination + prop_tip_estimated1 + cluster(name),
                   data=df.survivalized.report.correct, ties="efron")
@@ -109,7 +109,7 @@ summary(model1.6)
 model1.6.fit <- summary(survfit(model1.6))$table
 
 model1.7 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 +
-                    fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
+                    totalfreedom1 + corrected_regcrim1_1 + ratproto2000_1 +
                     ht_incidence_origin + ht_incidence_transit +
                     ht_incidence_destination + ht_ngos + cluster(name),
                   data=df.survivalized.report.correct, ties="efron")
@@ -377,3 +377,229 @@ model5.8 <- glm(crim1 ~ L.totalreactionnomedia + L.women_par + L.totalfreedom +
                 data=df.table5,
                 family=binomial(link="logit"))
 # summary(model5.8)
+
+
+# ----------------------
+# -----------
+# Extension
+# -----------
+# ----------------------
+# Explanatory variables to test:
+#    total.funding1
+#    prop_tip_wl1
+#    prop_tip_estimated1
+#    polity1
+#    uds1
+#
+# Standard controls:
+#    women1 + totalfreedom1 + ratproto2000 + corrected_regcrim1_1 + missinfo8_2
+#
+# "demographic" controls:
+#    logpop_1 + loggdppercap_1 + corruption_1
+#
+#    NGO controls:
+#        ngos_ave
+#        ht_ngos
+#
+# Intensity controls: 
+#    ht_incidence_origin + ht_incidence_transit + ht_incidence_destination
+
+# ------------------------------------------
+# TIP-specific funding and criminalization
+# ------------------------------------------
+ext1.0 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 + 
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext1.1)
+ext1.0.fit <- summary(survfit(ext1.0))$table
+
+ext1.1 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 + 
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  logpop_1 + loggdppercap_1 + corruption_1 + 
+                  ngos_ave + 
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext1.1)
+ext1.1.fit <- summary(survfit(ext1.1))$table
+
+ext1.2 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 + 
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  logpop_1 + loggdppercap_1 + corruption_1 + 
+                  ht_ngos + 
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext1.2)
+ext1.2.fit <- summary(survfit(ext1.2))$table
+
+ext1.3 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 + 
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  ht_incidence_origin + ht_incidence_transit + 
+                  ht_incidence_destination + 
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext1.3)
+ext1.3.fit <- summary(survfit(ext1.3))$table
+
+ext1.4 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 + inreport1 +
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext1.2)
+ext1.4.fit <- summary(survfit(ext1.4))$table
+
+ext1.5 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 + 
+                  tier1_1 + tier1_2 + tier1_25 + tier1_3 + 
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext1.2)
+ext1.5.fit <- summary(survfit(ext1.5))$table
+
+ext1.6 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 + inreport1 + 
+                  new_watch3 + new_watch2 + new_watch1 + 
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext1.2)
+ext1.6.fit <- summary(survfit(ext1.6))$table
+
+
+# -----------------------------------
+# US engagement and criminalization
+# -----------------------------------
+ext2.0 <- coxph(Surv(start_time, yrfromj2, fail) ~ prop_tip_wl1 + 
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext2.1)
+ext2.0.fit <- summary(survfit(ext2.0))$table
+
+ext2.00 <- coxph(Surv(start_time, yrfromj2, fail) ~ prop_tip_estimated1 + 
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext2.1)
+ext2.00.fit <- summary(survfit(ext2.00))$table
+
+ext2.1 <- coxph(Surv(start_time, yrfromj2, fail) ~ prop_tip_wl1 + 
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  logpop_1 + loggdppercap_1 + corruption_1 + 
+                  ngos_ave + 
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext2.1)
+ext2.1.fit <- summary(survfit(ext2.1))$table
+
+ext2.2 <- coxph(Surv(start_time, yrfromj2, fail) ~ prop_tip_estimated1 + 
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  logpop_1 + loggdppercap_1 + corruption_1 + 
+                  ngos_ave + 
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext2.1)
+ext2.2.fit <- summary(survfit(ext2.2))$table
+
+ext2.3 <- coxph(Surv(start_time, yrfromj2, fail) ~ prop_tip_wl1 + 
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  logpop_1 + loggdppercap_1 + corruption_1 + 
+                  ht_ngos + 
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext2.2)
+ext2.3.fit <- summary(survfit(ext2.3))$table
+
+ext2.4 <- coxph(Surv(start_time, yrfromj2, fail) ~ prop_tip_estimated1 + 
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  logpop_1 + loggdppercap_1 + corruption_1 + 
+                  ht_ngos + 
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext2.2)
+ext2.4.fit <- summary(survfit(ext2.4))$table
+
+ext2.5 <- coxph(Surv(start_time, yrfromj2, fail) ~ prop_tip_wl1 + 
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  ht_incidence_origin + ht_incidence_transit + 
+                  ht_incidence_destination + 
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext2.3)
+ext2.5.fit <- summary(survfit(ext2.5))$table
+
+ext2.6 <- coxph(Surv(start_time, yrfromj2, fail) ~ prop_tip_estimated1 + 
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  ht_incidence_origin + ht_incidence_transit + 
+                  ht_incidence_destination + 
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext2.3)
+ext2.6.fit <- summary(survfit(ext2.6))$table
+
+ext2.7 <- coxph(Surv(start_time, yrfromj2, fail) ~ prop_tip_wl1 + inreport1 +
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext2.2)
+ext2.7.fit <- summary(survfit(ext2.7))$table
+
+ext2.8 <- coxph(Surv(start_time, yrfromj2, fail) ~ prop_tip_estimated1 + inreport1 +
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext2.2)
+ext2.8.fit <- summary(survfit(ext2.8))$table
+
+ext2.9 <- coxph(Surv(start_time, yrfromj2, fail) ~ prop_tip_wl1 + 
+                  tier1_1 + tier1_2 + tier1_25 + tier1_3 + 
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext2.2)
+ext2.9.fit <- summary(survfit(ext2.9))$table
+
+ext2.10 <- coxph(Surv(start_time, yrfromj2, fail) ~ prop_tip_estimated1 + 
+                  tier1_1 + tier1_2 + tier1_25 + tier1_3 + 
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext2.2)
+ext2.10.fit <- summary(survfit(ext2.10))$table
+
+ext2.11 <- coxph(Surv(start_time, yrfromj2, fail) ~ prop_tip_wl1 + inreport1 + 
+                  new_watch3 + new_watch2 + new_watch1 + 
+                  women1 + totalfreedom1 + ratproto2000 + 
+                  corrected_regcrim1_1 + missinfo8_2 +
+                  cluster(name),
+                data=df.survivalized.crim.correct, ties="efron")
+# summary(ext2.2)
+ext2.11.fit <- summary(survfit(ext2.11))$table
+
+ext2.12 <- coxph(Surv(start_time, yrfromj2, fail) ~ prop_tip_estimated1 + inreport1 + 
+                   new_watch3 + new_watch2 + new_watch1 + 
+                   women1 + totalfreedom1 + ratproto2000 + 
+                   corrected_regcrim1_1 + missinfo8_2 +
+                   cluster(name),
+                 data=df.survivalized.crim.correct, ties="efron")
+# summary(ext2.2)
+ext2.12.fit <- summary(survfit(ext2.12))$table
+
