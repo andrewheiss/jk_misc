@@ -80,7 +80,9 @@ funding.raw <- read_csv("../data/funding_clean.csv") %>%
 funding.all <- funding.raw %>%
   group_by(cowcode, grant_year) %>%
   summarise(total.funding = sum(amount, na.rm=TRUE),
-            avg.funding = mean(amount, na.rm=TRUE)) 
+            avg.funding = mean(amount, na.rm=TRUE)) %>%
+  group_by(cowcode) %>%
+  mutate(cum.funding = cumsum(total.funding))
 
 funding.ngos <- funding.raw %>%
   filter(recipient_type %in% c("NGO", "NPO")) %>%
@@ -216,6 +218,7 @@ df.complete.with.lags.correct <- df.complete %>%
   # Deal with new variables
   mutate(total.funding1 = lag(total.funding),
          avg.funding1 = lag(avg.funding),
+         cum.funding1 = lag(cum.funding),
          total.funding.ngos1 = lag(total.funding.ngos),
          avg.funding.ngos1 = lag(avg.funding.ngos),
          prop_tip_wl1 = lag(prop_tip_wl),

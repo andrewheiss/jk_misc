@@ -415,6 +415,33 @@ ext1.0 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 +
 # summary(ext1.1)
 ext1.0.fit <- summary(survfit(ext1.0))$table
 
+# Coefficient = 1; no standard errors for total.funding1
+#
+# This is because of an issue with the variable---according to 
+# http://www.stata.com/support/faqs/statistics/stcox-producing-missing-standard-errors/
+#
+# 4) Covariate does not vary within death event risk sets.
+#    This is a complicated form of collinearity wherein a covariate varies
+#    overall, but for each death event, it does not vary within the 
+#    associated risk set.
+# model.df <- df.survivalized.crim.correct %>% 
+#   select(year, name, start_time, yrfromj2, fail, total.funding1, cum.funding1,
+#            women1, totalfreedom1, ratproto2000,
+#            corrected_regcrim1_1, missinfo8_2)
+# write_csv(model.df, path="~/Desktop/borked_model1.csv", na=".")
+# write_csv(model.df, path="~/Desktop/borked_model.csv")
+
+logit.funding <- glm(crim1 ~ total.funding1, 
+                     data=df.complete.with.lags.correct, 
+                     family=binomial(link="logit"))
+logit.funding.no.outliers <- glm(crim1 ~ total.funding1, 
+                     data=filter(df.complete.with.lags.correct, total.funding1 < 10000000), 
+                     family=binomial(link="logit"))
+logit.women <- glm(crim1 ~ women1, 
+                   data=df.complete.with.lags.correct, 
+                   family=binomial(link="logit"))
+
+
 ext1.1 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 + 
                   women1 + totalfreedom1 + ratproto2000 + 
                   corrected_regcrim1_1 + missinfo8_2 +

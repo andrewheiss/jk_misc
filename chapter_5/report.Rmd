@@ -15,6 +15,9 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 source("replicate_models.R")
 library(stargazer)
+library(ggplot2)
+library(scales)
+library(gridExtra)
 ```
 
 # Replication results
@@ -404,7 +407,7 @@ stargazer(model1.3, model1.4, model1.5, model1.6, model1.7,
 
 ## The effect of TIP-specific funding on criminalization
 
-Explain what's going on here…
+Using the amount of total TIP-specific funding to estimate the hazard of criminalizing trafficking does not reveal any additional insight.
 
 ```{r, results='asis', echo=FALSE}
 # var.labs <- c("Total population (logged)", "Missing information", 
@@ -458,10 +461,106 @@ stargazer(ext1.4, ext1.5, ext1.6,
           notes=c("Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+&nbsp;
+
+Importantly, the variable faces substantial mathematical issues and yields useless coefficients when used in models. A coefficient of 1 with no errors in a hazard model is generally indicative of a complicated form of multicollinearity where the variable does not vary within the risk set.^[See type 4 listed at [http://www.stata.com/support/faqs/statistics/stcox-producing-missing-standard-errors/](http://www.stata.com/support/faqs/statistics/stcox-producing-missing-standard-errors/).] That is, in every country in the model, it appears that total funding increases at the same rate.
+
+The same phenomenon occurs when running a more simple logistic regression model predicting criminalization with funding:
+
+```{r, results='asis', echo=FALSE}
+var.labs <- c("Total funding", "Share of women in parliament")
+col.labs <- c("Funding only", "Funding only (no outliers)", 
+              "Women in parliament only")
+
+extra.lines <- list(c("Pseudo R-squared",
+                      sapply(list(logit.funding, logit.funding.no.outliers, 
+                                  logit.women), 
+                             calc.pseudo.r.squared)))
+
+stargazer(logit.funding, logit.funding.no.outliers, logit.women,
+          covariate.labels=var.labs, column.labels=col.labs,
+          model.numbers=FALSE, dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, 
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+&nbsp;
+
+The effect (or rather, lack of effect) is clear when plotting the model. Funding does very little to explain anything, and while the higher levels of funding only appear where criminalization occurs, those few outliers drive the findings.
+
+```{r, echo=FALSE, fig.width=10, fig.height=3, warning=FALSE}
+temp.data <- data.frame(total.funding1 = seq(min(df.complete.with.lags.correct$total.funding1, na.rm=TRUE),
+                                             max(df.complete.with.lags.correct$total.funding1, na.rm=TRUE),
+                                             1000))
+predicted.data <- as.data.frame(predict(logit.funding, newdata = temp.data,
+                                        type="link", se=TRUE))
+
+std <- qnorm(0.95 / 2 + 0.5)
+new.data <- cbind(temp.data, predicted.data) %>%
+  mutate(ymin = logit.funding$family$linkinv(fit - std * se.fit),
+         ymax = logit.funding$family$linkinv(fit + std * se.fit),
+         fit = logit.funding$family$linkinv(fit))
+
+p.funding <- ggplot(df.complete.with.lags.correct, aes(x=total.funding1, y=crim1)) + 
+  geom_point() +
+  geom_ribbon(data=new.data, aes(y=fit, ymin=ymin, ymax=ymax), alpha=0.5) +
+  geom_line(data=new.data, aes(y=fit)) +
+  labs(x="Total funding", y="Criminalization") +
+  scale_x_continuous(labels=dollar) + 
+  theme_light()
+
+
+temp.data <- data.frame(total.funding1 = seq(min(df.complete.with.lags.correct$total.funding1, na.rm=TRUE),
+                                             max(filter(df.complete.with.lags.correct, total.funding1 < 10000000)$total.funding1, na.rm=TRUE),
+                                             1000))
+predicted.data <- as.data.frame(predict(logit.funding.no.outliers, 
+                                        newdata = temp.data,
+                                        type="link", se=TRUE))
+
+std <- qnorm(0.95 / 2 + 0.5)
+new.data <- cbind(temp.data, predicted.data) %>%
+  mutate(ymin = logit.funding.no.outliers$family$linkinv(fit - std * se.fit),
+         ymax = logit.funding.no.outliers$family$linkinv(fit + std * se.fit),
+         fit = logit.funding.no.outliers$family$linkinv(fit))
+
+p.funding1 <- ggplot(df.complete.with.lags.correct, aes(x=total.funding1, y=crim1)) + 
+  geom_point() +
+  geom_ribbon(data=new.data, aes(y=fit, ymin=ymin, ymax=ymax), alpha=0.5) +
+  geom_line(data=new.data, aes(y=fit)) +
+  labs(x="Total funding (outliers omitted)", y="Criminalization") +
+  scale_x_continuous(labels=dollar) + 
+  theme_light()
+
+
+temp.data <- data.frame(women1 = seq(min(df.complete.with.lags.correct$women1, na.rm=TRUE),
+                                             max(df.complete.with.lags.correct$women1, na.rm=TRUE),
+                                             0.1))
+predicted.data <- as.data.frame(predict(logit.women, newdata = temp.data,
+                                        type="link", se=TRUE))
+
+std <- qnorm(0.95 / 2 + 0.5)
+new.data <- cbind(temp.data, predicted.data) %>%
+  mutate(ymin = logit.women$family$linkinv(fit - std * se.fit),
+         ymax = logit.women$family$linkinv(fit + std * se.fit),
+         fit = logit.women$family$linkinv(fit))
+
+p.women <- ggplot(df.complete.with.lags.correct, aes(x=women1, y=crim1)) + 
+  geom_point() +
+  geom_ribbon(data=new.data, aes(y=fit, ymin=ymin, ymax=ymax), alpha=0.5) +
+  geom_line(data=new.data, aes(y=fit)) +
+  labs(x="Share of women in parliament", y="Criminalization") +
+  theme_light()
+
+grid.arrange(p.funding, p.funding1, p.women, nrow=1)
+```
+
 
 ## The effect of US engagement on criminalization
 
-Explain what's going on here…
+State Department cable discussions about host country TIP efforts have no effect on the time to criminalization, looking at both the observed (`r I(get.parenthetical.stats(ext2.0, "prop_tip_wl1", "z"))`) and the estimated (`r I(get.parenthetical.stats(ext2.00, "prop_tip_estimated1", "z"))`) number of cables.
 
 ```{r, results='asis', echo=FALSE}
 # var.labs <- c("Total population (logged)", "Missing information", 
@@ -529,7 +628,7 @@ stargazer(ext2.7, ext2.8, ext2.9, ext2.10, ext2.11, ext2.12,
 
 ## The effect of reactions + new variables on criminalization (logistic regression)
 
-When combined with the reactions data, none of the additional variables help explain the variance in time to criminalization. US TIP funding still suffers from the inexplicable math problem. Observed (`r I(get.parenthetical.stats(model5.6, "prop_tip_wl1", "z"))`) and estimated (`r I(get.parenthetical.stats(model5.7, "prop_tip_estimated1", "z"))`) State Department cables on TIP-related matters have no effect, and more human trafficking NGOs in a country does little to influence the passage of criminalization legislation (`r I(get.parenthetical.stats(model5.8, "ht_ngos", "z"))`).
+When combined with the reactions data, none of the additional variables help explain the variance in time to criminalization. US TIP funding has no effect, as expected. Observed (`r I(get.parenthetical.stats(model5.6, "prop_tip_wl1", "z"))`) and estimated (`r I(get.parenthetical.stats(model5.7, "prop_tip_estimated1", "z"))`) State Department cables on TIP-related matters have no effect, and more human trafficking NGOs in a country does little to influence the passage of criminalization legislation (`r I(get.parenthetical.stats(model5.8, "ht_ngos", "z"))`).
 
 ### Table: The effect of reactions to the TIP report *and* funding, engagement, and NGO density on criminalization
 
