@@ -148,7 +148,7 @@ stargazer(model4.1, model4.2, model4.3, model4.4 ,
 
 ## Chapter 5 table A5.1
 
-The current draft of the chapter uses descriptive statistics to show that countries with documented reactions to the TIP report are more likely to follow up with legislative action in the following year. This conclusion is borne out with multivariate statistical analysis. As seen in the models below, countries with a recorded non-media reaction are 77–88% more likely to criminalize human trafficking (model 5.1: `r I(get.parenthetical.stats(model5.1, "L.reactionnomedia", "z"))`; model 5.2: `r I(get.parenthetical.stats(model5.2, "L.reactionnomedia", "z"))`). The intensity of reactions to the report also has an effect—for every additional type of reaction, countries are approximately 20% more likely to criminalize trafficking (`r I(get.parenthetical.stats(model5.3, "L.totalreactionnomedia", "z"))`).
+The current draft of the chapter uses descriptive statistics to show that countries with documented reactions to the TIP report are more likely to follow up with legislative action in the following year. This conclusion is borne out with multivariate statistical analysis. As seen in the models below, countries with a recorded non-media reaction are 77–88% more likely to criminalize human trafficking (model 5.1: `r I(parens(model5.1, "L.reactionnomedia", "z"))`; model 5.2: `r I(parens(model5.2, "L.reactionnomedia", "z"))`). The intensity of reactions to the report also has an effect—for every additional type of reaction, countries are approximately 20% more likely to criminalize trafficking (`r I(parens(model5.3, "L.totalreactionnomedia", "z"))`).
 
 These results differ slightly from what is currently in the chapter draft because the models use cleaner and ostensibly more accurate data (the same data used for replicating the AJPS models). 
 
@@ -364,9 +364,9 @@ Before looking at the determinants of criminalization, it might be useulf to see
 
 The new variables add some additional nuance to the selection process, but not much. Funding from the United States has a statistically significant effect, but it most likely because of mathematical issues, given that the hazard ratio is 1 and the standard error is 0—too many country-years with zero funding distorts the model. 
 
-More engagement from the State Department has a significant and substantive positive effect on inclusion in the report, but again, with many caveats. If we measure engagement with the proportion of *observed* TIP-related cables in the Wikileaks dump, for every percent increase in State Department back chatter on trafficking, a country is 17 times more likely to enter the report (`r I(get.parenthetical.stats(model1.5, "prop_tip_wl1", "z"))`). However, if we measure engagement with the *estimated* proportion of TIP-related cables, the effect disappears entirely (`r I(get.parenthetical.stats(model1.6, "prop_tip_estimated1", "z"))`). Additionally, models using cable data are noticeably smaller than other models, with roughly 100 observations in only 24 countries, and the number of inclusions inexplicably exceeds the number of countries—there might be too much missing data. Also, the coefficient for the estimated number of TIP cables is ridiculously huge and most likely wrong.
+More engagement from the State Department has a significant and substantive positive effect on inclusion in the report, but again, with many caveats. If we measure engagement with the proportion of *observed* TIP-related cables in the Wikileaks dump, for every percent increase in State Department back chatter on trafficking, a country is 17 times more likely to enter the report (`r I(parens(model1.5, "prop_tip_wl1", "z"))`). However, if we measure engagement with the *estimated* proportion of TIP-related cables, the effect disappears entirely (`r I(parens(model1.6, "prop_tip_estimated1", "z"))`). Additionally, models using cable data are noticeably smaller than other models, with roughly 100 observations in only 24 countries, and the number of inclusions inexplicably exceeds the number of countries—there might be too much missing data. Also, the coefficient for the estimated number of TIP cables is ridiculously huge and most likely wrong.
 
-Replacing the NGO density variable with our own NGO measure—the number of NGOs in each country from the database of human trafficking NGOs we used for the survey—yields a significant but probably non-substantive negative effect of being included in the report. For each additional anti-TIP NGO, a country is 1% less likely to enter the report in a given year (`r I(get.parenthetical.stats(model1.7, "ht_ngos", "z"))`), which is hardly a noticeable effect. Moreover, the count of NGOs is not entirely accurate—it is based on the home location of the NGO, not the location(s) where the NGO actually works. We could use data from the survey to get information about where these NGOs work, but we would have an even smaller set of data to work with.
+Replacing the NGO density variable with our own NGO measure—the number of NGOs in each country from the database of human trafficking NGOs we used for the survey—yields a significant but probably non-substantive negative effect of being included in the report. For each additional anti-TIP NGO, a country is 1% less likely to enter the report in a given year (`r I(parens(model1.7, "ht_ngos", "z"))`), which is hardly a noticeable effect. Moreover, the count of NGOs is not entirely accurate—it is based on the home location of the NGO, not the location(s) where the NGO actually works. We could use data from the survey to get information about where these NGOs work, but we would have an even smaller set of data to work with.
 
 ```{r, results='asis', echo=FALSE}
 var.labs <- c("Total population (logged)", "Missing information", 
@@ -560,7 +560,7 @@ grid.arrange(p.funding, p.funding1, p.women, nrow=1)
 
 ## The effect of US engagement on criminalization
 
-State Department cable discussions about host country TIP efforts have no effect on the time to criminalization, looking at both the observed (`r I(get.parenthetical.stats(ext2.0, "prop_tip_wl1", "z"))`) and the estimated (`r I(get.parenthetical.stats(ext2.00, "prop_tip_estimated1", "z"))`) number of cables.
+State Department cable discussions about host country TIP efforts have no effect on the time to criminalization, looking at both the observed (`r I(parens(ext2.0, "prop_tip_wl1", "z"))`) and the estimated (`r I(parens(ext2.00, "prop_tip_estimated1", "z"))`) number of cables.
 
 ```{r, results='asis', echo=FALSE}
 # var.labs <- c("Total population (logged)", "Missing information", 
@@ -628,7 +628,7 @@ stargazer(ext2.7, ext2.8, ext2.9, ext2.10, ext2.11, ext2.12,
 
 ## The effect of reactions + new variables on criminalization (logistic regression)
 
-When combined with the reactions data, none of the additional variables help explain the variance in time to criminalization. US TIP funding has no effect, as expected. Observed (`r I(get.parenthetical.stats(model5.6, "prop_tip_wl1", "z"))`) and estimated (`r I(get.parenthetical.stats(model5.7, "prop_tip_estimated1", "z"))`) State Department cables on TIP-related matters have no effect, and more human trafficking NGOs in a country does little to influence the passage of criminalization legislation (`r I(get.parenthetical.stats(model5.8, "ht_ngos", "z"))`).
+When combined with the reactions data, none of the additional variables help explain the variance in time to criminalization. US TIP funding has no effect, as expected. Observed (`r I(parens(model5.6, "prop_tip_wl1", "z"))`) and estimated (`r I(parens(model5.7, "prop_tip_estimated1", "z"))`) State Department cables on TIP-related matters have no effect, and more human trafficking NGOs in a country does little to influence the passage of criminalization legislation (`r I(parens(model5.8, "ht_ngos", "z"))`).
 
 ### Table: The effect of reactions to the TIP report *and* funding, engagement, and NGO density on criminalization
 
@@ -667,9 +667,9 @@ The original article showed that a number of factors increased the probability t
 
 Again, the new variables show some promise in explaining the criminalization process, but not much. US TIP funding again has some wonky math issues that I need to look into (with a hazard ratio of 1 and a standard error of 0).
 
-While State Department chatter about TIP issues did influence the decision to include a country in the TIP report (assuming the math is right), it doesn't seem that US engagement in TIP advocacy has an effect on a country's decision to criminalize human trafficking, either measured with observed Wikileaks cables (`r I(get.parenthetical.stats(model3.7, "prop_tip_wl1", "z"))`) or estimated cables (`r I(get.parenthetical.stats(model3.8, "prop_tip_estimated1", "z"))`). 
+While State Department chatter about TIP issues did influence the decision to include a country in the TIP report (assuming the math is right), it doesn't seem that US engagement in TIP advocacy has an effect on a country's decision to criminalize human trafficking, either measured with observed Wikileaks cables (`r I(parens(model3.7, "prop_tip_wl1", "z"))`) or estimated cables (`r I(parens(model3.8, "prop_tip_estimated1", "z"))`). 
 
-The presence of more human trafficking NGOs does appear to influence the decision to criminalize though—for each additional NGO with headquarters in a country, the chance that that country will criminalize trafficking increases by 2% (`r I(get.parenthetical.stats(model3.9, "ht_ngos", "z"))`). 
+The presence of more human trafficking NGOs does appear to influence the decision to criminalize though—for each additional NGO with headquarters in a country, the chance that that country will criminalize trafficking increases by 2% (`r I(parens(model3.9, "ht_ngos", "z"))`). 
 
 ### Table: The effect of funding, engagement, and NGO density on criminalization
 

@@ -13,15 +13,15 @@ calc.pseudo.r.squared <- function(x.model) {
 
 # Format pretty in-text parenthetical statistics and p-values
 # Example:
-#   get.parenthetical.stats(model5.8, "L.totalfreedom", "z")
+#   parens(model5.8, "L.totalfreedom", "z")
 #   # [1] "z = -0.778, p = 0.437"
 #
 # Example in R Markdown:
-#   Lorem ipsum dolor sit amet (`r I(get.parenthetical.stats(model, "x1", "t"))`).
+#   Lorem ipsum dolor sit amet (`r I(parens(model, "x1", "t"))`).
 #
 #   Lorem ipsum dolor sit amet (t = 5.34, p < 0.001).
 #
-get.parenthetical.stats <- function(model, variable, statistic) {
+parens <- function(model, variable, statistic) {
   df <- model %>% tidy() %>%
     filter(term == variable) %>%
     select(statistic, p.value)
