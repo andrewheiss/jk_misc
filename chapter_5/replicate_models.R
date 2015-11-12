@@ -424,10 +424,14 @@ ext1.0.fit <- summary(survfit(ext1.0))$table
 #    This is a complicated form of collinearity wherein a covariate varies
 #    overall, but for each death event, it does not vary within the 
 #    associated risk set.
-# model.df <- df.survivalized.crim.correct %>% 
+# model.df <- df.survivalized.crim.correct %>%
 #   select(year, name, start_time, yrfromj2, fail, total.funding1, cum.funding1,
 #            women1, totalfreedom1, ratproto2000,
 #            corrected_regcrim1_1, missinfo8_2)
+# model.df1 <- df.complete.with.lags.correct %>%
+#   select(year, name, crim1, total.funding1, cum.funding1,
+#          women1, totalfreedom1, ratproto2000,
+#          corrected_regcrim1_1, missinfo8_2)
 # write_csv(model.df, path="~/Desktop/borked_model1.csv", na=".")
 # write_csv(model.df, path="~/Desktop/borked_model.csv")
 
