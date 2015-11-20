@@ -9,6 +9,7 @@ library(countrycode)
 df.orig <- read_dta("../original_files/kelley_simmons_ajps_2014_replication.dta") %>%
   arrange(cowcode, year) %>%
   filter(year >= 1991) %>%
+  mutate(year.factor = as.factor(year)) %>%
   # Deal with missing human trafficking data
   mutate(ht_incidence_origin = ifelse(is.na(ht_incidence_origin) & 
                                         (!is.na(ht_incidence_transit) | 
