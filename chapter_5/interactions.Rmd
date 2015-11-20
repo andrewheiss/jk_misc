@@ -55,17 +55,20 @@ prob.crim.democracy.report <- df.correct %>%
   summarize(total = n(),
             crim.no = sum(crim1 == 0),
             crim.yes = sum(crim1 == 1),
-            prob.yes = crim.yes / total)
+            prob.yes = crim.yes / total) %>%
+  filter(crim.yes > 0)
 
-ggplot(prob.crim.democracy.report, 
-       aes(x=as.factor(fh_cl1), y=prob.yes, fill=in.report)) + 
-  geom_bar(stat="identity", position="dodge")
-```
-
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
-ggplot(prob.crim.democracy.report, 
-       aes(x=fh_cl1, y=prob.yes, colour=in.report)) + 
-  geom_line()
+p.dem.prob <- ggplot(prob.crim.democracy.report, 
+       aes(x=fh_cl1, y=prob.yes, colour=in.report, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Worse democracy (Freedom House civil liberties)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_x_continuous(breaks=seq(1, 7, 1)) +
+  scale_colour_manual(values=report.colors, name="Presence in report") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized")) +
+  theme_light()
+p.dem.prob
 ```
 
 ### Interactions
