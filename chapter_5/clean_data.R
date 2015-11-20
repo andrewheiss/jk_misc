@@ -223,6 +223,7 @@ df.complete.with.lags.correct <- df.complete %>%
          ht_news_country1 = lag(ht_news_country)) %>%
   # Deal with new variables
   mutate(total.funding1 = lag(total.funding),
+         log.total.funding1 = log1p(total.funding1),
          avg.funding1 = lag(avg.funding),
          cum.funding1 = lag(cum.funding),
          total.funding.ngos1 = lag(total.funding.ngos),
