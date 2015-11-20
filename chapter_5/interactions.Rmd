@@ -16,8 +16,15 @@ output:
 ```{r setup, include=FALSE}
 source("clean_data.R")
 knitr::opts_chunk$set(echo = TRUE)
+library(broom)
 library(ggplot2)
+library(scales)
 library(stargazer)
+
+# Multiplier for standard error areas
+std <- qnorm(0.95 / 2 + 0.5)
+
+report.colors <- c("#E97F01", "#014358")
 
 df.correct <- df.correct %>%
   mutate(in.report = ifelse(tier1 == 0, "Not in report", "In report"),
@@ -67,13 +74,13 @@ ggplot(prob.crim.democracy.report,
 
 ```{r, results='asis', echo=FALSE}
 model.dem.simple <- glm(crim1 ~ fh_cl1 + inreport1 + women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.dem.int <- glm(crim1 ~ fh_cl1 + inreport1 + fh_cl1 * inreport1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -93,11 +100,41 @@ stargazer(model.dem.simple, model.dem.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
+
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+model <- model.dem.int
+# model <- model.dem.simple
+# pred.probs <- model$model %>% select(-1) %>%
+#   bind_cols(data.frame(predict(model, ., type="link", se=TRUE))) %>%
+#   mutate(pred.prob = model$family$linkinv(fit),
+#          pred.lower = model$family$linkinv(fit - (std * se.fit)),
+#          pred.upper = model$family$linkinv(fit + (std * se.fit)))
+# predict(model)
+# plot.data <- pred.probs %>%
+#   group_by(inreport1, fh_cl1) %>%
+#   summarize(fit = mean(fit))
+
+pred.probs <- augment(model) %>% 
+  mutate(pred.prob = model$family$linkinv(.fitted),
+         pred.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         pred.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
+  group_by(inreport1, fh_cl1) %>%
+  summarize(pred.prob = mean(pred.prob))
+
+ggplot() + 
+  geom_bar(data=prob.crim.democracy.report, 
+           aes(x=fh_cl1, y=prob.yes, fill=in.report), 
+           alpha=0.5, stat="identity", position="dodge") + 
+  geom_line(data=pred.probs, 
+             aes(x=fh_cl1, y=pred.prob, colour=as.factor(inreport1)),
+             alpha=1)
+```
+
 
 ---
 
@@ -105,21 +142,37 @@ stargazer(model.dem.simple, model.dem.int,
 
 ### Descriptive
 
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.ngos_ave.report <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(ngos_bin = cut(ngos_ave, seq(0, 10, 1))) %>%
+  # Treatment
+  group_by(in.report, ngos_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+ggplot(prob.crim.ngos_ave.report, 
+       aes(x=ngos_bin, y=prob.yes, fill=in.report)) + 
+  geom_bar(stat="identity", position="dodge")
+```
+
 ### Split sample
 
-### Interactions
+### Interactions (model)
 
 ```{r, results='asis', echo=FALSE}
 model.ngo.simple <- glm(crim1 ~ ngos_ave + fh_cl1 + inreport1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.ngo.int <- glm(crim1 ~ ngos_ave + fh_cl1 + inreport1 + 
                          ngos_ave * inreport1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -140,10 +193,50 @@ stargazer(model.ngo.simple, model.ngo.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.ngo.int
+
+new.data <- model$model %>%
+  select(-ngos_ave) %>%
+  group_by(inreport1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(ngos_ave = seq(0, 10, 0.1), 
+                         inreport1 = c(0, 1)), by="inreport1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+p.ngo.int <- ggplot(plot.predict, aes(x=ngos_ave, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=inreport1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="NGO engagement", y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=report.colors, name=NULL) + 
+  scale_colour_manual(values=report.colors, name=NULL)+
+  theme_light()
+p.ngo.int
 ```
 
 ---
@@ -166,14 +259,14 @@ model.media.basic <- glm(crim1 ~ ht_news_country1 + inreport1 +
                   family=binomial(link="logit"))
 model.media.simple <- glm(crim1 ~ ht_news_country1 + fh_cl1 + inreport1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.media.int <- glm(crim1 ~ ht_news_country1 + fh_cl1 + inreport1 + 
                          ht_news_country1 * inreport1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 # bloop <- df.logit.models %>% select(name, year, cowcode, crim1, ht_news_country1, inreport1) %>% mutate(ht_news_country1 * inreport1)
@@ -197,7 +290,7 @@ stargazer(model.media.simple, model.media.super.basic, model.media.basic, model.
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -216,14 +309,14 @@ stargazer(model.media.simple, model.media.super.basic, model.media.basic, model.
 ```{r, results='asis', echo=FALSE}
 model.aid.simple <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + inreport1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.aid.int <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + inreport1 + 
                          logeconasstP_1 * inreport1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -244,7 +337,7 @@ stargazer(model.aid.simple, model.aid.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -263,14 +356,14 @@ stargazer(model.aid.simple, model.aid.int,
 ```{r, results='asis', echo=FALSE}
 model.trade.simple <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + inreport1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.trade.int <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + inreport1 + 
                          newus_tradeshare_gdp * inreport1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -291,7 +384,7 @@ stargazer(model.trade.simple, model.trade.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -310,14 +403,14 @@ stargazer(model.trade.simple, model.trade.int,
 ```{r, results='asis', echo=FALSE}
 model.rat.simple <- glm(crim1 ~ fh_cl1 + inreport1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.rat.int <- glm(crim1 ~ fh_cl1 + inreport1 + 
                          ratproto2000_1 * inreport1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -337,7 +430,7 @@ stargazer(model.rat.simple, model.rat.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -356,14 +449,14 @@ stargazer(model.rat.simple, model.rat.int,
 ```{r, results='asis', echo=FALSE}
 model.wl.simple <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + inreport1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.wl.int <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + inreport1 + 
                          prop_tip_wl1 * inreport1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -384,7 +477,7 @@ stargazer(model.wl.simple, model.wl.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -403,14 +496,14 @@ stargazer(model.wl.simple, model.wl.int,
 ```{r, results='asis', echo=FALSE}
 model.ngo.new.simple <- glm(crim1 ~ ht_ngos + fh_cl1 + inreport1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.ngo.new.int <- glm(crim1 ~ ht_ngos + fh_cl1 + inreport1 + 
                          ht_ngos * inreport1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -431,7 +524,7 @@ stargazer(model.ngo.new.simple, model.ngo.new.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -450,14 +543,14 @@ stargazer(model.ngo.new.simple, model.ngo.new.int,
 ```{r, results='asis', echo=FALSE}
 model.funding.simple <- glm(crim1 ~ total.funding1 + fh_cl1 + inreport1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.funding.int <- glm(crim1 ~ total.funding1 + fh_cl1 + inreport1 + 
                          total.funding1 * inreport1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -478,7 +571,7 @@ stargazer(model.funding.simple, model.funding.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -514,13 +607,13 @@ ggplot(prob.crim.democracy.rating,
 
 ```{r, results='asis', echo=FALSE}
 model.dem.simple <- glm(crim1 ~ fh_cl1 + low_tier1 + women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.dem.int <- glm(crim1 ~ fh_cl1 + low_tier1 + fh_cl1 * low_tier1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -540,7 +633,7 @@ stargazer(model.dem.simple, model.dem.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -559,14 +652,14 @@ stargazer(model.dem.simple, model.dem.int,
 ```{r, results='asis', echo=FALSE}
 model.ngo.simple <- glm(crim1 ~ ngos_ave + fh_cl1 + low_tier1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.ngo.int <- glm(crim1 ~ ngos_ave + fh_cl1 + low_tier1 + 
                          ngos_ave * low_tier1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -587,7 +680,7 @@ stargazer(model.ngo.simple, model.ngo.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -606,14 +699,14 @@ stargazer(model.ngo.simple, model.ngo.int,
 ```{r, results='asis', echo=FALSE}
 model.media.simple <- glm(crim1 ~ ht_news_country1 + fh_cl1 + low_tier1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.media.int <- glm(crim1 ~ ht_news_country1 + fh_cl1 + low_tier1 + 
                          ht_news_country1 * low_tier1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -634,7 +727,7 @@ stargazer(model.media.simple,  model.media.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -653,14 +746,14 @@ stargazer(model.media.simple,  model.media.int,
 ```{r, results='asis', echo=FALSE}
 model.aid.simple <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + low_tier1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.aid.int <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + low_tier1 + 
                          logeconasstP_1 * low_tier1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -681,7 +774,7 @@ stargazer(model.aid.simple, model.aid.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -700,14 +793,14 @@ stargazer(model.aid.simple, model.aid.int,
 ```{r, results='asis', echo=FALSE}
 model.trade.simple <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + low_tier1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.trade.int <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + low_tier1 + 
                          newus_tradeshare_gdp * low_tier1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -728,7 +821,7 @@ stargazer(model.trade.simple, model.trade.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -747,14 +840,14 @@ stargazer(model.trade.simple, model.trade.int,
 ```{r, results='asis', echo=FALSE}
 model.rat.simple <- glm(crim1 ~ fh_cl1 + low_tier1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.rat.int <- glm(crim1 ~ fh_cl1 + low_tier1 + 
                          ratproto2000_1 * low_tier1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -774,7 +867,7 @@ stargazer(model.rat.simple, model.rat.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -793,14 +886,14 @@ stargazer(model.rat.simple, model.rat.int,
 ```{r, results='asis', echo=FALSE}
 model.wl.simple <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + low_tier1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.wl.int <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + low_tier1 + 
                          prop_tip_wl1 * low_tier1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -821,7 +914,7 @@ stargazer(model.wl.simple, model.wl.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -840,14 +933,14 @@ stargazer(model.wl.simple, model.wl.int,
 ```{r, results='asis', echo=FALSE}
 model.ngo.new.simple <- glm(crim1 ~ ht_ngos + fh_cl1 + low_tier1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.ngo.new.int <- glm(crim1 ~ ht_ngos + fh_cl1 + low_tier1 + 
                          ht_ngos * low_tier1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -868,7 +961,7 @@ stargazer(model.ngo.new.simple, model.ngo.new.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -887,14 +980,14 @@ stargazer(model.ngo.new.simple, model.ngo.new.int,
 ```{r, results='asis', echo=FALSE}
 model.funding.simple <- glm(crim1 ~ total.funding1 + fh_cl1 + low_tier1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
 model.funding.int <- glm(crim1 ~ total.funding1 + fh_cl1 + low_tier1 + 
                          total.funding1 * low_tier1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -915,7 +1008,7 @@ stargazer(model.funding.simple, model.funding.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -953,7 +1046,7 @@ ggplot(prob.crim.democracy.down,
 model.dem.simple <- glm(crim1 ~ fh_cl1 + 
                         new_watch3 + new_watch2 + new_watch1 + 
                         women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
@@ -963,7 +1056,7 @@ model.dem.int <- glm(crim1 ~ fh_cl1 +
                      fh_cl1 * new_watch2 + 
                      fh_cl1 * new_watch1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -987,7 +1080,7 @@ stargazer(model.dem.simple, model.dem.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -1007,7 +1100,7 @@ stargazer(model.dem.simple, model.dem.int,
 model.ngo.simple <- glm(crim1 ~ ngos_ave + fh_cl1 + 
                         new_watch3 + new_watch2 + new_watch1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
@@ -1017,7 +1110,7 @@ model.ngo.int <- glm(crim1 ~ ngos_ave + fh_cl1 +
                      ngos_ave * new_watch2 + 
                      ngos_ave * new_watch1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -1042,7 +1135,7 @@ stargazer(model.ngo.simple, model.ngo.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -1062,7 +1155,7 @@ stargazer(model.ngo.simple, model.ngo.int,
 model.media.simple <- glm(crim1 ~ ht_news_country1 + fh_cl1 + 
                           new_watch3 + new_watch2 + new_watch1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
@@ -1072,7 +1165,7 @@ model.media.int <- glm(crim1 ~ ht_news_country1 + fh_cl1 +
                      ht_news_country1 * new_watch2 + 
                      ht_news_country1 * new_watch1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -1097,7 +1190,7 @@ stargazer(model.media.simple,  model.media.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -1117,7 +1210,7 @@ stargazer(model.media.simple,  model.media.int,
 model.aid.simple <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + 
                         new_watch3 + new_watch2 + new_watch1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
@@ -1127,7 +1220,7 @@ model.aid.int <- glm(crim1 ~ logeconasstP_1 + fh_cl1 +
                      logeconasstP_1 * new_watch2 + 
                      logeconasstP_1 * new_watch1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -1152,7 +1245,7 @@ stargazer(model.aid.simple, model.aid.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -1172,7 +1265,7 @@ stargazer(model.aid.simple, model.aid.int,
 model.trade.simple <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 +
                           new_watch3 + new_watch2 + new_watch1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
@@ -1182,7 +1275,7 @@ model.trade.int <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 +
                      newus_tradeshare_gdp * new_watch2 + 
                      newus_tradeshare_gdp * new_watch1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -1207,7 +1300,7 @@ stargazer(model.trade.simple, model.trade.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -1227,7 +1320,7 @@ stargazer(model.trade.simple, model.trade.int,
 model.rat.simple <- glm(crim1 ~ fh_cl1 + 
                         new_watch3 + new_watch2 + new_watch1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
@@ -1237,7 +1330,7 @@ model.rat.int <- glm(crim1 ~ fh_cl1 +
                      ratproto2000_1 * new_watch2 + 
                      ratproto2000_1 * new_watch1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -1261,7 +1354,7 @@ stargazer(model.rat.simple, model.rat.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -1281,7 +1374,7 @@ stargazer(model.rat.simple, model.rat.int,
 model.wl.simple <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + 
                        new_watch3 + new_watch2 + new_watch1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
@@ -1291,7 +1384,7 @@ model.wl.int <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 +
                      prop_tip_wl1 * new_watch2 + 
                      prop_tip_wl1 * new_watch1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -1316,7 +1409,7 @@ stargazer(model.wl.simple, model.wl.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -1336,7 +1429,7 @@ stargazer(model.wl.simple, model.wl.int,
 model.ngo.new.simple <- glm(crim1 ~ ht_ngos + fh_cl1 + 
                             new_watch3 + new_watch2 + new_watch1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
@@ -1346,7 +1439,7 @@ model.ngo.new.int <- glm(crim1 ~ ht_ngos + fh_cl1 +
                      ht_ngos * new_watch2 + 
                      ht_ngos * new_watch1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -1371,7 +1464,7 @@ stargazer(model.ngo.new.simple, model.ngo.new.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
@@ -1391,7 +1484,7 @@ stargazer(model.ngo.new.simple, model.ngo.new.int,
 model.funding.simple <- glm(crim1 ~ total.funding1 + fh_cl1 + 
                             new_watch3 + new_watch2 + new_watch1 + 
                           women1 + ratproto2000_1 + 
-                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
@@ -1401,7 +1494,7 @@ model.funding.int <- glm(crim1 ~ total.funding1 + fh_cl1 +
                      total.funding1 * new_watch2 + 
                      total.funding1 * new_watch1 + 
                            women1 + ratproto2000_1 + 
-                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
@@ -1426,7 +1519,7 @@ stargazer(model.funding.simple, model.funding.int,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
