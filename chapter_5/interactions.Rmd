@@ -104,35 +104,47 @@ stargazer(model.dem.simple, model.dem.int,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 model <- model.dem.int
-# model <- model.dem.simple
-# pred.probs <- model$model %>% select(-1) %>%
-#   bind_cols(data.frame(predict(model, ., type="link", se=TRUE))) %>%
-#   mutate(pred.prob = model$family$linkinv(fit),
-#          pred.lower = model$family$linkinv(fit - (std * se.fit)),
-#          pred.upper = model$family$linkinv(fit + (std * se.fit)))
-# predict(model)
-# plot.data <- pred.probs %>%
-#   group_by(inreport1, fh_cl1) %>%
-#   summarize(fit = mean(fit))
 
-pred.probs <- augment(model) %>% 
-  mutate(pred.prob = model$family$linkinv(.fitted),
-         pred.lower = model$family$linkinv(.fitted - (std * .se.fit)),
-         pred.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
-  group_by(inreport1, fh_cl1) %>%
-  summarize(pred.prob = mean(pred.prob))
+new.data <- model$model %>%
+  select(-fh_cl1) %>%
+  group_by(inreport1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(fh_cl1 = seq(1, 7, 0.1), 
+                         inreport1 = c(0, 1)), by="inreport1")
 
-ggplot() + 
-  geom_bar(data=prob.crim.democracy.report, 
-           aes(x=fh_cl1, y=prob.yes, fill=in.report), 
-           alpha=0.5, stat="identity", position="dodge") + 
-  geom_line(data=pred.probs, 
-             aes(x=fh_cl1, y=pred.prob, colour=as.factor(inreport1)),
-             alpha=1)
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+p.dem.int <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=inreport1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b", position="jitter") + 
+  labs(x="Worse democracy (Freedom House civil liberties)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_x_continuous(breaks=seq(1, 7, 1)) +
+  scale_fill_manual(values=report.colors, name=NULL) + 
+  scale_colour_manual(values=report.colors, name=NULL)+
+  theme_light()
+p.dem.int
 ```
-
 
 ---
 
