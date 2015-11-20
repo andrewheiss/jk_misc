@@ -9,6 +9,8 @@ output:
     number_sections: yes
     theme: flatly
     toc: yes
+    includes:
+      in_header: scripts.html
 ---
 
 ```{r setup, include=FALSE}
