@@ -68,8 +68,6 @@ ggplot(prob.crim.democracy.report,
   geom_line()
 ```
 
-### Split sample
-
 ### Interactions
 
 ```{r, results='asis', echo=FALSE}
@@ -158,9 +156,7 @@ ggplot(prob.crim.ngos_ave.report,
   geom_bar(stat="identity", position="dodge")
 ```
 
-### Split sample
-
-### Interactions (model)
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.ngo.simple <- glm(crim1 ~ ngos_ave + fh_cl1 + inreport1 + 
@@ -245,9 +241,7 @@ p.ngo.int
 
 ### Descriptive
 
-### Split sample
-
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.media.super.basic <- glm(crim1 ~ ht_news_country1 + inreport1,
@@ -296,15 +290,53 @@ stargazer(model.media.simple, model.media.super.basic, model.media.basic, model.
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.media.int
+
+new.data <- model$model %>%
+  select(-ht_news_country1) %>%
+  group_by(inreport1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(ht_news_country1 = seq(0, 1000, 1), 
+                         inreport1 = c(0, 1)), by="inreport1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+p.media.int <- ggplot(plot.predict, aes(x=ht_news_country1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=inreport1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Media coverage", y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=report.colors, name=NULL) + 
+  scale_colour_manual(values=report.colors, name=NULL)+
+  theme_light()
+p.media.int
+```
+
 ---
 
 ## US foreign aid × presence in TIP report
 
 ### Descriptive
 
-### Split sample
-
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.aid.simple <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + inreport1 + 
@@ -343,15 +375,53 @@ stargazer(model.aid.simple, model.aid.int,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.aid.int
+
+new.data <- model$model %>%
+  select(-logeconasstP_1) %>%
+  group_by(inreport1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(logeconasstP_1 = seq(0, 23, 0.1), 
+                         inreport1 = c(0, 1)), by="inreport1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+p.aid.int <- ggplot(plot.predict, aes(x=logeconasstP_1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=inreport1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="US foreign aid (logged)", y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=report.colors, name=NULL) + 
+  scale_colour_manual(values=report.colors, name=NULL)+
+  theme_light()
+p.aid.int
+```
+
 ---
 
 ## US trade × presence in TIP report
 
 ### Descriptive
 
-### Split sample
-
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.trade.simple <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + inreport1 + 
@@ -390,15 +460,54 @@ stargazer(model.trade.simple, model.trade.int,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.trade.int
+
+new.data <- model$model %>%
+  select(-newus_tradeshare_gdp) %>%
+  group_by(inreport1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(newus_tradeshare_gdp = seq(0, 0.6, 0.05), 
+                         inreport1 = c(0, 1)), by="inreport1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+p.trade.int <- ggplot(plot.predict, aes(x=newus_tradeshare_gdp, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=inreport1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Trade with US (percent of GDP)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=report.colors, name=NULL) + 
+  scale_colour_manual(values=report.colors, name=NULL)+
+  theme_light()
+p.trade.int
+```
+
 ---
 
 ## Protocol ratified × presence in TIP report
 
 ### Descriptive
 
-### Split sample
-
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.rat.simple <- glm(crim1 ~ fh_cl1 + inreport1 + 
@@ -436,15 +545,54 @@ stargazer(model.rat.simple, model.rat.int,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.rat.int
+
+new.data <- model$model %>%
+  select(-ratproto2000_1) %>%
+  group_by(inreport1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(ratproto2000_1 = c(0, 1), 
+                         inreport1 = c(0, 1)), by="inreport1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE),
+         ratproto2000_1 = factor(ratproto2000_1, 
+                                 labels=c("Not ratified", "Ratified"), 
+                                 ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+p.rat.int <- ggplot(plot.predict, aes(x=ratproto2000_1, y=prob, colour=inreport1)) + 
+  geom_pointrange(aes(ymax=prob.upper, ymin=prob.lower), size=.75,
+                  position=position_dodge(width=0.25)) + 
+  labs(x="2000 TIP protocol ratification", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=report.colors, name=NULL)+
+  theme_light()
+p.rat.int
+```
+
 ---
 
 ## Wikileaks engagement/intensity × presence in TIP report
 
 ### Descriptive
 
-### Split sample
-
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.wl.simple <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + inreport1 + 
@@ -483,15 +631,54 @@ stargazer(model.wl.simple, model.wl.int,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.wl.int
+
+new.data <- model$model %>%
+  select(-prop_tip_wl1) %>%
+  group_by(inreport1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(prop_tip_wl1 = seq(0, 1, 0.05), 
+                         inreport1 = c(0, 1)), by="inreport1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+p.wl.int <- ggplot(plot.predict, aes(x=prop_tip_wl1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=inreport1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Proportion of TIP-related cables (observed in Wikileaks)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=report.colors, name=NULL) + 
+  scale_colour_manual(values=report.colors, name=NULL)+
+  theme_light()
+p.wl.int
+```
+
 ---
 
 ## TIP NGO count × presence in TIP report
 
 ### Descriptive
 
-### Split sample
-
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.ngo.new.simple <- glm(crim1 ~ ht_ngos + fh_cl1 + inreport1 + 
@@ -530,31 +717,70 @@ stargazer(model.ngo.new.simple, model.ngo.new.int,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.ngo.new.int
+
+new.data <- model$model %>%
+  select(-ht_ngos) %>%
+  group_by(inreport1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(ht_ngos = seq(0, 100, 0.5), 
+                         inreport1 = c(0, 1)), by="inreport1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+p.ngo.new.int <- ggplot(plot.predict, aes(x=ht_ngos, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=inreport1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Number of anti-TIP NGOs", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=report.colors, name=NULL) + 
+  scale_colour_manual(values=report.colors, name=NULL)+
+  theme_light()
+p.ngo.new.int
+```
+
 ---
 
 ## TIP funding from US × presence in TIP report
 
 ### Descriptive
 
-### Split sample
-
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.funding.simple <- glm(crim1 ~ total.funding1 + fh_cl1 + inreport1 + 
+model.funding.simple <- glm(crim1 ~ log.total.funding1 + fh_cl1 + inreport1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.funding.int <- glm(crim1 ~ total.funding1 + fh_cl1 + inreport1 + 
-                         total.funding1 * inreport1 + 
+model.funding.int <- glm(crim1 ~ log.total.funding1 + fh_cl1 + inreport1 + 
+                         log.total.funding1 * inreport1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
-var.labs <- c("Total anti-TIP funding from US",
+var.labs <- c("Total anti-TIP funding from US (log)",
               "Worse democracy (Freedom House civil liberties)", "In TIP report", 
               "Share of women in parliament", 
               "2000 TIP protocol ratification", 
@@ -575,6 +801,47 @@ stargazer(model.funding.simple, model.funding.int,
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.funding.int
+
+new.data <- model$model %>%
+  select(-log.total.funding1) %>%
+  group_by(inreport1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(log.total.funding1 = seq(0, 16, 0.5), 
+                         inreport1 = c(0, 1)), by="inreport1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+p.funding.int <- ggplot(plot.predict, aes(x=log.total.funding1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=inreport1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Total anti-TIP funding from US (log)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=report.colors, name=NULL) + 
+  scale_colour_manual(values=report.colors, name=NULL)+
+  theme_light()
+p.funding.int
 ```
 
 ---
