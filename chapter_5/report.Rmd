@@ -709,6 +709,64 @@ stargazer(model3.2, model3.6, model3.7, model3.8, model3.9,
           notes=c("Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+## Predicting time to ratification of 2000 TIP protocol
+
+We can use a similar set of survival models to see which factors influence a country's decision to ratify the UN's 2000 anti-TIP protocol. As seen in extensions 4.0–4.3, worse democracies are 5–10% less likely to ratify in a given year (Extension 4.1: `r I(parens(ext4.1, "totalfreedom1", "z"))`), while countries with more corruption more than 30% less likely to do so (Extension 4.1). Having more NGOs in the country also decreases the likelihood of criminalization (by 17%; Extension 4.1: `r I(parens(ext4.1, "ngos_ave", "z"))`), but only when measured using the original variable from AJPS and not using our own database of NGOs. Human trafficking incidence generally does little to affect the decision, except for increased trafficking intensity in destination countries, which decreases the probability of ratification. Notably, peer pressure from neighboring countries has a powerful effect on the decision to ratify. The regional density of *criminalization* in neighboring countries increases the likelihood of *protocol ratification* by 3–6 times (Extension 4.0: `r I(parens(ext4.0, "corrected_regcrim1_1", "z"))`; Extension 4.1: `r I(parens(ext4.1, "corrected_regcrim1_1", "z"))`).
+
+Scorecard diplomacy does not appear to have an effect on the decision to ratify the protocol—neither presence in the TIP report nor the assignment of any specific tier rating changes the likelihood of adopting the protocol (see Extensions 4.4–4.6). However, the initial placement on the watchlist *does* appear to have some impact, as a country is almost 70% more likely to ratify in the year following the assignment (`r I(parens(ext4.6, "new_watch1", "z"))`).
+
+```{r, results='asis', echo=FALSE}
+# var.labs <- c("Total population (logged)", "Missing information", 
+#               "NGO density", "Worse civil liberties", 
+#               "Regional density of criminalization", 
+#               "2000 TIP protocol ratification")
+col.labs <- c("Extension 4.0", "Extension 4.1", "Extension 4.2", "Extension 4.3")
+
+ses <- list(sqrt(diag(ext4.1$var)), sqrt(diag(ext4.1$var)), 
+            sqrt(diag(ext4.2$var)), sqrt(diag(ext4.3$var)))
+
+extra.lines <- list(c("Number of countries", 
+                      c(ext4.0.fit["n.max"], ext4.4.fit["n.max"], 
+                        ext4.2.fit["n.max"], ext4.3.fit["n.max"])),
+                    c("Number of inclusions", 
+                      c(ext4.0.fit["events"], ext4.4.fit["events"], 
+                        ext4.2.fit["events"], ext4.3.fit["events"])))
+
+stargazer(ext4.0, ext4.1, ext4.2, ext4.3, 
+          apply.coef=exp, column.labels=col.labs, #covariate.labels=var.labs,
+          keep.stat=c("n", "ll"), model.numbers=FALSE, dep.var.labels.include=FALSE,
+          dep.var.caption="Time to Ratification", 
+          se=ses, p.auto=FALSE, type="html",
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+```{r, results='asis', echo=FALSE}
+# var.labs <- c("Total population (logged)", "Missing information", 
+#               "NGO density", "Worse civil liberties", 
+#               "Regional density of criminalization", 
+#               "2000 TIP protocol ratification")
+col.labs <- c("Extension 4.4", "Extension 4.5", "Extension 4.6")
+
+ses <- list(sqrt(diag(ext4.4$var)), sqrt(diag(ext4.5$var)), 
+            sqrt(diag(ext4.6$var)))
+
+extra.lines <- list(c("Number of countries", 
+                      c(ext4.4.fit["n.max"], ext4.5.fit["n.max"], 
+                        ext4.6.fit["n.max"])),
+                    c("Number of inclusions", 
+                      c(ext4.4.fit["events"], ext4.5.fit["events"], 
+                        ext4.6.fit["events"])))
+
+stargazer(ext4.4, ext4.5, ext4.6,
+          apply.coef=exp, column.labels=col.labs, #covariate.labels=var.labs, 
+          keep.stat=c("n", "ll"), model.numbers=FALSE, dep.var.labels.include=FALSE,
+          dep.var.caption="Time to Ratification", 
+          se=ses, p.auto=FALSE, type="html",
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
 ## Updated number of human trafficking NGOs
 
 Substituting the number of NGOs in the database used for the survey yields smaller (and seemingly more precise) effects on both the time to entering the report (explained in section 3.3 above) and the time to criminalization. In Extension 1.2, an additional NGO in a country increases the odds of criminalization in a given year by 2% (`r I(parens(ext1.2, "ht_ngos", "z"))`), which is a smaller and more precise effect than the original NGO density variable in Extension 1.1 (`r I(parens(ext1.1, "ngos_ave", "z"))`). The new measure has no effect when used as a covariate for estimating the effect of US engagement. In Extensions 2.1 and 2.2, the original NGO density variable increases the odds of criminalization by roughly 25% (Extension 2.1: `r I(parens(ext2.1, "ngos_ave", "z"))`), but that effect drops to an insignificant 2% with the updated measure (Extension 2.3: `r I(parens(ext2.3, "ht_ngos", "z"))`).

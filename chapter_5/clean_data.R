@@ -167,6 +167,7 @@ df.complete.with.lags.orig <- df.complete %>%
   mutate(chtier = tier - tier1,
          improve_tier = ifelse(chtier >= 0, 0, 1),
          worsen_tier = ifelse(chtier > 0, 1, 0),
+         low_tier = ifelse(tier == 3, 1, 0),
          econasstPgdp = econasstP / data2,
          logeconasstPgdp = log(econasstPgdp)) %>%
   # More lagging...
@@ -174,6 +175,7 @@ df.complete.with.lags.orig <- df.complete %>%
   mutate(chtier1 = lag(chtier),
          improve_tier1 = lag(improve_tier),
          worsen_tier1 = lag(worsen_tier),
+         low_tier1 = lag(low_tier),
          new_watch1 = lag(new_watch, 1),
          new_watch2 = lag(new_watch, 2),
          new_watch3 = lag(new_watch, 3),
@@ -214,7 +216,10 @@ df.complete.with.lags.correct <- df.complete %>%
          women1 = lag(women_par),
          fh_cl1 = lag(fh_cl),
          totalfreedom1 = lag(totalfreedom),
-         protection_1 = lag(protection)) %>%
+         protection_1 = lag(protection),
+         totalaidave1 = lag(totalaidave),
+         newus_tradeshare_gdp1 = lag(newus_tradeshare_gdp),
+         ht_news_country1 = lag(ht_news_country)) %>%
   # Deal with new variables
   mutate(total.funding1 = lag(total.funding),
          avg.funding1 = lag(avg.funding),
@@ -243,12 +248,14 @@ df.complete.with.lags.correct <- df.complete %>%
   mutate(chtier = tier - tier1,
          improve_tier = ifelse(chtier >= 0, 0, 1),
          worsen_tier = ifelse(chtier > 0, 1, 0),
+         low_tier = ifelse(tier == 3, 1, 0),
          econasstPgdp = econasstP / data2,
          logeconasstPgdp = log(econasstPgdp)) %>%
   # More lagging...
   mutate(chtier1 = lag(chtier),
          improve_tier1 = lag(improve_tier),
          worsen_tier1 = lag(worsen_tier),
+         low_tier1 = lag(low_tier),
          new_watch1 = lag(new_watch, 1),
          new_watch2 = lag(new_watch, 2),
          new_watch3 = lag(new_watch, 3),
@@ -363,6 +370,34 @@ df.hazardized.crim.correct <- df.complete.with.lags.correct %>%
   ungroup() %>%
   arrange(cowcode, year)
 
+calc.year <- function(chunk) {
+  if (all(chunk$ratproto2000 == 0, na.rm=TRUE)) {
+    rat_year <- NA
+  } else {
+    rat_year <- min(filter(chunk, ratproto2000 == 1)$year)
+  }
+  return(chunk %>% mutate(rat_year = rat_year))
+}
+
+df.ratproto <- df.complete.with.lags.correct %>%
+  select(name, cowcode, year, ratproto2000) %>%
+  group_by(cowcode) %>%
+  do(calc.year(.)) %>%
+  select(cowcode, year, rat_year)
+
+df.hazardized.rat <- df.complete.with.lags.correct %>%
+  left_join(df.ratproto, by=c("cowcode", "year")) %>%
+  mutate(yr2fail2 = rat_year - year,  # Years before "failing" (criminalization)
+         yrfromj2 = year - 2000) %>%  # Years since possible to ratify protocol (post 2000)
+  group_by(name) %>%
+  mutate(endstate1 = mean(crim1, na.rm=TRUE),
+         endstate1 = as.numeric(ifelse(endstate1 > 0, 1, 0)),
+         fail = generate.failure(yr2fail2)) %>% 
+  filter(yr2fail2 >= 0 | is.na(yr2fail2)) %>%
+  filter(yrfromj2 >= 0) %>%
+  ungroup() %>%
+  arrange(cowcode, year)
+
 # Generate start time variable.
 # Stata does this behind the scenes when running stset ..., id(name)
 # coxph needs an explicit column
@@ -383,6 +418,11 @@ df.survivalized.crim.correct <- df.hazardized.crim.correct %>%
   mutate(start_time = lag(yrfromj2, default=0)) %>% 
   filter(year > 1999)
 
+df.survivalized.rat <- df.hazardized.rat %>%
+  filter(!is.na(yrfromj2)) %>%
+  group_by(name) %>%
+  mutate(start_time = lag(yrfromj2, default=0)) %>%
+  filter(year > 2000)
 
 # Deal with reactions data
 reactions <- read_dta("../original_files/mergedreaction8_new.dta") %>%
@@ -438,7 +478,31 @@ reactions <- read_dta("../original_files/mergedreaction8_new.dta") %>%
          image11 = ifelse(tier < 4 & is.na(image11), 0, image11)) %>%
   mutate(totalfreedom = fh_pr + fh_cl)
 
+reactions.small <- reactions %>% 
+  select(year, cowcode, totalreactionnomedia, reactionnomedia, aid, bigaid)
+df.correct <- df.complete.with.lags.correct %>%
+  left_join(reactions.small, by=c("year", "cowcode")) %>%
+  group_by(cowcode) %>%
+  mutate(totalreactionnomedia1 = lag(totalreactionnomedia),
+         reactionnomedia1 = lag(reactionnomedia),
+         bigaid1 = lag(bigaid))
 
+df.table5 <- reactions %>%
+  filter(lag(adjbicrimlevel) == 0 & year > 2001 & year < 2011) %>%
+  group_by(cowcode) %>%
+  mutate(L.reactionnomedia = lag(reactionnomedia),
+         L.totalreactionnomedia = lag(totalreactionnomedia),
+         L.women_par = lag(women_par),
+         L.totalfreedom = lag(totalfreedom),
+         L.adj_ratproto2000 = lag(adj_ratproto2000),
+         L.bigaid = lag(bigaid),
+         L.corrected_regcrim = lag(corrected_regcrim)) %>%
+  mutate(total.funding1 = lag(total.funding),
+         avg.funding1 = lag(avg.funding),
+         total.funding.ngos1 = lag(total.funding.ngos),
+         avg.funding.ngos1 = lag(avg.funding.ngos),
+         prop_tip_wl1 = lag(prop_tip_wl),
+         prop_tip_estimated1 = lag(prop_tip_estimated))
 # # Democracy data
 # polity.url <- "http://www.systemicpeace.org/inscr/p4v2014.xls"
 # polity.tmp <- paste0(tempdir(), basename(polity.url))
