@@ -1,0 +1,1433 @@
+---
+title: "Interactions by treatment"
+author: "Andrew Heiss"
+date: "November 16, 2015"
+output: 
+  html_document: 
+    css: fixes.css
+    highlight: pygments
+    number_sections: yes
+    theme: flatly
+    toc: yes
+    includes:
+      in_header: scripts.html
+---
+
+```{r setup, include=FALSE}
+source("clean_data.R")
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(stargazer)
+
+df.correct <- df.correct %>%
+  mutate(in.report = ifelse(tier1 == 0, "Not in report", "In report"),
+         in.report = factor(in.report, levels=c("Not in report", "In report"), ordered=TRUE))
+
+df.logit.models <- df.correct %>% 
+  filter(lag(adjbicrimlevel) == 0 & year > 2001 & year < 2011)
+
+# Calculate a pseudo R-squared measure using
+# 1-\frac{\text{Residual Deviance}}{\text{Null Deviance}}
+calc.pseudo.r.squared <- function(x.model) {
+  return(round(1 - (x.model$deviance / x.model$null.deviance), 4))
+}
+```
+
+
+# Monitoring (presence in the TIP report)
+
+## Democracy × presence in TIP report
+
+### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.democracy.report <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  # Treatment
+  group_by(in.report, fh_cl1) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+ggplot(prob.crim.democracy.report, 
+       aes(x=as.factor(fh_cl1), y=prob.yes, fill=in.report)) + 
+  geom_bar(stat="identity", position="dodge")
+```
+
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+ggplot(prob.crim.democracy.report, 
+       aes(x=fh_cl1, y=prob.yes, colour=in.report)) + 
+  geom_line()
+```
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.dem.simple <- glm(crim1 ~ fh_cl1 + inreport1 + women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.dem.int <- glm(crim1 ~ fh_cl1 + inreport1 + fh_cl1 * inreport1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Worse democracy (Freedom House civil liberties)", "In TIP report", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Worse democracy × In TIP report")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.dem.simple, model.dem.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.dem.simple, model.dem.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## NGO engagement × presence in TIP report
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.ngo.simple <- glm(crim1 ~ ngos_ave + fh_cl1 + inreport1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.ngo.int <- glm(crim1 ~ ngos_ave + fh_cl1 + inreport1 + 
+                         ngos_ave * inreport1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("NGO engagement",
+              "Worse democracy (Freedom House civil liberties)", "In TIP report", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "NGO engagement × In TIP report")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.ngo.simple, model.ngo.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.ngo.simple, model.ngo.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## Media coverage × presence in TIP report
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.media.super.basic <- glm(crim1 ~ ht_news_country1 + inreport1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.media.basic <- glm(crim1 ~ ht_news_country1 + inreport1 + 
+                          ht_news_country1 * inreport1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.media.simple <- glm(crim1 ~ ht_news_country1 + fh_cl1 + inreport1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.media.int <- glm(crim1 ~ ht_news_country1 + fh_cl1 + inreport1 + 
+                         ht_news_country1 * inreport1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+# bloop <- df.logit.models %>% select(name, year, cowcode, crim1, ht_news_country1, inreport1) %>% mutate(ht_news_country1 * inreport1)
+# write_csv(bloop, path="~/Desktop/sample_data.csv", na="")
+
+var.labs <- c("Media coverage",
+              "Worse democracy (Freedom House civil liberties)", "In TIP report", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Media coverage × In TIP report")
+
+extra.lines <- list(c("Year fixed effects", c("Yes", "No", "No", "Yes")),
+                    c("Pseudo R-squared",
+                      sapply(list(model.media.simple, model.media.super.basic,
+                                  model.media.basic, model.media.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.media.simple, model.media.super.basic, model.media.basic, model.media.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## US foreign aid × presence in TIP report
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.aid.simple <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + inreport1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.aid.int <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + inreport1 + 
+                         logeconasstP_1 * inreport1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("US aid (logged)",
+              "Worse democracy (Freedom House civil liberties)", "In TIP report", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "US aid × In TIP report")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.aid.simple, model.aid.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.aid.simple, model.aid.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## US trade × presence in TIP report
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.trade.simple <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + inreport1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.trade.int <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + inreport1 + 
+                         newus_tradeshare_gdp * inreport1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Share of US trade (part of GDP)",
+              "Worse democracy (Freedom House civil liberties)", "In TIP report", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Trade share × In TIP report")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.trade.simple, model.trade.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.trade.simple, model.trade.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## Protocol ratified × presence in TIP report
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.rat.simple <- glm(crim1 ~ fh_cl1 + inreport1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.rat.int <- glm(crim1 ~ fh_cl1 + inreport1 + 
+                         ratproto2000_1 * inreport1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Worse democracy (Freedom House civil liberties)", "In TIP report", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Protocol ratification × In TIP report")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.rat.simple, model.rat.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.rat.simple, model.rat.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## Wikileaks engagement/intensity × presence in TIP report
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.wl.simple <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + inreport1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.wl.int <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + inreport1 + 
+                         prop_tip_wl1 * inreport1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Proportion of TIP-related cables (observed in Wikileaks)",
+              "Worse democracy (Freedom House civil liberties)", "In TIP report", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "TIP cables × In TIP report")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.wl.simple, model.wl.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.wl.simple, model.wl.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## TIP NGO count × presence in TIP report
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.ngo.new.simple <- glm(crim1 ~ ht_ngos + fh_cl1 + inreport1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.ngo.new.int <- glm(crim1 ~ ht_ngos + fh_cl1 + inreport1 + 
+                         ht_ngos * inreport1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Number of anti-TIP NGOs",
+              "Worse democracy (Freedom House civil liberties)", "In TIP report", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "TIP cables × In TIP report")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.ngo.new.simple, model.ngo.new.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.ngo.new.simple, model.ngo.new.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## TIP funding from US × presence in TIP report
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.funding.simple <- glm(crim1 ~ total.funding1 + fh_cl1 + inreport1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.funding.int <- glm(crim1 ~ total.funding1 + fh_cl1 + inreport1 + 
+                         total.funding1 * inreport1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Total anti-TIP funding from US",
+              "Worse democracy (Freedom House civil liberties)", "In TIP report", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "TIP cables × In TIP report")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.funding.simple, model.funding.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.funding.simple, model.funding.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+# Lower tier ratings
+
+## Democracy × lower tier ratings
+
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.democracy.rating <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  # Treatment
+  mutate(lower.rating = ifelse(tier1 %in% c(1, 2, 2.5), "1, 2, or 2.5", "3")) %>%
+  group_by(lower.rating, fh_cl1) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+ggplot(prob.crim.democracy.rating, 
+       aes(x=as.factor(fh_cl1), y=prob.yes, fill=lower.rating)) + 
+  geom_bar(stat="identity", position="dodge")
+```
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.dem.simple <- glm(crim1 ~ fh_cl1 + low_tier1 + women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.dem.int <- glm(crim1 ~ fh_cl1 + low_tier1 + fh_cl1 * low_tier1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Worse democracy (Freedom House civil liberties)", "Lowest tier", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Worse democracy × Lowest tier")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.dem.simple, model.dem.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.dem.simple, model.dem.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## NGO engagement × lower tier ratings
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.ngo.simple <- glm(crim1 ~ ngos_ave + fh_cl1 + low_tier1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.ngo.int <- glm(crim1 ~ ngos_ave + fh_cl1 + low_tier1 + 
+                         ngos_ave * low_tier1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("NGO engagement",
+              "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "NGO engagement × Lowest tier")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.ngo.simple, model.ngo.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.ngo.simple, model.ngo.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## Media coverage × lower tier ratings
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.media.simple <- glm(crim1 ~ ht_news_country1 + fh_cl1 + low_tier1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.media.int <- glm(crim1 ~ ht_news_country1 + fh_cl1 + low_tier1 + 
+                         ht_news_country1 * low_tier1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Media coverage",
+              "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Media coverage × Lowest tier")
+
+extra.lines <- list(c("Year fixed effects", c("Yes", "Yes")),
+                    c("Pseudo R-squared",
+                      sapply(list(model.media.simple, model.media.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.media.simple,  model.media.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## US foreign aid × lower tier ratings
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.aid.simple <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + low_tier1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.aid.int <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + low_tier1 + 
+                         logeconasstP_1 * low_tier1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("US aid (logged)",
+              "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "US aid × Lowest tier")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.aid.simple, model.aid.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.aid.simple, model.aid.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## US trade × lower tier ratings
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.trade.simple <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + low_tier1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.trade.int <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + low_tier1 + 
+                         newus_tradeshare_gdp * low_tier1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Share of US trade (part of GDP)",
+              "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Trade share × Lowest tier")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.trade.simple, model.trade.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.trade.simple, model.trade.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## Protocol ratified × lower tier ratings
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.rat.simple <- glm(crim1 ~ fh_cl1 + low_tier1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.rat.int <- glm(crim1 ~ fh_cl1 + low_tier1 + 
+                         ratproto2000_1 * low_tier1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Worse democracy (Freedom House civil liberties)", "Lowest tier", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Protocol ratification × Lowest tier")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.rat.simple, model.rat.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.rat.simple, model.rat.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## Wikileaks engagement/intensity × lower tier ratings
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.wl.simple <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + low_tier1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.wl.int <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + low_tier1 + 
+                         prop_tip_wl1 * low_tier1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Proportion of TIP-related cables (observed in Wikileaks)",
+              "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "TIP cables × Lowest tier")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.wl.simple, model.wl.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.wl.simple, model.wl.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## TIP NGO count × lower tier ratings
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.ngo.new.simple <- glm(crim1 ~ ht_ngos + fh_cl1 + low_tier1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.ngo.new.int <- glm(crim1 ~ ht_ngos + fh_cl1 + low_tier1 + 
+                         ht_ngos * low_tier1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Number of anti-TIP NGOs",
+              "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "TIP cables × Lowest tier")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.ngo.new.simple, model.ngo.new.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.ngo.new.simple, model.ngo.new.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## TIP funding from US × lower tier ratings
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.funding.simple <- glm(crim1 ~ total.funding1 + fh_cl1 + low_tier1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.funding.int <- glm(crim1 ~ total.funding1 + fh_cl1 + low_tier1 + 
+                         total.funding1 * low_tier1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Total anti-TIP funding from US",
+              "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "TIP cables × Lowest tier")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.funding.simple, model.funding.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.funding.simple, model.funding.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+# Downgrading
+
+## Democracy × downgrading
+
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.democracy.down <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  # Treatment
+  mutate(downgrade = factor(worsen_tier1)) %>%
+  group_by(downgrade, fh_cl1) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+ggplot(prob.crim.democracy.down, 
+       aes(x=as.factor(fh_cl1), y=prob.yes, fill=downgrade)) + 
+  geom_bar(stat="identity", position="dodge")
+```
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.dem.simple <- glm(crim1 ~ fh_cl1 + 
+                        new_watch3 + new_watch2 + new_watch1 + 
+                        women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.dem.int <- glm(crim1 ~ fh_cl1 + 
+                     new_watch3 + new_watch2 + new_watch1 + 
+                     fh_cl1 * new_watch3 + 
+                     fh_cl1 * new_watch2 + 
+                     fh_cl1 * new_watch1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Worse democracy (Freedom House civil liberties)", 
+              "First demotion (t−3)", "First demotion (t−2)", 
+              "First demotion (t−1)",
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Worse democracy × First demotion (t−3)", 
+              "Worse democracy × First demotion (t−2)", 
+              "Worse democracy × First demotion (t−1)")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.dem.simple, model.dem.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.dem.simple, model.dem.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## NGO engagement × downgrading
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.ngo.simple <- glm(crim1 ~ ngos_ave + fh_cl1 + 
+                        new_watch3 + new_watch2 + new_watch1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.ngo.int <- glm(crim1 ~ ngos_ave + fh_cl1 + 
+                     new_watch3 + new_watch2 + new_watch1 + 
+                     ngos_ave * new_watch3 + 
+                     ngos_ave * new_watch2 + 
+                     ngos_ave * new_watch1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("NGO engagement",
+              "Worse democracy (Freedom House civil liberties)", 
+              "First demotion (t−3)", "First demotion (t−2)", 
+              "First demotion (t−1)",
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Worse democracy × First demotion (t−3)", 
+              "Worse democracy × First demotion (t−2)", 
+              "Worse democracy × First demotion (t−1)")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.ngo.simple, model.ngo.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.ngo.simple, model.ngo.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## Media coverage × downgrading
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.media.simple <- glm(crim1 ~ ht_news_country1 + fh_cl1 + 
+                          new_watch3 + new_watch2 + new_watch1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.media.int <- glm(crim1 ~ ht_news_country1 + fh_cl1 + 
+                       new_watch3 + new_watch2 + new_watch1 + 
+                     ht_news_country1 * new_watch3 + 
+                     ht_news_country1 * new_watch2 + 
+                     ht_news_country1 * new_watch1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Media coverage",
+              "Worse democracy (Freedom House civil liberties)", 
+              "First demotion (t−3)", "First demotion (t−2)", 
+              "First demotion (t−1)",
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Worse democracy × First demotion (t−3)", 
+              "Worse democracy × First demotion (t−2)", 
+              "Worse democracy × First demotion (t−1)")
+
+extra.lines <- list(c("Year fixed effects", c("Yes", "Yes")),
+                    c("Pseudo R-squared",
+                      sapply(list(model.media.simple, model.media.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.media.simple,  model.media.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## US foreign aid × downgrading
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.aid.simple <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + 
+                        new_watch3 + new_watch2 + new_watch1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.aid.int <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + 
+                     new_watch3 + new_watch2 + new_watch1 + 
+                     logeconasstP_1 * new_watch3 + 
+                     logeconasstP_1 * new_watch2 + 
+                     logeconasstP_1 * new_watch1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("US aid (logged)",
+              "Worse democracy (Freedom House civil liberties)", 
+              "First demotion (t−3)", "First demotion (t−2)", 
+              "First demotion (t−1)",
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Worse democracy × First demotion (t−3)", 
+              "Worse democracy × First demotion (t−2)", 
+              "Worse democracy × First demotion (t−1)")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.aid.simple, model.aid.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.aid.simple, model.aid.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## US trade × downgrading
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.trade.simple <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 +
+                          new_watch3 + new_watch2 + new_watch1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.trade.int <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 +
+                       new_watch3 + new_watch2 + new_watch1 + 
+                     newus_tradeshare_gdp * new_watch3 + 
+                     newus_tradeshare_gdp * new_watch2 + 
+                     newus_tradeshare_gdp * new_watch1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Share of US trade (part of GDP)",
+              "Worse democracy (Freedom House civil liberties)", 
+              "First demotion (t−3)", "First demotion (t−2)", 
+              "First demotion (t−1)",
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Worse democracy × First demotion (t−3)", 
+              "Worse democracy × First demotion (t−2)", 
+              "Worse democracy × First demotion (t−1)")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.trade.simple, model.trade.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.trade.simple, model.trade.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## Protocol ratified × downgrading
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.rat.simple <- glm(crim1 ~ fh_cl1 + 
+                        new_watch3 + new_watch2 + new_watch1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.rat.int <- glm(crim1 ~ fh_cl1 + 
+                     new_watch3 + new_watch2 + new_watch1 + 
+                     ratproto2000_1 * new_watch3 + 
+                     ratproto2000_1 * new_watch2 + 
+                     ratproto2000_1 * new_watch1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Worse democracy (Freedom House civil liberties)", 
+              "First demotion (t−3)", "First demotion (t−2)", 
+              "First demotion (t−1)",
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Worse democracy × First demotion (t−3)", 
+              "Worse democracy × First demotion (t−2)", 
+              "Worse democracy × First demotion (t−1)")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.rat.simple, model.rat.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.rat.simple, model.rat.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## Wikileaks engagement/intensity × downgrading
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.wl.simple <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + 
+                       new_watch3 + new_watch2 + new_watch1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.wl.int <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + 
+                    new_watch3 + new_watch2 + new_watch1 + 
+                     prop_tip_wl1 * new_watch3 + 
+                     prop_tip_wl1 * new_watch2 + 
+                     prop_tip_wl1 * new_watch1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Proportion of TIP-related cables (observed in Wikileaks)",
+              "Worse democracy (Freedom House civil liberties)", 
+              "First demotion (t−3)", "First demotion (t−2)", 
+              "First demotion (t−1)",
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Worse democracy × First demotion (t−3)", 
+              "Worse democracy × First demotion (t−2)", 
+              "Worse democracy × First demotion (t−1)")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.wl.simple, model.wl.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.wl.simple, model.wl.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## TIP NGO count × downgrading
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.ngo.new.simple <- glm(crim1 ~ ht_ngos + fh_cl1 + 
+                            new_watch3 + new_watch2 + new_watch1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.ngo.new.int <- glm(crim1 ~ ht_ngos + fh_cl1 + 
+                         new_watch3 + new_watch2 + new_watch1 + 
+                     ht_ngos * new_watch3 + 
+                     ht_ngos * new_watch2 + 
+                     ht_ngos * new_watch1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Number of anti-TIP NGOs",
+              "Worse democracy (Freedom House civil liberties)", 
+              "First demotion (t−3)", "First demotion (t−2)", 
+              "First demotion (t−1)",
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Worse democracy × First demotion (t−3)", 
+              "Worse democracy × First demotion (t−2)", 
+              "Worse democracy × First demotion (t−1)")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.ngo.new.simple, model.ngo.new.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.ngo.new.simple, model.ngo.new.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+---
+
+## TIP funding from US × downgrading
+
+### Descriptive
+
+### Split sample
+
+### Interactions
+
+```{r, results='asis', echo=FALSE}
+model.funding.simple <- glm(crim1 ~ total.funding1 + fh_cl1 + 
+                            new_watch3 + new_watch2 + new_watch1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + as.factor(year),# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.funding.int <- glm(crim1 ~ total.funding1 + fh_cl1 + 
+                         new_watch3 + new_watch2 + new_watch1 + 
+                     total.funding1 * new_watch3 + 
+                     total.funding1 * new_watch2 + 
+                     total.funding1 * new_watch1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + as.factor(year),
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+var.labs <- c("Total anti-TIP funding from US",
+              "Worse democracy (Freedom House civil liberties)", 
+              "First demotion (t−3)", "First demotion (t−2)", 
+              "First demotion (t−1)",
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Worse democracy × First demotion (t−3)", 
+              "Worse democracy × First demotion (t−2)", 
+              "Worse democracy × First demotion (t−1)")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.funding.simple, model.funding.int), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.funding.simple, model.funding.int,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
+          keep.stat=c("n", "ll"), 
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
