@@ -88,7 +88,7 @@ p.dem.prob <- ggplot(prob.crim.democracy.report,
 p.dem.prob
 ```
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.dem.simple <- glm(crim1 ~ fh_cl1 + inreport1 + women1 + ratproto2000_1 + 
@@ -933,7 +933,7 @@ var.labs <- c("Number of anti-TIP NGOs",
               "2000 TIP protocol ratification", 
               "Regional density of criminalization",
               "Missing info",
-              "TIP cables × In TIP report")
+              "Anti-TIP NGOs × In TIP report")
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
@@ -1051,7 +1051,7 @@ var.labs <- c("Total anti-TIP funding from US (log)",
               "2000 TIP protocol ratification", 
               "Regional density of criminalization",
               "Missing info",
-              "TIP cables × In TIP report")
+              "US funding × In TIP report")
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
@@ -1141,7 +1141,7 @@ p.dem.prob.rating
 
 ### Descriptive
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.dem.simple <- glm(crim1 ~ fh_cl1 + low_tier1 + women1 + ratproto2000_1 + 
@@ -1175,6 +1175,48 @@ stargazer(model.dem.simple, model.dem.int,
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.dem.int
+
+new.data <- model$model %>%
+  select(-fh_cl1) %>%
+  group_by(low_tier1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(fh_cl1 = seq(1, 7, 0.1), 
+                         low_tier1 = c(0, 1)), by="low_tier1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+p.dem.int.rating <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=low_tier1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=low_tier1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b", position="jitter") + 
+  labs(x="Worse democracy (Freedom House civil liberties)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_x_continuous(breaks=seq(1, 7, 1)) +
+  scale_fill_manual(values=rating.colors, name=NULL) + 
+  scale_colour_manual(values=rating.colors, name=NULL)+
+  theme_light()
+p.dem.int.rating
 ```
 
 ---
@@ -1215,7 +1257,7 @@ p.ngos.prob.rating <- ggplot(full, aes(x=ngos_bin, y=prob.yes,
 p.ngos.prob.rating
 ```
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.ngo.simple <- glm(crim1 ~ ngos_ave + fh_cl1 + low_tier1 + 
@@ -1252,6 +1294,46 @@ stargazer(model.ngo.simple, model.ngo.int,
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.ngo.int
+
+new.data <- model$model %>%
+  select(-ngos_ave) %>%
+  group_by(low_tier1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(ngos_ave = seq(0, 10, 0.1), 
+                         low_tier1 = c(0, 1)), by="low_tier1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+p.ngo.int.rating <- ggplot(plot.predict, aes(x=ngos_ave, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=low_tier1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=low_tier1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="NGO engagement", y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=rating.colors, name=NULL) + 
+  scale_colour_manual(values=rating.colors, name=NULL)+
+  theme_light()
+p.ngo.int.rating
 ```
 
 ---
@@ -1292,7 +1374,7 @@ p.media.prob.rating <- ggplot(full, aes(x=news_bin, y=prob.yes,
 p.media.prob.rating
 ```
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.media.simple <- glm(crim1 ~ ht_news_country1 + fh_cl1 + low_tier1 + 
@@ -1329,6 +1411,46 @@ stargazer(model.media.simple,  model.media.int,
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.media.int
+
+new.data <- model$model %>%
+  select(-ht_news_country1) %>%
+  group_by(low_tier1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(ht_news_country1 = seq(0, 1000, 1), 
+                         low_tier1 = c(0, 1)), by="low_tier1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+p.media.int.rating <- ggplot(plot.predict, aes(x=ht_news_country1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=low_tier1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=low_tier1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Media coverage", y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=rating.colors, name=NULL) + 
+  scale_colour_manual(values=rating.colors, name=NULL)+
+  theme_light()
+p.media.int.rating
 ```
 
 ---
@@ -1369,7 +1491,7 @@ p.aid.prob.rating <- ggplot(full, aes(x=aid_bin, y=prob.yes,
 p.aid.prob.rating
 ```
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.aid.simple <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + low_tier1 + 
@@ -1406,6 +1528,46 @@ stargazer(model.aid.simple, model.aid.int,
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.aid.int
+
+new.data <- model$model %>%
+  select(-logeconasstP_1) %>%
+  group_by(low_tier1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(logeconasstP_1 = seq(0, 23, 0.1), 
+                         low_tier1 = c(0, 1)), by="low_tier1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+p.aid.int.rating <- ggplot(plot.predict, aes(x=logeconasstP_1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=low_tier1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=low_tier1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="US foreign aid (logged)", y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=rating.colors, name=NULL) + 
+  scale_colour_manual(values=rating.colors, name=NULL)+
+  theme_light()
+p.aid.int.rating
 ```
 
 ---
@@ -1446,7 +1608,7 @@ p.trade.prob.rating <- ggplot(full, aes(x=trade_bin, y=prob.yes,
 p.trade.prob.rating
 ```
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.trade.simple <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + low_tier1 + 
@@ -1485,6 +1647,47 @@ stargazer(model.trade.simple, model.trade.int,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.trade.int
+
+new.data <- model$model %>%
+  select(-newus_tradeshare_gdp) %>%
+  group_by(low_tier1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(newus_tradeshare_gdp = seq(0, 0.6, 0.05), 
+                         low_tier1 = c(0, 1)), by="low_tier1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+p.trade.int.rating <- ggplot(plot.predict, aes(x=newus_tradeshare_gdp, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=low_tier1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=low_tier1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Trade with US (percent of GDP)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=rating.colors, name=NULL) + 
+  scale_colour_manual(values=rating.colors, name=NULL)+
+  theme_light()
+p.trade.int.rating
+```
+
 ---
 
 ## Protocol ratified × lower tier ratings
@@ -1516,7 +1719,7 @@ p.rat.prob.rating <- ggplot(prob.crim.rat.rating, aes(x=ratproto2000_1, y=prob.y
 p.rat.prob.rating
 ```
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.rat.simple <- glm(crim1 ~ fh_cl1 + low_tier1 + 
@@ -1552,6 +1755,47 @@ stargazer(model.rat.simple, model.rat.int,
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.rat.int
+
+new.data <- model$model %>%
+  select(-ratproto2000_1) %>%
+  group_by(low_tier1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(ratproto2000_1 = c(0, 1), 
+                         low_tier1 = c(0, 1)), by="low_tier1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE),
+         ratproto2000_1 = factor(ratproto2000_1, 
+                                 labels=c("Not ratified", "Ratified"), 
+                                 ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+p.rat.int.rating <- ggplot(plot.predict, aes(x=ratproto2000_1, y=prob, colour=low_tier1)) + 
+  geom_pointrange(aes(ymax=prob.upper, ymin=prob.lower), size=.75,
+                  position=position_dodge(width=0.25)) + 
+  labs(x="2000 TIP protocol ratification", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=rating.colors, name=NULL)+
+  theme_light()
+p.rat.int.rating
 ```
 
 ---
@@ -1592,7 +1836,7 @@ p.wl.prob.rating <- ggplot(full, aes(x=wl_bin, y=prob.yes,
 p.wl.prob.rating
 ```
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.wl.simple <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + low_tier1 + 
@@ -1629,6 +1873,47 @@ stargazer(model.wl.simple, model.wl.int,
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.wl.int
+
+new.data <- model$model %>%
+  select(-prop_tip_wl1) %>%
+  group_by(low_tier1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(prop_tip_wl1 = seq(0, 1, 0.05), 
+                         low_tier1 = c(0, 1)), by="low_tier1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+p.wl.int.rating <- ggplot(plot.predict, aes(x=prop_tip_wl1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=low_tier1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=low_tier1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Proportion of TIP-related cables (observed in Wikileaks)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=rating.colors, name=NULL) + 
+  scale_colour_manual(values=rating.colors, name=NULL)+
+  theme_light()
+p.wl.int.rating
 ```
 
 ---
@@ -1669,7 +1954,7 @@ p.ngos_new.prob.rating <- ggplot(full, aes(x=ngos_bin, y=prob.yes,
 p.ngos_new.prob.rating
 ```
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.ngo.new.simple <- glm(crim1 ~ ht_ngos + fh_cl1 + low_tier1 + 
@@ -1691,7 +1976,7 @@ var.labs <- c("Number of anti-TIP NGOs",
               "2000 TIP protocol ratification", 
               "Regional density of criminalization",
               "Missing info",
-              "TIP cables × Lowest tier")
+              "Anti-TIP NGOs × Lowest tier")
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
@@ -1706,6 +1991,47 @@ stargazer(model.ngo.new.simple, model.ngo.new.int,
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.ngo.new.int
+
+new.data <- model$model %>%
+  select(-ht_ngos) %>%
+  group_by(low_tier1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(ht_ngos = seq(0, 100, 0.5), 
+                         low_tier1 = c(0, 1)), by="low_tier1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+p.ngo.new.int.rating <- ggplot(plot.predict, aes(x=ht_ngos, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=low_tier1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=low_tier1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Number of anti-TIP NGOs", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=rating.colors, name=NULL) + 
+  scale_colour_manual(values=rating.colors, name=NULL)+
+  theme_light()
+p.ngo.new.int.rating
 ```
 
 ---
@@ -1746,29 +2072,29 @@ p.funding.prob.rating <- ggplot(full, aes(x=funding_bin, y=prob.yes,
 p.funding.prob.rating
 ```
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.funding.simple <- glm(crim1 ~ total.funding1 + fh_cl1 + low_tier1 + 
+model.funding.simple <- glm(crim1 ~ log.total.funding1 + fh_cl1 + low_tier1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.funding.int <- glm(crim1 ~ total.funding1 + fh_cl1 + low_tier1 + 
-                         total.funding1 * low_tier1 + 
+model.funding.int <- glm(crim1 ~ log.total.funding1 + fh_cl1 + low_tier1 + 
+                         log.total.funding1 * low_tier1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
-var.labs <- c("Total anti-TIP funding from US",
+var.labs <- c("Total anti-TIP funding from US (log)",
               "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
               "Share of women in parliament", 
               "2000 TIP protocol ratification", 
               "Regional density of criminalization",
               "Missing info",
-              "TIP cables × Lowest tier")
+              "US funding × Lowest tier")
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
@@ -1783,6 +2109,47 @@ stargazer(model.funding.simple, model.funding.int,
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.funding.int
+
+new.data <- model$model %>%
+  select(-log.total.funding1) %>%
+  group_by(low_tier1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(log.total.funding1 = seq(0, 16, 0.5), 
+                         low_tier1 = c(0, 1)), by="low_tier1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+p.funding.int.rating <- ggplot(plot.predict, aes(x=log.total.funding1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=low_tier1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=low_tier1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Total anti-TIP funding from US (log)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=rating.colors, name=NULL) + 
+  scale_colour_manual(values=rating.colors, name=NULL)+
+  theme_light()
+p.funding.int.rating
 ```
 
 ---
