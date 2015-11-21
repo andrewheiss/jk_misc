@@ -25,10 +25,15 @@ library(stargazer)
 std <- qnorm(0.95 / 2 + 0.5)
 
 report.colors <- c("#E97F01", "#014358")
+rating.colors <- c("#490A3D", "#EA2E49")
 
 df.correct <- df.correct %>%
   mutate(in.report = ifelse(tier1 == 0, "Not in report", "In report"),
-         in.report = factor(in.report, levels=c("Not in report", "In report"), ordered=TRUE))
+         in.report = factor(in.report, levels=c("Not in report", "In report"),
+                            ordered=TRUE),
+         lower.rating = ifelse(tier1 %in% c(1, 2), "1 or 2", "Watchlist or 3"),
+         lower.rating = factor(lower.rating, levels=c("1 or 2", "Watchlist or 3"), 
+                               ordered=TRUE))
 
 df.logit.models <- df.correct %>% 
   filter(lag(adjbicrimlevel) == 0 & year > 2001 & year < 2011)
@@ -662,7 +667,7 @@ prob.crim.rat.report <- df.correct %>%
 p.rat.prob <- ggplot(prob.crim.rat.report, aes(x=ratproto2000_1, y=prob.yes, 
                                  colour=in.report, size=crim.yes)) + 
   geom_point() +
-  labs(x="Share of US trade (% of GDP)", 
+  labs(x="2000 TIP protocol ratification", 
        y="Actual probability of criminalization") + 
   scale_y_continuous(labels=percent) + 
   scale_colour_manual(values=report.colors, name="Presence in report") +
@@ -1114,21 +1119,27 @@ p.funding.int
 prob.crim.democracy.rating <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   # Treatment
-  mutate(lower.rating = ifelse(tier1 %in% c(1, 2, 2.5), "1, 2, or 2.5", "3")) %>%
   group_by(lower.rating, fh_cl1) %>%
   summarize(total = n(),
             crim.no = sum(crim1 == 0),
             crim.yes = sum(crim1 == 1),
-            prob.yes = crim.yes / total)
+            prob.yes = crim.yes / total) %>%
+  filter(crim.yes > 0)
 
-ggplot(prob.crim.democracy.rating, 
-       aes(x=as.factor(fh_cl1), y=prob.yes, fill=lower.rating)) + 
-  geom_bar(stat="identity", position="dodge")
+p.dem.prob.rating <- ggplot(prob.crim.democracy.rating, 
+       aes(x=fh_cl1, y=prob.yes, colour=lower.rating, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Worse democracy (Freedom House civil liberties)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_x_continuous(breaks=seq(1, 7, 1)) +
+  scale_colour_manual(values=rating.colors, name="TIP rating") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.dem.prob.rating
 ```
 
 ### Descriptive
-
-### Split sample
 
 ### Interactions
 
@@ -1172,7 +1183,37 @@ stargazer(model.dem.simple, model.dem.int,
 
 ### Descriptive
 
-### Split sample
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.ngos_ave.rating <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(ngos_bin = cut(ngos_ave, seq(0, 10, 1), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(lower.rating, ngos_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.ngos_ave.rating %>% ungroup() %>%
+  do(expand.grid(lower.rating = levels(.$lower.rating), ngos_bin = levels(.$ngos_bin))) %>%
+  left_join(prob.crim.ngos_ave.rating, by=c("lower.rating", "ngos_bin")) %>%
+  mutate(ngos_bin = factor(ngos_bin, 
+                           labels=sapply(levels(ngos_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.ngos.prob.rating <- ggplot(full, aes(x=ngos_bin, y=prob.yes, 
+                                colour=lower.rating, size=crim.yes)) + 
+  geom_point(position=position_dodge(width=0.3)) +
+  labs(x="NGO engagement", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=rating.colors, name="TIP rating") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.ngos.prob.rating
+```
 
 ### Interactions
 
@@ -1219,7 +1260,37 @@ stargazer(model.ngo.simple, model.ngo.int,
 
 ### Descriptive
 
-### Split sample
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.media.rating <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(news_bin = cut(ht_news_country1, c(seq(0, 500, 50), 2500), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(lower.rating, news_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.media.rating %>% ungroup() %>%
+  do(expand.grid(lower.rating = levels(.$lower.rating), news_bin = levels(.$news_bin))) %>%
+  left_join(prob.crim.media.rating, by=c("lower.rating", "news_bin")) %>%
+  mutate(news_bin = factor(news_bin, 
+                           labels=sapply(levels(news_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.media.prob.rating <- ggplot(full, aes(x=news_bin, y=prob.yes, 
+                                 colour=lower.rating, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Media coverage", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=rating.colors, name="TIP rating") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.media.prob.rating
+```
 
 ### Interactions
 
@@ -1266,7 +1337,37 @@ stargazer(model.media.simple,  model.media.int,
 
 ### Descriptive
 
-### Split sample
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.aid.rating <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(aid_bin = cut(logeconasstP_1, seq(0, 25, 5), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(lower.rating, aid_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.aid.rating %>% ungroup() %>%
+  do(expand.grid(lower.rating = levels(.$lower.rating), aid_bin = levels(.$aid_bin))) %>%
+  left_join(prob.crim.aid.rating, by=c("lower.rating", "aid_bin")) %>%
+  mutate(aid_bin = factor(aid_bin, 
+                           labels=sapply(levels(aid_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.aid.prob.rating <- ggplot(full, aes(x=aid_bin, y=prob.yes, 
+                                 colour=lower.rating, size=crim.yes)) + 
+  geom_point() +
+  labs(x="US aid (logged)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=rating.colors, name="TIP rating") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.aid.prob.rating
+```
 
 ### Interactions
 
@@ -1313,7 +1414,37 @@ stargazer(model.aid.simple, model.aid.int,
 
 ### Descriptive
 
-### Split sample
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.trade.rating <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(trade_bin = cut(newus_tradeshare_gdp, seq(0, 1, 0.1), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(lower.rating, trade_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.trade.rating %>% ungroup() %>%
+  do(expand.grid(lower.rating = levels(.$lower.rating), trade_bin = levels(.$trade_bin))) %>%
+  left_join(prob.crim.trade.rating, by=c("lower.rating", "trade_bin")) %>%
+  mutate(trade_bin = factor(trade_bin, 
+                           labels=sapply(levels(trade_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.trade.prob.rating <- ggplot(full, aes(x=trade_bin, y=prob.yes, 
+                                 colour=lower.rating, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Share of US trade (% of GDP)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=rating.colors, name="TIP rating") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.trade.prob.rating
+```
 
 ### Interactions
 
@@ -1360,7 +1491,30 @@ stargazer(model.trade.simple, model.trade.int,
 
 ### Descriptive
 
-### Split sample
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.rat.rating <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  # Treatment
+  group_by(lower.rating, ratproto2000_1) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total) %>%
+  mutate(ratproto2000_1 = factor(ratproto2000_1, 
+                                 labels=c("Not ratified", "Ratified"), 
+                                 ordered=TRUE))
+
+p.rat.prob.rating <- ggplot(prob.crim.rat.rating, aes(x=ratproto2000_1, y=prob.yes, 
+                                 colour=lower.rating, size=crim.yes)) + 
+  geom_point() +
+  labs(x="2000 TIP protocol ratification", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=rating.colors, name="TIP rating") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.rat.prob.rating
+```
 
 ### Interactions
 
@@ -1406,7 +1560,37 @@ stargazer(model.rat.simple, model.rat.int,
 
 ### Descriptive
 
-### Split sample
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.wl.rating <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(wl_bin = cut(prop_tip_wl1, c(seq(0, 0.2, 0.05), 1), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(lower.rating, wl_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.wl.rating %>% ungroup() %>%
+  do(expand.grid(lower.rating = levels(.$lower.rating), wl_bin = levels(.$wl_bin))) %>%
+  left_join(prob.crim.wl.rating, by=c("lower.rating", "wl_bin")) %>%
+  mutate(wl_bin = factor(wl_bin, 
+                           labels=sapply(levels(wl_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.wl.prob.rating <- ggplot(full, aes(x=wl_bin, y=prob.yes, 
+                                 colour=lower.rating, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Proportion of TIP-related cables (observed in Wikileaks)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=rating.colors, name="TIP rating") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.wl.prob.rating
+```
 
 ### Interactions
 
@@ -1453,7 +1637,37 @@ stargazer(model.wl.simple, model.wl.int,
 
 ### Descriptive
 
-### Split sample
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.ngos_new.rating <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(ngos_bin = cut(ht_ngos, c(seq(0, 20, 5), 100), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(lower.rating, ngos_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.ngos_new.rating %>% ungroup() %>%
+  do(expand.grid(lower.rating = levels(.$lower.rating), ngos_bin = levels(.$ngos_bin))) %>%
+  left_join(prob.crim.ngos_new.rating, by=c("lower.rating", "ngos_bin")) %>%
+  mutate(ngos_bin = factor(ngos_bin, 
+                           labels=sapply(levels(ngos_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.ngos_new.prob.rating <- ggplot(full, aes(x=ngos_bin, y=prob.yes, 
+                                 colour=lower.rating, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Number of anti-TIP NGOs", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=rating.colors, name="TIP rating") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.ngos_new.prob.rating
+```
 
 ### Interactions
 
@@ -1500,7 +1714,37 @@ stargazer(model.ngo.new.simple, model.ngo.new.int,
 
 ### Descriptive
 
-### Split sample
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.funding.rating <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(funding_bin = cut(log.total.funding1, c(0, seq(10, 20, 2.5)), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(lower.rating, funding_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.funding.rating %>% ungroup() %>%
+  do(expand.grid(lower.rating = levels(.$lower.rating), funding_bin = levels(.$funding_bin))) %>%
+  left_join(prob.crim.funding.rating, by=c("lower.rating", "funding_bin")) %>%
+  mutate(funding_bin = factor(funding_bin, 
+                           labels=sapply(levels(funding_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.funding.prob.rating <- ggplot(full, aes(x=funding_bin, y=prob.yes, 
+                                 colour=lower.rating, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Total anti-TIP funding from US (log)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=rating.colors, name="TIP rating") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.funding.prob.rating
+```
 
 ### Interactions
 
