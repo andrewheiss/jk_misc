@@ -250,7 +250,7 @@ df.complete.with.lags.correct <- df.complete %>%
   mutate(chtier = tier - tier1,
          improve_tier = ifelse(chtier >= 0, 0, 1),
          worsen_tier = ifelse(chtier > 0, 1, 0),
-         low_tier = ifelse(tier == 3, 1, 0),
+         low_tier = ifelse(tier %in% c(2.5, 3), 1, 0),
          econasstPgdp = econasstP / data2,
          logeconasstPgdp = log(econasstPgdp)) %>%
   # More lagging...
