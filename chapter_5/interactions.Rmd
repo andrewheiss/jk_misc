@@ -44,7 +44,8 @@ clean.labs <- function(x) {
   separated <- unlist(strsplit(x, ","))
   
   # Remove anything that's not a digit from each part
-  cleaned <- sapply(separated, FUN=function (y) gsub("\\D", "", y))
+  cleaned <- sapply(separated, FUN=function (y) 
+    as.numeric(gsub("\\[|\\]|\\(|\\)", "", y)))
   
   # Concatenate remaining digits
   return(paste(cleaned, collapse="-"))
