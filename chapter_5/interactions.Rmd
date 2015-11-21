@@ -78,7 +78,7 @@ p.dem.prob <- ggplot(prob.crim.democracy.report,
   scale_y_continuous(labels=percent) + 
   scale_x_continuous(breaks=seq(1, 7, 1)) +
   scale_colour_manual(values=report.colors, name="Presence in report") +
-  guides(size=guide_legend(title="Number of cases\nwhere criminalized")) +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
   theme_light()
 p.dem.prob
 ```
@@ -187,14 +187,16 @@ full <- prob.crim.ngos_ave.report %>% ungroup() %>%
                            labels=sapply(levels(ngos_bin), FUN=clean.labs))) %>%
   filter(crim.yes > 0)
 
-ggplot(full, aes(x=ngos_bin, y=prob.yes, colour=in.report, size=crim.yes)) + 
+p.ngos.prob <- ggplot(full, aes(x=ngos_bin, y=prob.yes, 
+                                colour=in.report, size=crim.yes)) + 
   geom_point() +
   labs(x="NGO engagement", 
        y="Actual probability of criminalization") + 
   scale_y_continuous(labels=percent) + 
   scale_colour_manual(values=report.colors, name="Presence in report") +
-  guides(size=guide_legend(title="Number of cases\nwhere criminalized")) +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
   theme_light()
+p.ngos.prob
 ```
 
 ### Interactions (models)
@@ -281,6 +283,38 @@ p.ngo.int
 ## Media coverage × presence in TIP report
 
 ### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.media.report <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(news_bin = cut(ht_news_country1, c(seq(0, 500, 50), 2500), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(in.report, news_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.media.report %>% ungroup() %>%
+  do(expand.grid(in.report = levels(.$in.report), news_bin = levels(.$news_bin))) %>%
+  left_join(prob.crim.media.report, by=c("in.report", "news_bin")) %>%
+  mutate(news_bin = factor(news_bin, 
+                           labels=sapply(levels(news_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.media.prob <- ggplot(full, aes(x=news_bin, y=prob.yes, 
+                                 colour=in.report, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Media coverage", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=report.colors, name="Presence in report") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.media.prob
+```
 
 ### Interactions (models)
 
@@ -377,6 +411,38 @@ p.media.int
 
 ### Descriptive
 
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.aid.report <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(aid_bin = cut(logeconasstP_1, seq(0, 25, 5), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(in.report, aid_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.aid.report %>% ungroup() %>%
+  do(expand.grid(in.report = levels(.$in.report), aid_bin = levels(.$aid_bin))) %>%
+  left_join(prob.crim.aid.report, by=c("in.report", "aid_bin")) %>%
+  mutate(aid_bin = factor(aid_bin, 
+                           labels=sapply(levels(aid_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.aid.prob <- ggplot(full, aes(x=aid_bin, y=prob.yes, 
+                                 colour=in.report, size=crim.yes)) + 
+  geom_point() +
+  labs(x="US aid (logged)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=report.colors, name="Presence in report") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.aid.prob
+```
+
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
@@ -462,6 +528,38 @@ p.aid.int
 
 ### Descriptive
 
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.trade.report <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(trade_bin = cut(newus_tradeshare_gdp, seq(0, 1, 0.1), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(in.report, trade_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.trade.report %>% ungroup() %>%
+  do(expand.grid(in.report = levels(.$in.report), trade_bin = levels(.$trade_bin))) %>%
+  left_join(prob.crim.trade.report, by=c("in.report", "trade_bin")) %>%
+  mutate(trade_bin = factor(trade_bin, 
+                           labels=sapply(levels(trade_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.trade.prob <- ggplot(full, aes(x=trade_bin, y=prob.yes, 
+                                 colour=in.report, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Share of US trade (% of GDP)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=report.colors, name="Presence in report") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.trade.prob
+```
+
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
@@ -478,7 +576,7 @@ model.trade.int <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + inreport1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
-var.labs <- c("Share of US trade (part of GDP)",
+var.labs <- c("Share of US trade (% of GDP)",
               "Worse democracy (Freedom House civil liberties)", "In TIP report", 
               "Share of women in parliament", 
               "2000 TIP protocol ratification", 
@@ -547,6 +645,31 @@ p.trade.int
 ## Protocol ratified × presence in TIP report
 
 ### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.rat.report <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  # Treatment
+  group_by(in.report, ratproto2000_1) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total) %>%
+  mutate(ratproto2000_1 = factor(ratproto2000_1, 
+                                 labels=c("Not ratified", "Ratified"), 
+                                 ordered=TRUE))
+
+p.rat.prob <- ggplot(prob.crim.rat.report, aes(x=ratproto2000_1, y=prob.yes, 
+                                 colour=in.report, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Share of US trade (% of GDP)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=report.colors, name="Presence in report") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.rat.prob
+```
 
 ### Interactions (models)
 
@@ -632,6 +755,38 @@ p.rat.int
 ## Wikileaks engagement/intensity × presence in TIP report
 
 ### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.wl.report <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(wl_bin = cut(prop_tip_wl1, c(seq(0, 0.2, 0.05), 1), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(in.report, wl_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.wl.report %>% ungroup() %>%
+  do(expand.grid(in.report = levels(.$in.report), wl_bin = levels(.$wl_bin))) %>%
+  left_join(prob.crim.wl.report, by=c("in.report", "wl_bin")) %>%
+  mutate(wl_bin = factor(wl_bin, 
+                           labels=sapply(levels(wl_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.wl.prob <- ggplot(full, aes(x=wl_bin, y=prob.yes, 
+                                 colour=in.report, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Proportion of TIP-related cables (observed in Wikileaks)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=report.colors, name="Presence in report") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.wl.prob
+```
 
 ### Interactions (models)
 
@@ -719,6 +874,38 @@ p.wl.int
 
 ### Descriptive
 
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.ngos_new.report <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(ngos_bin = cut(ht_ngos, c(seq(0, 20, 5), 100), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(in.report, ngos_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.ngos_new.report %>% ungroup() %>%
+  do(expand.grid(in.report = levels(.$in.report), ngos_bin = levels(.$ngos_bin))) %>%
+  left_join(prob.crim.ngos_new.report, by=c("in.report", "ngos_bin")) %>%
+  mutate(ngos_bin = factor(ngos_bin, 
+                           labels=sapply(levels(ngos_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.ngos_new.prob <- ggplot(full, aes(x=ngos_bin, y=prob.yes, 
+                                 colour=in.report, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Number of anti-TIP NGOs", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=report.colors, name="Presence in report") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.ngos_new.prob
+```
+
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
@@ -804,6 +991,38 @@ p.ngo.new.int
 ## TIP funding from US × presence in TIP report
 
 ### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+prob.crim.funding.report <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(funding_bin = cut(log.total.funding1, c(0, seq(10, 20, 2.5)), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(in.report, funding_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.funding.report %>% ungroup() %>%
+  do(expand.grid(in.report = levels(.$in.report), funding_bin = levels(.$funding_bin))) %>%
+  left_join(prob.crim.funding.report, by=c("in.report", "funding_bin")) %>%
+  mutate(funding_bin = factor(funding_bin, 
+                           labels=sapply(levels(funding_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.funding.prob <- ggplot(full, aes(x=funding_bin, y=prob.yes, 
+                                 colour=in.report, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Total anti-TIP funding from US (log)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=report.colors, name="Presence in report") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.funding.prob
+```
 
 ### Interactions (models)
 
