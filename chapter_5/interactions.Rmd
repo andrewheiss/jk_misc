@@ -26,6 +26,7 @@ std <- qnorm(0.95 / 2 + 0.5)
 
 report.colors <- c("#E97F01", "#014358")
 rating.colors <- c("#490A3D", "#EA2E49")
+demote.colors <- c("#00A0B0", "#6A4A3C", "#CC333F")
 
 df.correct <- df.correct %>%
   mutate(in.report = ifelse(tier1 == 0, "Not in report", "In report"),
@@ -2176,7 +2177,7 @@ ggplot(prob.crim.democracy.down,
 
 ### Descriptive
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.dem.simple <- glm(crim1 ~ fh_cl1 + 
@@ -2220,6 +2221,54 @@ stargazer(model.dem.simple, model.dem.int,
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.dem.int
+
+covars <- model$model %>%
+  select(-fh_cl1, -starts_with("new_watch")) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005),
+         id = 1)  # For joining into fully expanded dataframe later
+
+new.combinations <- expand.grid(fh_cl1 = seq(1, 7, 0.1),
+                                new_watch = c("1", "2", "3"))
+new.data <- new.combinations %>%
+  bind_cols(data.frame(model.matrix(fh_cl1 ~ new_watch + 0, 
+                                    data=new.combinations))) %>%
+  mutate(id = 1) %>% left_join(covars, by="id") %>%
+  select(-c(id, new_watch))
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
+  gather(demote_type, demote_value, starts_with("new_watch")) %>%
+  filter(demote_value == 1) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years")))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted)
+
+p.dem.int.demote <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) + 
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=demote_type), 
+              alpha=0.2) + 
+  geom_line(aes(colour=demote_type), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b", position="jitter") +
+  labs(x="Worse democracy (Freedom House civil liberties)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_x_continuous(breaks=seq(1, 7, 1)) +
+  scale_fill_manual(values=demote.colors, name="Time since\ndemotion") + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion")+
+  theme_light()
+p.dem.int.demote
 ```
 
 ---
