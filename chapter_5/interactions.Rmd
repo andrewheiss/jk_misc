@@ -38,6 +38,17 @@ df.logit.models <- df.correct %>%
 calc.pseudo.r.squared <- function(x.model) {
   return(round(1 - (x.model$deviance / x.model$null.deviance), 4))
 }
+
+clean.labs <- function(x) {
+  # Divide into comma-separated parts
+  separated <- unlist(strsplit(x, ","))
+  
+  # Remove anything that's not a digit from each part
+  cleaned <- sapply(separated, FUN=function (y) gsub("\\D", "", y))
+  
+  # Concatenate remaining digits
+  return(paste(cleaned, collapse="-"))
+}
 ```
 
 
@@ -158,7 +169,8 @@ p.dem.int
 ```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
 prob.crim.ngos_ave.report <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
-  mutate(ngos_bin = cut(ngos_ave, seq(0, 10, 1))) %>%
+  mutate(ngos_bin = cut(ngos_ave, seq(0, 10, 1), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
   # Treatment
   group_by(in.report, ngos_bin) %>%
   summarize(total = n(),
@@ -166,9 +178,22 @@ prob.crim.ngos_ave.report <- df.correct %>%
             crim.yes = sum(crim1 == 1),
             prob.yes = crim.yes / total)
 
-ggplot(prob.crim.ngos_ave.report, 
-       aes(x=ngos_bin, y=prob.yes, fill=in.report)) + 
-  geom_bar(stat="identity", position="dodge")
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.ngos_ave.report %>% ungroup() %>%
+  do(expand.grid(in.report = levels(.$in.report), ngos_bin = levels(.$ngos_bin))) %>%
+  left_join(prob.crim.ngos_ave.report, by=c("in.report", "ngos_bin")) %>%
+  mutate(ngos_bin = factor(ngos_bin, 
+                           labels=sapply(levels(ngos_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+ggplot(full, aes(x=ngos_bin, y=prob.yes, colour=in.report, size=crim.yes)) + 
+  geom_point() +
+  labs(x="NGO engagement", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=report.colors, name="Presence in report") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized")) +
+  theme_light()
 ```
 
 ### Interactions (models)
