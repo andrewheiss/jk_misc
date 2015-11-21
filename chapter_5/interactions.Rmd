@@ -2176,8 +2176,6 @@ ggplot(prob.crim.democracy.down,
 
 ### Descriptive
 
-### Split sample
-
 ### Interactions
 
 ```{r, results='asis', echo=FALSE}
@@ -2229,8 +2227,6 @@ stargazer(model.dem.simple, model.dem.int,
 ## NGO engagement × downgrading
 
 ### Descriptive
-
-### Split sample
 
 ### Interactions
 
@@ -2285,8 +2281,6 @@ stargazer(model.ngo.simple, model.ngo.int,
 
 ### Descriptive
 
-### Split sample
-
 ### Interactions
 
 ```{r, results='asis', echo=FALSE}
@@ -2339,8 +2333,6 @@ stargazer(model.media.simple,  model.media.int,
 ## US foreign aid × downgrading
 
 ### Descriptive
-
-### Split sample
 
 ### Interactions
 
@@ -2395,8 +2387,6 @@ stargazer(model.aid.simple, model.aid.int,
 
 ### Descriptive
 
-### Split sample
-
 ### Interactions
 
 ```{r, results='asis', echo=FALSE}
@@ -2450,8 +2440,6 @@ stargazer(model.trade.simple, model.trade.int,
 
 ### Descriptive
 
-### Split sample
-
 ### Interactions
 
 ```{r, results='asis', echo=FALSE}
@@ -2503,8 +2491,6 @@ stargazer(model.rat.simple, model.rat.int,
 ## Wikileaks engagement/intensity × downgrading
 
 ### Descriptive
-
-### Split sample
 
 ### Interactions
 
@@ -2559,8 +2545,6 @@ stargazer(model.wl.simple, model.wl.int,
 
 ### Descriptive
 
-### Split sample
-
 ### Interactions
 
 ```{r, results='asis', echo=FALSE}
@@ -2613,8 +2597,6 @@ stargazer(model.ngo.new.simple, model.ngo.new.int,
 ## TIP funding from US × downgrading
 
 ### Descriptive
-
-### Split sample
 
 ### Interactions
 
