@@ -64,7 +64,7 @@ clean.labs <- function(x) {
 
 ### Descriptive
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.democracy.report <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   # Treatment
@@ -172,7 +172,7 @@ p.dem.int
 
 ### Descriptive
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.ngos_ave.report <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   mutate(ngos_bin = cut(ngos_ave, seq(0, 10, 1), 
@@ -289,7 +289,7 @@ p.ngo.int
 
 ### Descriptive
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.media.report <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   mutate(news_bin = cut(ht_news_country1, c(seq(0, 500, 50), 2500), 
@@ -416,7 +416,7 @@ p.media.int
 
 ### Descriptive
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.aid.report <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   mutate(aid_bin = cut(logeconasstP_1, seq(0, 25, 5), 
@@ -533,7 +533,7 @@ p.aid.int
 
 ### Descriptive
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.trade.report <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   mutate(trade_bin = cut(newus_tradeshare_gdp, seq(0, 1, 0.1), 
@@ -651,7 +651,7 @@ p.trade.int
 
 ### Descriptive
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.rat.report <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   # Treatment
@@ -761,7 +761,7 @@ p.rat.int
 
 ### Descriptive
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.wl.report <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   mutate(wl_bin = cut(prop_tip_wl1, c(seq(0, 0.2, 0.05), 1), 
@@ -879,7 +879,7 @@ p.wl.int
 
 ### Descriptive
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.ngos_new.report <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   mutate(ngos_bin = cut(ht_ngos, c(seq(0, 20, 5), 100), 
@@ -997,7 +997,7 @@ p.ngo.new.int
 
 ### Descriptive
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.funding.report <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   mutate(funding_bin = cut(log.total.funding1, c(0, seq(10, 20, 2.5)), 
@@ -1115,7 +1115,7 @@ p.funding.int
 
 ## Democracy × lower tier ratings
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.democracy.rating <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   # Treatment
@@ -1225,7 +1225,7 @@ p.dem.int.rating
 
 ### Descriptive
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.ngos_ave.rating <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   mutate(ngos_bin = cut(ngos_ave, seq(0, 10, 1), 
@@ -1342,7 +1342,7 @@ p.ngo.int.rating
 
 ### Descriptive
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.media.rating <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   mutate(news_bin = cut(ht_news_country1, c(seq(0, 500, 50), 2500), 
@@ -1459,7 +1459,7 @@ p.media.int.rating
 
 ### Descriptive
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.aid.rating <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   mutate(aid_bin = cut(logeconasstP_1, seq(0, 25, 5), 
@@ -1576,7 +1576,7 @@ p.aid.int.rating
 
 ### Descriptive
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.trade.rating <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   mutate(trade_bin = cut(newus_tradeshare_gdp, seq(0, 1, 0.1), 
@@ -1694,7 +1694,7 @@ p.trade.int.rating
 
 ### Descriptive
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.rat.rating <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   # Treatment
@@ -1804,7 +1804,7 @@ p.rat.int.rating
 
 ### Descriptive
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.wl.rating <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   mutate(wl_bin = cut(prop_tip_wl1, c(seq(0, 0.2, 0.05), 1), 
@@ -1922,7 +1922,7 @@ p.wl.int.rating
 
 ### Descriptive
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.ngos_new.rating <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   mutate(ngos_bin = cut(ht_ngos, c(seq(0, 20, 5), 100), 
@@ -2040,7 +2040,7 @@ p.ngo.new.int.rating
 
 ### Descriptive
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.funding.rating <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   mutate(funding_bin = cut(log.total.funding1, c(0, seq(10, 20, 2.5)), 
@@ -2158,7 +2158,7 @@ p.funding.int.rating
 
 ## Democracy × downgrading
 
-```{r, echo=FALSE, fig.width=8, fig.height=3, warning=FALSE}
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.democracy.down <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   # Treatment
