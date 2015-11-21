@@ -2277,7 +2277,7 @@ p.dem.int.demote
 
 ### Descriptive
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.ngo.simple <- glm(crim1 ~ ngos_ave + fh_cl1 + 
@@ -2324,13 +2324,59 @@ stargazer(model.ngo.simple, model.ngo.int,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.ngo.int
+
+covars <- model$model %>%
+  select(-ngos_ave, -starts_with("new_watch")) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005),
+         id = 1)  # For joining into fully expanded dataframe later
+
+new.combinations <- expand.grid(ngos_ave = seq(0, 10, 0.1),
+                                new_watch = c("1", "2", "3"))
+new.data <- new.combinations %>%
+  bind_cols(data.frame(model.matrix(ngos_ave ~ new_watch + 0, 
+                                    data=new.combinations))) %>%
+  mutate(id = 1) %>% left_join(covars, by="id") %>%
+  select(-c(id, new_watch))
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
+  gather(demote_type, demote_value, starts_with("new_watch")) %>%
+  filter(demote_value == 1) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years")))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted)
+
+p.ngo.int.demote <- ggplot(plot.predict, aes(x=ngos_ave, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=demote_type), 
+              alpha=0.2) + 
+  geom_line(aes(colour=demote_type), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="NGO engagement", y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=demote.colors, name="Time since\ndemotion") + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion")+
+  theme_light()
+p.ngo.int.demote
+```
+
 ---
 
 ## Media coverage × downgrading
 
 ### Descriptive
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.media.simple <- glm(crim1 ~ ht_news_country1 + fh_cl1 + 
@@ -2377,13 +2423,59 @@ stargazer(model.media.simple,  model.media.int,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.media.int
+
+covars <- model$model %>%
+  select(-ht_news_country1, -starts_with("new_watch")) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005),
+         id = 1)  # For joining into fully expanded dataframe later
+
+new.combinations <- expand.grid(ht_news_country1 = seq(0, 1000, 0.1),
+                                new_watch = c("1", "2", "3"))
+new.data <- new.combinations %>%
+  bind_cols(data.frame(model.matrix(ht_news_country1 ~ new_watch + 0, 
+                                    data=new.combinations))) %>%
+  mutate(id = 1) %>% left_join(covars, by="id") %>%
+  select(-c(id, new_watch))
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
+  gather(demote_type, demote_value, starts_with("new_watch")) %>%
+  filter(demote_value == 1) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years")))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted)
+
+p.media.int.demote <- ggplot(plot.predict, aes(x=ht_news_country1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=demote_type), 
+              alpha=0.2) + 
+  geom_line(aes(colour=demote_type), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Media coverage", y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=demote.colors, name="Time since\ndemotion") + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion")+
+  theme_light()
+p.media.int.demote
+```
+
 ---
 
 ## US foreign aid × downgrading
 
 ### Descriptive
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.aid.simple <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + 
@@ -2430,13 +2522,59 @@ stargazer(model.aid.simple, model.aid.int,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.aid.int
+
+covars <- model$model %>%
+  select(-logeconasstP_1, -starts_with("new_watch")) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005),
+         id = 1)  # For joining into fully expanded dataframe later
+
+new.combinations <- expand.grid(logeconasstP_1 = seq(0, 23, 0.1),
+                                new_watch = c("1", "2", "3"))
+new.data <- new.combinations %>%
+  bind_cols(data.frame(model.matrix(logeconasstP_1 ~ new_watch + 0, 
+                                    data=new.combinations))) %>%
+  mutate(id = 1) %>% left_join(covars, by="id") %>%
+  select(-c(id, new_watch))
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
+  gather(demote_type, demote_value, starts_with("new_watch")) %>%
+  filter(demote_value == 1) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years")))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted)
+
+p.aid.int.demote <- ggplot(plot.predict, aes(x=logeconasstP_1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=demote_type), 
+              alpha=0.2) + 
+  geom_line(aes(colour=demote_type), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="US foreign aid (logged)", y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=demote.colors, name="Time since\ndemotion") + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion")+
+  theme_light()
+p.aid.int.demote
+```
+
 ---
 
 ## US trade × downgrading
 
 ### Descriptive
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.trade.simple <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 +
@@ -2483,13 +2621,60 @@ stargazer(model.trade.simple, model.trade.int,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.trade.int
+
+covars <- model$model %>%
+  select(-newus_tradeshare_gdp, -starts_with("new_watch")) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005),
+         id = 1)  # For joining into fully expanded dataframe later
+
+new.combinations <- expand.grid(newus_tradeshare_gdp = seq(0, 0.6, 0.05),
+                                new_watch = c("1", "2", "3"))
+new.data <- new.combinations %>%
+  bind_cols(data.frame(model.matrix(newus_tradeshare_gdp ~ new_watch + 0, 
+                                    data=new.combinations))) %>%
+  mutate(id = 1) %>% left_join(covars, by="id") %>%
+  select(-c(id, new_watch))
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
+  gather(demote_type, demote_value, starts_with("new_watch")) %>%
+  filter(demote_value == 1) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years")))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted)
+
+p.trade.int.demote <- ggplot(plot.predict, aes(x=newus_tradeshare_gdp, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=demote_type), 
+              alpha=0.2) + 
+  geom_line(aes(colour=demote_type), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Trade with US (percent of GDP)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=demote.colors, name="Time since\ndemotion") + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion")+
+  theme_light()
+p.trade.int.demote
+```
+
 ---
 
 ## Protocol ratified × downgrading
 
 ### Descriptive
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.rat.simple <- glm(crim1 ~ fh_cl1 + 
@@ -2535,13 +2720,61 @@ stargazer(model.rat.simple, model.rat.int,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.rat.int
+
+covars <- model$model %>%
+  select(-ratproto2000_1, -starts_with("new_watch")) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005),
+         id = 1)  # For joining into fully expanded dataframe later
+
+new.combinations <- expand.grid(ratproto2000_1 = c(0, 1),
+                                new_watch = c("1", "2", "3"))
+new.data <- new.combinations %>%
+  bind_cols(data.frame(model.matrix(ratproto2000_1 ~ new_watch + 0, 
+                                    data=new.combinations))) %>%
+  mutate(id = 1) %>% left_join(covars, by="id") %>%
+  select(-c(id, new_watch))
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
+  gather(demote_type, demote_value, starts_with("new_watch")) %>%
+  filter(demote_value == 1) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years")),
+         ratproto2000_1 = factor(ratproto2000_1, 
+                                 labels=c("Not ratified", "Ratified"), 
+                                 ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted)
+
+p.rat.int.demote <- ggplot(plot.predict, aes(x=ratproto2000_1, 
+                                             y=prob, colour=demote_type)) + 
+  geom_pointrange(aes(ymax=prob.upper, ymin=prob.lower), size=.75,
+                  position=position_dodge(width=0.25)) + 
+  labs(x="2000 TIP protocol ratification", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion")+
+  theme_light()
+p.rat.int.demote
+```
+
 ---
 
 ## Wikileaks engagement/intensity × downgrading
 
 ### Descriptive
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.wl.simple <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + 
@@ -2588,13 +2821,60 @@ stargazer(model.wl.simple, model.wl.int,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.wl.int
+
+covars <- model$model %>%
+  select(-prop_tip_wl1, -starts_with("new_watch")) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005),
+         id = 1)  # For joining into fully expanded dataframe later
+
+new.combinations <- expand.grid(prop_tip_wl1 = seq(0, 1, 0.05),
+                                new_watch = c("1", "2", "3"))
+new.data <- new.combinations %>%
+  bind_cols(data.frame(model.matrix(prop_tip_wl1 ~ new_watch + 0, 
+                                    data=new.combinations))) %>%
+  mutate(id = 1) %>% left_join(covars, by="id") %>%
+  select(-c(id, new_watch))
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
+  gather(demote_type, demote_value, starts_with("new_watch")) %>%
+  filter(demote_value == 1) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years")))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted)
+
+p.wl.int.demote <- ggplot(plot.predict, aes(x=prop_tip_wl1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=demote_type), 
+              alpha=0.2) + 
+  geom_line(aes(colour=demote_type), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Proportion of TIP-related cables (observed in Wikileaks)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=demote.colors, name="Time since\ndemotion") + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion")+
+  theme_light()
+p.wl.int.demote
+```
+
 ---
 
 ## TIP NGO count × downgrading
 
 ### Descriptive
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
 model.ngo.new.simple <- glm(crim1 ~ ht_ngos + fh_cl1 + 
@@ -2641,33 +2921,80 @@ stargazer(model.ngo.new.simple, model.ngo.new.int,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.ngo.new.int
+
+covars <- model$model %>%
+  select(-ht_ngos, -starts_with("new_watch")) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005),
+         id = 1)  # For joining into fully expanded dataframe later
+
+new.combinations <- expand.grid(ht_ngos = seq(0, 100, 0.5),
+                                new_watch = c("1", "2", "3"))
+new.data <- new.combinations %>%
+  bind_cols(data.frame(model.matrix(ht_ngos ~ new_watch + 0, 
+                                    data=new.combinations))) %>%
+  mutate(id = 1) %>% left_join(covars, by="id") %>%
+  select(-c(id, new_watch))
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
+  gather(demote_type, demote_value, starts_with("new_watch")) %>%
+  filter(demote_value == 1) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years")))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted)
+
+p.ngo.new.int.demote <- ggplot(plot.predict, aes(x=ht_ngos, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=demote_type), 
+              alpha=0.2) + 
+  geom_line(aes(colour=demote_type), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Number of anti-TIP NGOs", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=demote.colors, name="Time since\ndemotion") + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion")+
+  theme_light()
+p.ngo.new.int.demote
+```
+
 ---
 
 ## TIP funding from US × downgrading
 
 ### Descriptive
 
-### Interactions
+### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.funding.simple <- glm(crim1 ~ total.funding1 + fh_cl1 + 
+model.funding.simple <- glm(crim1 ~ log.total.funding1 + fh_cl1 + 
                             new_watch3 + new_watch2 + new_watch1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.funding.int <- glm(crim1 ~ total.funding1 + fh_cl1 + 
+model.funding.int <- glm(crim1 ~ log.total.funding1 + fh_cl1 + 
                          new_watch3 + new_watch2 + new_watch1 + 
-                     total.funding1 * new_watch3 + 
-                     total.funding1 * new_watch2 + 
-                     total.funding1 * new_watch1 + 
+                     log.total.funding1 * new_watch3 + 
+                     log.total.funding1 * new_watch2 + 
+                     log.total.funding1 * new_watch1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
-var.labs <- c("Total anti-TIP funding from US",
+var.labs <- c("Total anti-TIP funding from US (log)",
               "Worse democracy (Freedom House civil liberties)", 
               "First demotion (t−3)", "First demotion (t−2)", 
               "First demotion (t−1)",
@@ -2692,4 +3019,51 @@ stargazer(model.funding.simple, model.funding.int,
           keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.funding.int
+
+covars <- model$model %>%
+  select(-log.total.funding1, -starts_with("new_watch")) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005),
+         id = 1)  # For joining into fully expanded dataframe later
+
+new.combinations <- expand.grid(log.total.funding1 = seq(0, 16, 0.5),
+                                new_watch = c("1", "2", "3"))
+new.data <- new.combinations %>%
+  bind_cols(data.frame(model.matrix(log.total.funding1 ~ new_watch + 0, 
+                                    data=new.combinations))) %>%
+  mutate(id = 1) %>% left_join(covars, by="id") %>%
+  select(-c(id, new_watch))
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
+  gather(demote_type, demote_value, starts_with("new_watch")) %>%
+  filter(demote_value == 1) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years")))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted)
+
+p.funding.int.demote <- ggplot(plot.predict, aes(x=log.total.funding1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=demote_type), 
+              alpha=0.2) + 
+  geom_line(aes(colour=demote_type), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Total anti-TIP funding from US (log)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=demote.colors, name="Time since\ndemotion") + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion")+
+  theme_light()
+p.funding.int.demote
 ```
