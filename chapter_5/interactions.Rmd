@@ -1116,6 +1116,8 @@ p.funding.int
 
 ## Democracy × lower tier ratings
 
+### Descriptive
+
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.democracy.rating <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
@@ -1139,8 +1141,6 @@ p.dem.prob.rating <- ggplot(prob.crim.democracy.rating,
   theme_light()
 p.dem.prob.rating
 ```
-
-### Descriptive
 
 ### Interactions (models)
 
@@ -2159,23 +2159,35 @@ p.funding.int.rating
 
 ## Democracy × downgrading
 
+### Descriptive
+
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
 prob.crim.democracy.down <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
+  gather(demote_type, demote_value, c(new_watch1, new_watch2, new_watch3)) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years"))) %>%
+  filter(demote_value == 1) %>%
   # Treatment
-  mutate(downgrade = factor(worsen_tier1)) %>%
-  group_by(downgrade, fh_cl1) %>%
+  group_by(demote_type, fh_cl1) %>%
   summarize(total = n(),
             crim.no = sum(crim1 == 0),
             crim.yes = sum(crim1 == 1),
-            prob.yes = crim.yes / total)
+            prob.yes = crim.yes / total) %>%
+  filter(crim.yes > 0)
 
-ggplot(prob.crim.democracy.down, 
-       aes(x=as.factor(fh_cl1), y=prob.yes, fill=downgrade)) + 
-  geom_bar(stat="identity", position="dodge")
+p.dem.prob.down <- ggplot(prob.crim.democracy.down, 
+       aes(x=fh_cl1, y=prob.yes, colour=demote_type, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Worse democracy (Freedom House civil liberties)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_x_continuous(breaks=seq(1, 7, 1)) +
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.dem.prob.down
 ```
-
-### Descriptive
 
 ### Interactions (models)
 
