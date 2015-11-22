@@ -2179,6 +2179,7 @@ prob.crim.democracy.down <- df.correct %>%
 p.dem.prob.down <- ggplot(prob.crim.democracy.down, 
        aes(x=fh_cl1, y=prob.yes, colour=demote_type, size=crim.yes)) + 
   geom_point() +
+  # geom_line(size=1) + 
   labs(x="Worse democracy (Freedom House civil liberties)", 
        y="Actual probability of criminalization") + 
   scale_y_continuous(labels=percent) + 
@@ -2289,6 +2290,42 @@ p.dem.int.demote
 
 ### Descriptive
 
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+prob.crim.ngos_ave.demote <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  gather(demote_type, demote_value, c(new_watch1, new_watch2, new_watch3)) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years"))) %>%
+  filter(demote_value == 1) %>%
+  mutate(ngos_bin = cut(ngos_ave, seq(0, 10, 1), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(demote_type, ngos_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.ngos_ave.demote %>% ungroup() %>%
+  do(expand.grid(demote_type = levels(.$demote_type), ngos_bin = levels(.$ngos_bin))) %>%
+  left_join(prob.crim.ngos_ave.demote, by=c("demote_type", "ngos_bin")) %>%
+  mutate(ngos_bin = factor(ngos_bin, 
+                           labels=sapply(levels(ngos_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.ngos.prob.demote <- ggplot(full, aes(x=ngos_bin, y=prob.yes, 
+                                colour=demote_type, size=crim.yes)) + 
+  geom_point(position=position_dodge(width=0.3)) +
+  labs(x="NGO engagement", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.ngos.prob.demote
+```
+
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
@@ -2387,6 +2424,42 @@ p.ngo.int.demote
 ## Media coverage × downgrading
 
 ### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+prob.crim.media.demote <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  gather(demote_type, demote_value, c(new_watch1, new_watch2, new_watch3)) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years"))) %>%
+  filter(demote_value == 1) %>%
+  mutate(news_bin = cut(ht_news_country1, c(seq(0, 500, 50), 2500), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(demote_type, news_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.media.demote %>% ungroup() %>%
+  do(expand.grid(demote_type = levels(.$demote_type), news_bin = levels(.$news_bin))) %>%
+  left_join(prob.crim.media.demote, by=c("demote_type", "news_bin")) %>%
+  mutate(news_bin = factor(news_bin, 
+                           labels=sapply(levels(news_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.media.prob.demote <- ggplot(full, aes(x=news_bin, y=prob.yes, 
+                                 colour=demote_type, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Media coverage", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.media.prob.demote
+```
 
 ### Interactions (models)
 
@@ -2487,6 +2560,42 @@ p.media.int.demote
 
 ### Descriptive
 
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+prob.crim.aid.demote <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  gather(demote_type, demote_value, c(new_watch1, new_watch2, new_watch3)) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years"))) %>%
+  filter(demote_value == 1) %>%
+  mutate(aid_bin = cut(logeconasstP_1, seq(0, 25, 5), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(demote_type, aid_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.aid.demote %>% ungroup() %>%
+  do(expand.grid(demote_type = levels(.$demote_type), aid_bin = levels(.$aid_bin))) %>%
+  left_join(prob.crim.aid.demote, by=c("demote_type", "aid_bin")) %>%
+  mutate(aid_bin = factor(aid_bin, 
+                           labels=sapply(levels(aid_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.aid.prob.demote <- ggplot(full, aes(x=aid_bin, y=prob.yes, 
+                                 colour=demote_type, size=crim.yes)) + 
+  geom_point() +
+  labs(x="US aid (logged)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.aid.prob.demote
+```
+
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
@@ -2585,6 +2694,42 @@ p.aid.int.demote
 ## US trade × downgrading
 
 ### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+prob.crim.trade.demote <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  gather(demote_type, demote_value, c(new_watch1, new_watch2, new_watch3)) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years"))) %>%
+  filter(demote_value == 1) %>%
+  mutate(trade_bin = cut(newus_tradeshare_gdp, seq(0, 1, 0.1), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(demote_type, trade_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.trade.demote %>% ungroup() %>%
+  do(expand.grid(demote_type = levels(.$demote_type), trade_bin = levels(.$trade_bin))) %>%
+  left_join(prob.crim.trade.demote, by=c("demote_type", "trade_bin")) %>%
+  mutate(trade_bin = factor(trade_bin, 
+                           labels=sapply(levels(trade_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.trade.prob.demote <- ggplot(full, aes(x=trade_bin, y=prob.yes, 
+                                 colour=demote_type, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Share of US trade (% of GDP)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.trade.prob.demote
+```
 
 ### Interactions (models)
 
@@ -2686,6 +2831,35 @@ p.trade.int.demote
 
 ### Descriptive
 
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+prob.crim.rat.demote <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  gather(demote_type, demote_value, c(new_watch1, new_watch2, new_watch3)) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years"))) %>%
+  filter(demote_value == 1) %>%
+  # Treatment
+  group_by(demote_type, ratproto2000_1) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total) %>%
+  mutate(ratproto2000_1 = factor(ratproto2000_1, 
+                                 labels=c("Not ratified", "Ratified"), 
+                                 ordered=TRUE))
+
+p.rat.prob.demote <- ggplot(prob.crim.rat.demote, aes(x=ratproto2000_1, y=prob.yes, 
+                                 colour=demote_type, size=crim.yes)) + 
+  geom_point() +
+  labs(x="2000 TIP protocol ratification", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.rat.prob.demote
+```
+
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
@@ -2785,6 +2959,42 @@ p.rat.int.demote
 ## Wikileaks engagement/intensity × downgrading
 
 ### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+prob.crim.wl.demote <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  gather(demote_type, demote_value, c(new_watch1, new_watch2, new_watch3)) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years"))) %>%
+  filter(demote_value == 1) %>%
+  mutate(wl_bin = cut(prop_tip_wl1, c(seq(0, 0.2, 0.05), 1), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(demote_type, wl_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.wl.demote %>% ungroup() %>%
+  do(expand.grid(demote_type = levels(.$demote_type), wl_bin = levels(.$wl_bin))) %>%
+  left_join(prob.crim.wl.demote, by=c("demote_type", "wl_bin")) %>%
+  mutate(wl_bin = factor(wl_bin, 
+                           labels=sapply(levels(wl_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.wl.prob.demote <- ggplot(full, aes(x=wl_bin, y=prob.yes, 
+                                 colour=demote_type, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Proportion of TIP-related cables (observed in Wikileaks)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.wl.prob.demote
+```
 
 ### Interactions (models)
 
@@ -2886,6 +3096,42 @@ p.wl.int.demote
 
 ### Descriptive
 
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+prob.crim.ngos_new.demote <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  gather(demote_type, demote_value, c(new_watch1, new_watch2, new_watch3)) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years"))) %>%
+  filter(demote_value == 1) %>%
+  mutate(ngos_bin = cut(ht_ngos, c(seq(0, 20, 5), 100), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(demote_type, ngos_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.ngos_new.demote %>% ungroup() %>%
+  do(expand.grid(demote_type = levels(.$demote_type), ngos_bin = levels(.$ngos_bin))) %>%
+  left_join(prob.crim.ngos_new.demote, by=c("demote_type", "ngos_bin")) %>%
+  mutate(ngos_bin = factor(ngos_bin, 
+                           labels=sapply(levels(ngos_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.ngos_new.prob.demote <- ggplot(full, aes(x=ngos_bin, y=prob.yes, 
+                                 colour=demote_type, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Number of anti-TIP NGOs", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.ngos_new.prob.demote
+```
+
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
@@ -2985,6 +3231,42 @@ p.ngo.new.int.demote
 ## TIP funding from US × downgrading
 
 ### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+prob.crim.funding.demote <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  gather(demote_type, demote_value, c(new_watch1, new_watch2, new_watch3)) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years"))) %>%
+  filter(demote_value == 1) %>%
+  mutate(funding_bin = cut(log.total.funding1, c(0, seq(10, 20, 2.5)), 
+                        include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(demote_type, funding_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.funding.demote %>% ungroup() %>%
+  do(expand.grid(demote_type = levels(.$demote_type), funding_bin = levels(.$funding_bin))) %>%
+  left_join(prob.crim.funding.demote, by=c("demote_type", "funding_bin")) %>%
+  mutate(funding_bin = factor(funding_bin, 
+                           labels=sapply(levels(funding_bin), FUN=clean.labs))) %>%
+  filter(crim.yes > 0)
+
+p.funding.prob.demote <- ggplot(full, aes(x=funding_bin, y=prob.yes, 
+                                 colour=demote_type, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Total anti-TIP funding from US (log)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.funding.prob.demote
+```
 
 ### Interactions (models)
 
