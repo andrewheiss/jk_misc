@@ -76,7 +76,7 @@ prob.crim.democracy.report <- df.correct %>%
             prob.yes = crim.yes / total) %>%
   filter(crim.yes > 0)
 
-p.dem.prob <- ggplot(prob.crim.democracy.report, 
+p.dem.prob.report <- ggplot(prob.crim.democracy.report, 
        aes(x=fh_cl1, y=prob.yes, colour=in.report, size=crim.yes)) + 
   geom_point() +
   labs(x="Worse democracy (Freedom House civil liberties)", 
@@ -86,18 +86,18 @@ p.dem.prob <- ggplot(prob.crim.democracy.report,
   scale_colour_manual(values=report.colors, name="Presence in report") +
   guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
   theme_light()
-p.dem.prob
+p.dem.prob.report
 ```
 
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.dem.simple <- glm(crim1 ~ fh_cl1 + inreport1 + women1 + ratproto2000_1 + 
+model.dem.simple.report <- glm(crim1 ~ fh_cl1 + inreport1 + women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.dem.int <- glm(crim1 ~ fh_cl1 + inreport1 + fh_cl1 * inreport1 + 
+model.dem.int.report <- glm(crim1 ~ fh_cl1 + inreport1 + fh_cl1 * inreport1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
@@ -112,10 +112,10 @@ var.labs <- c("Worse democracy (Freedom House civil liberties)", "In TIP report"
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.dem.simple, model.dem.int), 
+                      sapply(list(model.dem.simple.report, model.dem.int.report), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.dem.simple, model.dem.int,
+stargazer(model.dem.simple.report, model.dem.int.report,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -130,7 +130,7 @@ stargazer(model.dem.simple, model.dem.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.dem.int
+model <- model.dem.int.report
 
 new.data <- model$model %>%
   select(-fh_cl1) %>%
@@ -152,7 +152,7 @@ plot.data <- augment(model, type.predict="response") %>%
   mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
                             ordered=TRUE))
 
-p.dem.int <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +  
+p.dem.int.report <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +  
   geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
               alpha=0.2) + 
   geom_line(aes(colour=inreport1), size=1) +
@@ -164,7 +164,7 @@ p.dem.int <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +
   scale_fill_manual(values=report.colors, name=NULL) + 
   scale_colour_manual(values=report.colors, name=NULL)+
   theme_light()
-p.dem.int
+p.dem.int.report
 ```
 
 ---
@@ -193,7 +193,7 @@ full <- prob.crim.ngos_ave.report %>% ungroup() %>%
                            labels=sapply(levels(ngos_bin), FUN=clean.labs))) %>%
   filter(crim.yes > 0)
 
-p.ngos.prob <- ggplot(full, aes(x=ngos_bin, y=prob.yes, 
+p.ngos.prob.report <- ggplot(full, aes(x=ngos_bin, y=prob.yes, 
                                 colour=in.report, size=crim.yes)) + 
   geom_point() +
   labs(x="NGO engagement", 
@@ -202,19 +202,19 @@ p.ngos.prob <- ggplot(full, aes(x=ngos_bin, y=prob.yes,
   scale_colour_manual(values=report.colors, name="Presence in report") +
   guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
   theme_light()
-p.ngos.prob
+p.ngos.prob.report
 ```
 
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.ngo.simple <- glm(crim1 ~ ngos_ave + fh_cl1 + inreport1 + 
+model.ngo.simple.report <- glm(crim1 ~ ngos_ave + fh_cl1 + inreport1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.ngo.int <- glm(crim1 ~ ngos_ave + fh_cl1 + inreport1 + 
+model.ngo.int.report <- glm(crim1 ~ ngos_ave + fh_cl1 + inreport1 + 
                          ngos_ave * inreport1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
@@ -231,10 +231,10 @@ var.labs <- c("NGO engagement",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.ngo.simple, model.ngo.int), 
+                      sapply(list(model.ngo.simple.report, model.ngo.int.report), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.ngo.simple, model.ngo.int,
+stargazer(model.ngo.simple.report, model.ngo.int.report,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -249,7 +249,7 @@ stargazer(model.ngo.simple, model.ngo.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.ngo.int
+model <- model.ngo.int.report
 
 new.data <- model$model %>%
   select(-ngos_ave) %>%
@@ -271,7 +271,7 @@ plot.data <- augment(model, type.predict="response") %>%
   mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
                             ordered=TRUE))
 
-p.ngo.int <- ggplot(plot.predict, aes(x=ngos_ave, y=prob)) +  
+p.ngo.int.report <- ggplot(plot.predict, aes(x=ngos_ave, y=prob)) +  
   geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
               alpha=0.2) + 
   geom_line(aes(colour=inreport1), size=1) +
@@ -281,7 +281,7 @@ p.ngo.int <- ggplot(plot.predict, aes(x=ngos_ave, y=prob)) +
   scale_fill_manual(values=report.colors, name=NULL) + 
   scale_colour_manual(values=report.colors, name=NULL)+
   theme_light()
-p.ngo.int
+p.ngo.int.report
 ```
 
 ---
@@ -310,7 +310,7 @@ full <- prob.crim.media.report %>% ungroup() %>%
                            labels=sapply(levels(news_bin), FUN=clean.labs))) %>%
   filter(crim.yes > 0)
 
-p.media.prob <- ggplot(full, aes(x=news_bin, y=prob.yes, 
+p.media.prob.report <- ggplot(full, aes(x=news_bin, y=prob.yes, 
                                  colour=in.report, size=crim.yes)) + 
   geom_point() +
   labs(x="Media coverage", 
@@ -319,7 +319,7 @@ p.media.prob <- ggplot(full, aes(x=news_bin, y=prob.yes,
   scale_colour_manual(values=report.colors, name="Presence in report") +
   guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
   theme_light()
-p.media.prob
+p.media.prob.report
 ```
 
 ### Interactions (models)
@@ -332,13 +332,13 @@ model.media.basic <- glm(crim1 ~ ht_news_country1 + inreport1 +
                           ht_news_country1 * inreport1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.media.simple <- glm(crim1 ~ ht_news_country1 + fh_cl1 + inreport1 + 
+model.media.simple.report <- glm(crim1 ~ ht_news_country1 + fh_cl1 + inreport1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.media.int <- glm(crim1 ~ ht_news_country1 + fh_cl1 + inreport1 + 
+model.media.int.report <- glm(crim1 ~ ht_news_country1 + fh_cl1 + inreport1 + 
                          ht_news_country1 * inreport1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
@@ -357,11 +357,11 @@ var.labs <- c("Media coverage",
 
 extra.lines <- list(c("Year fixed effects", c("Yes", "No", "No", "Yes")),
                     c("Pseudo R-squared",
-                      sapply(list(model.media.simple, model.media.super.basic,
-                                  model.media.basic, model.media.int), 
+                      sapply(list(model.media.simple.report, model.media.super.basic,
+                                  model.media.basic, model.media.int.report), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.media.simple, model.media.super.basic, model.media.basic, model.media.int,
+stargazer(model.media.simple.report, model.media.super.basic, model.media.basic, model.media.int.report,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -376,7 +376,7 @@ stargazer(model.media.simple, model.media.super.basic, model.media.basic, model.
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.media.int
+model <- model.media.int.report
 
 new.data <- model$model %>%
   select(-ht_news_country1) %>%
@@ -398,7 +398,7 @@ plot.data <- augment(model, type.predict="response") %>%
   mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
                             ordered=TRUE))
 
-p.media.int <- ggplot(plot.predict, aes(x=ht_news_country1, y=prob)) +  
+p.media.int.report <- ggplot(plot.predict, aes(x=ht_news_country1, y=prob)) +  
   geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
               alpha=0.2) + 
   geom_line(aes(colour=inreport1), size=1) +
@@ -408,7 +408,7 @@ p.media.int <- ggplot(plot.predict, aes(x=ht_news_country1, y=prob)) +
   scale_fill_manual(values=report.colors, name=NULL) + 
   scale_colour_manual(values=report.colors, name=NULL)+
   theme_light()
-p.media.int
+p.media.int.report
 ```
 
 ---
@@ -437,7 +437,7 @@ full <- prob.crim.aid.report %>% ungroup() %>%
                            labels=sapply(levels(aid_bin), FUN=clean.labs))) %>%
   filter(crim.yes > 0)
 
-p.aid.prob <- ggplot(full, aes(x=aid_bin, y=prob.yes, 
+p.aid.prob.report <- ggplot(full, aes(x=aid_bin, y=prob.yes, 
                                  colour=in.report, size=crim.yes)) + 
   geom_point() +
   labs(x="US aid (logged)", 
@@ -446,19 +446,19 @@ p.aid.prob <- ggplot(full, aes(x=aid_bin, y=prob.yes,
   scale_colour_manual(values=report.colors, name="Presence in report") +
   guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
   theme_light()
-p.aid.prob
+p.aid.prob.report
 ```
 
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.aid.simple <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + inreport1 + 
+model.aid.simple.report <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + inreport1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.aid.int <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + inreport1 + 
+model.aid.int.report <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + inreport1 + 
                          logeconasstP_1 * inreport1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
@@ -475,10 +475,10 @@ var.labs <- c("US aid (logged)",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.aid.simple, model.aid.int), 
+                      sapply(list(model.aid.simple.report, model.aid.int.report), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.aid.simple, model.aid.int,
+stargazer(model.aid.simple.report, model.aid.int.report,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -493,7 +493,7 @@ stargazer(model.aid.simple, model.aid.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.aid.int
+model <- model.aid.int.report
 
 new.data <- model$model %>%
   select(-logeconasstP_1) %>%
@@ -515,7 +515,7 @@ plot.data <- augment(model, type.predict="response") %>%
   mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
                             ordered=TRUE))
 
-p.aid.int <- ggplot(plot.predict, aes(x=logeconasstP_1, y=prob)) +  
+p.aid.int.report <- ggplot(plot.predict, aes(x=logeconasstP_1, y=prob)) +  
   geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
               alpha=0.2) + 
   geom_line(aes(colour=inreport1), size=1) +
@@ -525,7 +525,7 @@ p.aid.int <- ggplot(plot.predict, aes(x=logeconasstP_1, y=prob)) +
   scale_fill_manual(values=report.colors, name=NULL) + 
   scale_colour_manual(values=report.colors, name=NULL)+
   theme_light()
-p.aid.int
+p.aid.int.report
 ```
 
 ---
@@ -554,7 +554,7 @@ full <- prob.crim.trade.report %>% ungroup() %>%
                            labels=sapply(levels(trade_bin), FUN=clean.labs))) %>%
   filter(crim.yes > 0)
 
-p.trade.prob <- ggplot(full, aes(x=trade_bin, y=prob.yes, 
+p.trade.prob.report <- ggplot(full, aes(x=trade_bin, y=prob.yes, 
                                  colour=in.report, size=crim.yes)) + 
   geom_point() +
   labs(x="Share of US trade (% of GDP)", 
@@ -563,19 +563,19 @@ p.trade.prob <- ggplot(full, aes(x=trade_bin, y=prob.yes,
   scale_colour_manual(values=report.colors, name="Presence in report") +
   guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
   theme_light()
-p.trade.prob
+p.trade.prob.report
 ```
 
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.trade.simple <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + inreport1 + 
+model.trade.simple.report <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + inreport1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.trade.int <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + inreport1 + 
+model.trade.int.report <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + inreport1 + 
                          newus_tradeshare_gdp * inreport1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
@@ -592,10 +592,10 @@ var.labs <- c("Share of US trade (% of GDP)",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.trade.simple, model.trade.int), 
+                      sapply(list(model.trade.simple.report, model.trade.int.report), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.trade.simple, model.trade.int,
+stargazer(model.trade.simple.report, model.trade.int.report,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -610,7 +610,7 @@ stargazer(model.trade.simple, model.trade.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.trade.int
+model <- model.trade.int.report
 
 new.data <- model$model %>%
   select(-newus_tradeshare_gdp) %>%
@@ -632,7 +632,7 @@ plot.data <- augment(model, type.predict="response") %>%
   mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
                             ordered=TRUE))
 
-p.trade.int <- ggplot(plot.predict, aes(x=newus_tradeshare_gdp, y=prob)) +  
+p.trade.int.report <- ggplot(plot.predict, aes(x=newus_tradeshare_gdp, y=prob)) +  
   geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
               alpha=0.2) + 
   geom_line(aes(colour=inreport1), size=1) +
@@ -643,7 +643,7 @@ p.trade.int <- ggplot(plot.predict, aes(x=newus_tradeshare_gdp, y=prob)) +
   scale_fill_manual(values=report.colors, name=NULL) + 
   scale_colour_manual(values=report.colors, name=NULL)+
   theme_light()
-p.trade.int
+p.trade.int.report
 ```
 
 ---
@@ -665,7 +665,7 @@ prob.crim.rat.report <- df.correct %>%
                                  labels=c("Not ratified", "Ratified"), 
                                  ordered=TRUE))
 
-p.rat.prob <- ggplot(prob.crim.rat.report, aes(x=ratproto2000_1, y=prob.yes, 
+p.rat.prob.report <- ggplot(prob.crim.rat.report, aes(x=ratproto2000_1, y=prob.yes, 
                                  colour=in.report, size=crim.yes)) + 
   geom_point() +
   labs(x="2000 TIP protocol ratification", 
@@ -674,19 +674,19 @@ p.rat.prob <- ggplot(prob.crim.rat.report, aes(x=ratproto2000_1, y=prob.yes,
   scale_colour_manual(values=report.colors, name="Presence in report") +
   guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
   theme_light()
-p.rat.prob
+p.rat.prob.report
 ```
 
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.rat.simple <- glm(crim1 ~ fh_cl1 + inreport1 + 
+model.rat.simple.report <- glm(crim1 ~ fh_cl1 + inreport1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.rat.int <- glm(crim1 ~ fh_cl1 + inreport1 + 
+model.rat.int.report <- glm(crim1 ~ fh_cl1 + inreport1 + 
                          ratproto2000_1 * inreport1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
@@ -702,10 +702,10 @@ var.labs <- c("Worse democracy (Freedom House civil liberties)", "In TIP report"
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.rat.simple, model.rat.int), 
+                      sapply(list(model.rat.simple.report, model.rat.int.report), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.rat.simple, model.rat.int,
+stargazer(model.rat.simple.report, model.rat.int.report,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -720,7 +720,7 @@ stargazer(model.rat.simple, model.rat.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.rat.int
+model <- model.rat.int.report
 
 new.data <- model$model %>%
   select(-ratproto2000_1) %>%
@@ -745,7 +745,7 @@ plot.data <- augment(model, type.predict="response") %>%
   mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
                             ordered=TRUE))
 
-p.rat.int <- ggplot(plot.predict, aes(x=ratproto2000_1, y=prob, colour=inreport1)) + 
+p.rat.int.report <- ggplot(plot.predict, aes(x=ratproto2000_1, y=prob, colour=inreport1)) + 
   geom_pointrange(aes(ymax=prob.upper, ymin=prob.lower), size=.75,
                   position=position_dodge(width=0.25)) + 
   labs(x="2000 TIP protocol ratification", 
@@ -753,7 +753,7 @@ p.rat.int <- ggplot(plot.predict, aes(x=ratproto2000_1, y=prob, colour=inreport1
   scale_y_continuous(labels=percent) + 
   scale_colour_manual(values=report.colors, name=NULL)+
   theme_light()
-p.rat.int
+p.rat.int.report
 ```
 
 ---
@@ -782,7 +782,7 @@ full <- prob.crim.wl.report %>% ungroup() %>%
                            labels=sapply(levels(wl_bin), FUN=clean.labs))) %>%
   filter(crim.yes > 0)
 
-p.wl.prob <- ggplot(full, aes(x=wl_bin, y=prob.yes, 
+p.wl.prob.report <- ggplot(full, aes(x=wl_bin, y=prob.yes, 
                                  colour=in.report, size=crim.yes)) + 
   geom_point() +
   labs(x="Proportion of TIP-related cables (observed in Wikileaks)", 
@@ -791,19 +791,19 @@ p.wl.prob <- ggplot(full, aes(x=wl_bin, y=prob.yes,
   scale_colour_manual(values=report.colors, name="Presence in report") +
   guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
   theme_light()
-p.wl.prob
+p.wl.prob.report
 ```
 
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.wl.simple <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + inreport1 + 
+model.wl.simple.report <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + inreport1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.wl.int <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + inreport1 + 
+model.wl.int.report <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + inreport1 + 
                          prop_tip_wl1 * inreport1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
@@ -820,10 +820,10 @@ var.labs <- c("Proportion of TIP-related cables (observed in Wikileaks)",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.wl.simple, model.wl.int), 
+                      sapply(list(model.wl.simple.report, model.wl.int.report), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.wl.simple, model.wl.int,
+stargazer(model.wl.simple.report, model.wl.int.report,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -838,7 +838,7 @@ stargazer(model.wl.simple, model.wl.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.wl.int
+model <- model.wl.int.report
 
 new.data <- model$model %>%
   select(-prop_tip_wl1) %>%
@@ -860,7 +860,7 @@ plot.data <- augment(model, type.predict="response") %>%
   mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
                             ordered=TRUE))
 
-p.wl.int <- ggplot(plot.predict, aes(x=prop_tip_wl1, y=prob)) +  
+p.wl.int.report <- ggplot(plot.predict, aes(x=prop_tip_wl1, y=prob)) +  
   geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
               alpha=0.2) + 
   geom_line(aes(colour=inreport1), size=1) +
@@ -871,7 +871,7 @@ p.wl.int <- ggplot(plot.predict, aes(x=prop_tip_wl1, y=prob)) +
   scale_fill_manual(values=report.colors, name=NULL) + 
   scale_colour_manual(values=report.colors, name=NULL)+
   theme_light()
-p.wl.int
+p.wl.int.report
 ```
 
 ---
@@ -900,7 +900,7 @@ full <- prob.crim.ngos_new.report %>% ungroup() %>%
                            labels=sapply(levels(ngos_bin), FUN=clean.labs))) %>%
   filter(crim.yes > 0)
 
-p.ngos_new.prob <- ggplot(full, aes(x=ngos_bin, y=prob.yes, 
+p.ngos_new.prob.report <- ggplot(full, aes(x=ngos_bin, y=prob.yes, 
                                  colour=in.report, size=crim.yes)) + 
   geom_point() +
   labs(x="Number of anti-TIP NGOs", 
@@ -909,19 +909,19 @@ p.ngos_new.prob <- ggplot(full, aes(x=ngos_bin, y=prob.yes,
   scale_colour_manual(values=report.colors, name="Presence in report") +
   guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
   theme_light()
-p.ngos_new.prob
+p.ngos_new.prob.report
 ```
 
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.ngo.new.simple <- glm(crim1 ~ ht_ngos + fh_cl1 + inreport1 + 
+model.ngo.new.simple.report <- glm(crim1 ~ ht_ngos + fh_cl1 + inreport1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.ngo.new.int <- glm(crim1 ~ ht_ngos + fh_cl1 + inreport1 + 
+model.ngo.new.int.report <- glm(crim1 ~ ht_ngos + fh_cl1 + inreport1 + 
                          ht_ngos * inreport1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
@@ -938,10 +938,10 @@ var.labs <- c("Number of anti-TIP NGOs",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.ngo.new.simple, model.ngo.new.int), 
+                      sapply(list(model.ngo.new.simple.report, model.ngo.new.int.report), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.ngo.new.simple, model.ngo.new.int,
+stargazer(model.ngo.new.simple.report, model.ngo.new.int.report,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -956,7 +956,7 @@ stargazer(model.ngo.new.simple, model.ngo.new.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.ngo.new.int
+model <- model.ngo.new.int.report
 
 new.data <- model$model %>%
   select(-ht_ngos) %>%
@@ -978,7 +978,7 @@ plot.data <- augment(model, type.predict="response") %>%
   mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
                             ordered=TRUE))
 
-p.ngo.new.int <- ggplot(plot.predict, aes(x=ht_ngos, y=prob)) +  
+p.ngo.new.int.report <- ggplot(plot.predict, aes(x=ht_ngos, y=prob)) +  
   geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
               alpha=0.2) + 
   geom_line(aes(colour=inreport1), size=1) +
@@ -989,7 +989,7 @@ p.ngo.new.int <- ggplot(plot.predict, aes(x=ht_ngos, y=prob)) +
   scale_fill_manual(values=report.colors, name=NULL) + 
   scale_colour_manual(values=report.colors, name=NULL)+
   theme_light()
-p.ngo.new.int
+p.ngo.new.int.report
 ```
 
 ---
@@ -1018,7 +1018,7 @@ full <- prob.crim.funding.report %>% ungroup() %>%
                            labels=sapply(levels(funding_bin), FUN=clean.labs))) %>%
   filter(crim.yes > 0)
 
-p.funding.prob <- ggplot(full, aes(x=funding_bin, y=prob.yes, 
+p.funding.prob.report <- ggplot(full, aes(x=funding_bin, y=prob.yes, 
                                  colour=in.report, size=crim.yes)) + 
   geom_point() +
   labs(x="Total anti-TIP funding from US (log)", 
@@ -1027,19 +1027,19 @@ p.funding.prob <- ggplot(full, aes(x=funding_bin, y=prob.yes,
   scale_colour_manual(values=report.colors, name="Presence in report") +
   guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
   theme_light()
-p.funding.prob
+p.funding.prob.report
 ```
 
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.funding.simple <- glm(crim1 ~ log.total.funding1 + fh_cl1 + inreport1 + 
+model.funding.simple.report <- glm(crim1 ~ log.total.funding1 + fh_cl1 + inreport1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.funding.int <- glm(crim1 ~ log.total.funding1 + fh_cl1 + inreport1 + 
+model.funding.int.report <- glm(crim1 ~ log.total.funding1 + fh_cl1 + inreport1 + 
                          log.total.funding1 * inreport1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
@@ -1056,10 +1056,10 @@ var.labs <- c("Total anti-TIP funding from US (log)",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.funding.simple, model.funding.int), 
+                      sapply(list(model.funding.simple.report, model.funding.int.report), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.funding.simple, model.funding.int,
+stargazer(model.funding.simple.report, model.funding.int.report,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -1074,7 +1074,7 @@ stargazer(model.funding.simple, model.funding.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.funding.int
+model <- model.funding.int.report
 
 new.data <- model$model %>%
   select(-log.total.funding1) %>%
@@ -1096,7 +1096,7 @@ plot.data <- augment(model, type.predict="response") %>%
   mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
                             ordered=TRUE))
 
-p.funding.int <- ggplot(plot.predict, aes(x=log.total.funding1, y=prob)) +  
+p.funding.int.report <- ggplot(plot.predict, aes(x=log.total.funding1, y=prob)) +  
   geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
               alpha=0.2) + 
   geom_line(aes(colour=inreport1), size=1) +
@@ -1107,7 +1107,7 @@ p.funding.int <- ggplot(plot.predict, aes(x=log.total.funding1, y=prob)) +
   scale_fill_manual(values=report.colors, name=NULL) + 
   scale_colour_manual(values=report.colors, name=NULL)+
   theme_light()
-p.funding.int
+p.funding.int.report
 ```
 
 ---
@@ -1145,12 +1145,12 @@ p.dem.prob.rating
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.dem.simple <- glm(crim1 ~ fh_cl1 + low_tier1 + women1 + ratproto2000_1 + 
+model.dem.simple.rating <- glm(crim1 ~ fh_cl1 + low_tier1 + women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.dem.int <- glm(crim1 ~ fh_cl1 + low_tier1 + fh_cl1 * low_tier1 + 
+model.dem.int.rating <- glm(crim1 ~ fh_cl1 + low_tier1 + fh_cl1 * low_tier1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
                          data=df.logit.models,
@@ -1165,10 +1165,10 @@ var.labs <- c("Worse democracy (Freedom House civil liberties)", "Lowest tier",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.dem.simple, model.dem.int), 
+                      sapply(list(model.dem.simple.rating, model.dem.int.rating), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.dem.simple, model.dem.int,
+stargazer(model.dem.simple.rating, model.dem.int.rating,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -1183,7 +1183,7 @@ stargazer(model.dem.simple, model.dem.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.dem.int
+model <- model.dem.int.rating
 
 new.data <- model$model %>%
   select(-fh_cl1) %>%
@@ -1261,13 +1261,13 @@ p.ngos.prob.rating
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.ngo.simple <- glm(crim1 ~ ngos_ave + fh_cl1 + low_tier1 + 
+model.ngo.simple.rating <- glm(crim1 ~ ngos_ave + fh_cl1 + low_tier1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.ngo.int <- glm(crim1 ~ ngos_ave + fh_cl1 + low_tier1 + 
+model.ngo.int.rating <- glm(crim1 ~ ngos_ave + fh_cl1 + low_tier1 + 
                          ngos_ave * low_tier1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
@@ -1284,10 +1284,10 @@ var.labs <- c("NGO engagement",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.ngo.simple, model.ngo.int), 
+                      sapply(list(model.ngo.simple.rating, model.ngo.int.rating), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.ngo.simple, model.ngo.int,
+stargazer(model.ngo.simple.rating, model.ngo.int.rating,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -1302,7 +1302,7 @@ stargazer(model.ngo.simple, model.ngo.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.ngo.int
+model <- model.ngo.int.rating
 
 new.data <- model$model %>%
   select(-ngos_ave) %>%
@@ -1378,13 +1378,13 @@ p.media.prob.rating
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.media.simple <- glm(crim1 ~ ht_news_country1 + fh_cl1 + low_tier1 + 
+model.media.simple.rating <- glm(crim1 ~ ht_news_country1 + fh_cl1 + low_tier1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.media.int <- glm(crim1 ~ ht_news_country1 + fh_cl1 + low_tier1 + 
+model.media.int.rating <- glm(crim1 ~ ht_news_country1 + fh_cl1 + low_tier1 + 
                          ht_news_country1 * low_tier1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
@@ -1401,10 +1401,10 @@ var.labs <- c("Media coverage",
 
 extra.lines <- list(c("Year fixed effects", c("Yes", "Yes")),
                     c("Pseudo R-squared",
-                      sapply(list(model.media.simple, model.media.int), 
+                      sapply(list(model.media.simple.rating, model.media.int.rating), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.media.simple,  model.media.int,
+stargazer(model.media.simple.rating,  model.media.int.rating,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -1419,7 +1419,7 @@ stargazer(model.media.simple,  model.media.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.media.int
+model <- model.media.int.rating
 
 new.data <- model$model %>%
   select(-ht_news_country1) %>%
@@ -1495,13 +1495,13 @@ p.aid.prob.rating
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.aid.simple <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + low_tier1 + 
+model.aid.simple.rating <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + low_tier1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.aid.int <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + low_tier1 + 
+model.aid.int.rating <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + low_tier1 + 
                          logeconasstP_1 * low_tier1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
@@ -1518,10 +1518,10 @@ var.labs <- c("US aid (logged)",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.aid.simple, model.aid.int), 
+                      sapply(list(model.aid.simple.rating, model.aid.int.rating), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.aid.simple, model.aid.int,
+stargazer(model.aid.simple.rating, model.aid.int.rating,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -1536,7 +1536,7 @@ stargazer(model.aid.simple, model.aid.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.aid.int
+model <- model.aid.int.rating
 
 new.data <- model$model %>%
   select(-logeconasstP_1) %>%
@@ -1612,13 +1612,13 @@ p.trade.prob.rating
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.trade.simple <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + low_tier1 + 
+model.trade.simple.rating <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + low_tier1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.trade.int <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + low_tier1 + 
+model.trade.int.rating <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + low_tier1 + 
                          newus_tradeshare_gdp * low_tier1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
@@ -1635,10 +1635,10 @@ var.labs <- c("Share of US trade (part of GDP)",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.trade.simple, model.trade.int), 
+                      sapply(list(model.trade.simple.rating, model.trade.int.rating), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.trade.simple, model.trade.int,
+stargazer(model.trade.simple.rating, model.trade.int.rating,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -1653,7 +1653,7 @@ stargazer(model.trade.simple, model.trade.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.trade.int
+model <- model.trade.int.rating
 
 new.data <- model$model %>%
   select(-newus_tradeshare_gdp) %>%
@@ -1723,13 +1723,13 @@ p.rat.prob.rating
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.rat.simple <- glm(crim1 ~ fh_cl1 + low_tier1 + 
+model.rat.simple.rating <- glm(crim1 ~ fh_cl1 + low_tier1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.rat.int <- glm(crim1 ~ fh_cl1 + low_tier1 + 
+model.rat.int.rating <- glm(crim1 ~ fh_cl1 + low_tier1 + 
                          ratproto2000_1 * low_tier1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
@@ -1745,10 +1745,10 @@ var.labs <- c("Worse democracy (Freedom House civil liberties)", "Lowest tier",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.rat.simple, model.rat.int), 
+                      sapply(list(model.rat.simple.rating, model.rat.int.rating), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.rat.simple, model.rat.int,
+stargazer(model.rat.simple.rating, model.rat.int.rating,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -1763,7 +1763,7 @@ stargazer(model.rat.simple, model.rat.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.rat.int
+model <- model.rat.int.rating
 
 new.data <- model$model %>%
   select(-ratproto2000_1) %>%
@@ -1840,13 +1840,13 @@ p.wl.prob.rating
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.wl.simple <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + low_tier1 + 
+model.wl.simple.rating <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + low_tier1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.wl.int <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + low_tier1 + 
+model.wl.int.rating <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + low_tier1 + 
                          prop_tip_wl1 * low_tier1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
@@ -1863,10 +1863,10 @@ var.labs <- c("Proportion of TIP-related cables (observed in Wikileaks)",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.wl.simple, model.wl.int), 
+                      sapply(list(model.wl.simple.rating, model.wl.int.rating), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.wl.simple, model.wl.int,
+stargazer(model.wl.simple.rating, model.wl.int.rating,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -1881,7 +1881,7 @@ stargazer(model.wl.simple, model.wl.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.wl.int
+model <- model.wl.int.rating
 
 new.data <- model$model %>%
   select(-prop_tip_wl1) %>%
@@ -1958,13 +1958,13 @@ p.ngos_new.prob.rating
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.ngo.new.simple <- glm(crim1 ~ ht_ngos + fh_cl1 + low_tier1 + 
+model.ngo.new.simple.rating <- glm(crim1 ~ ht_ngos + fh_cl1 + low_tier1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.ngo.new.int <- glm(crim1 ~ ht_ngos + fh_cl1 + low_tier1 + 
+model.ngo.new.int.rating <- glm(crim1 ~ ht_ngos + fh_cl1 + low_tier1 + 
                          ht_ngos * low_tier1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
@@ -1981,10 +1981,10 @@ var.labs <- c("Number of anti-TIP NGOs",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.ngo.new.simple, model.ngo.new.int), 
+                      sapply(list(model.ngo.new.simple.rating, model.ngo.new.int.rating), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.ngo.new.simple, model.ngo.new.int,
+stargazer(model.ngo.new.simple.rating, model.ngo.new.int.rating,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -1999,7 +1999,7 @@ stargazer(model.ngo.new.simple, model.ngo.new.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.ngo.new.int
+model <- model.ngo.new.int.rating
 
 new.data <- model$model %>%
   select(-ht_ngos) %>%
@@ -2076,13 +2076,13 @@ p.funding.prob.rating
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.funding.simple <- glm(crim1 ~ log.total.funding1 + fh_cl1 + low_tier1 + 
+model.funding.simple.rating <- glm(crim1 ~ log.total.funding1 + fh_cl1 + low_tier1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.funding.int <- glm(crim1 ~ log.total.funding1 + fh_cl1 + low_tier1 + 
+model.funding.int.rating <- glm(crim1 ~ log.total.funding1 + fh_cl1 + low_tier1 + 
                          log.total.funding1 * low_tier1 + 
                            women1 + ratproto2000_1 + 
                            corrected_regcrim1_1 + missinfo8_2 + year.factor,
@@ -2099,10 +2099,10 @@ var.labs <- c("Total anti-TIP funding from US (log)",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.funding.simple, model.funding.int), 
+                      sapply(list(model.funding.simple.rating, model.funding.int.rating), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.funding.simple, model.funding.int,
+stargazer(model.funding.simple.rating, model.funding.int.rating,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -2117,7 +2117,7 @@ stargazer(model.funding.simple, model.funding.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.funding.int
+model <- model.funding.int.rating
 
 new.data <- model$model %>%
   select(-log.total.funding1) %>%
@@ -2162,7 +2162,7 @@ p.funding.int.rating
 ### Descriptive
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-prob.crim.democracy.down <- df.correct %>%
+prob.crim.democracy.demote <- df.correct %>%
   filter(crim1_minus1 == 0, year > 2000) %>%
   gather(demote_type, demote_value, c(new_watch1, new_watch2, new_watch3)) %>%
   mutate(demote_type = factor(demote_type, 
@@ -2176,7 +2176,7 @@ prob.crim.democracy.down <- df.correct %>%
             prob.yes = crim.yes / total) %>%
   filter(crim.yes > 0)
 
-p.dem.prob.down <- ggplot(prob.crim.democracy.down, 
+p.dem.prob.demote <- ggplot(prob.crim.democracy.demote, 
        aes(x=fh_cl1, y=prob.yes, colour=demote_type, size=crim.yes)) + 
   geom_point() +
   # geom_line(size=1) + 
@@ -2187,20 +2187,20 @@ p.dem.prob.down <- ggplot(prob.crim.democracy.down,
   scale_colour_manual(values=demote.colors, name="Time since\ndemotion") +
   guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
   theme_light()
-p.dem.prob.down
+p.dem.prob.demote
 ```
 
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.dem.simple <- glm(crim1 ~ fh_cl1 + 
+model.dem.simple.demote <- glm(crim1 ~ fh_cl1 + 
                         new_watch3 + new_watch2 + new_watch1 + 
                         women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.dem.int <- glm(crim1 ~ fh_cl1 + 
+model.dem.int.demote <- glm(crim1 ~ fh_cl1 + 
                      new_watch3 + new_watch2 + new_watch1 + 
                      fh_cl1 * new_watch3 + 
                      fh_cl1 * new_watch2 + 
@@ -2223,10 +2223,10 @@ var.labs <- c("Worse democracy (Freedom House civil liberties)",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.dem.simple, model.dem.int), 
+                      sapply(list(model.dem.simple.demote, model.dem.int.demote), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.dem.simple, model.dem.int,
+stargazer(model.dem.simple.demote, model.dem.int.demote,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -2241,7 +2241,7 @@ stargazer(model.dem.simple, model.dem.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.dem.int
+model <- model.dem.int.demote
 
 covars <- model$model %>%
   select(-fh_cl1, -starts_with("new_watch")) %>%
@@ -2329,14 +2329,14 @@ p.ngos.prob.demote
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.ngo.simple <- glm(crim1 ~ ngos_ave + fh_cl1 + 
+model.ngo.simple.demote <- glm(crim1 ~ ngos_ave + fh_cl1 + 
                         new_watch3 + new_watch2 + new_watch1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.ngo.int <- glm(crim1 ~ ngos_ave + fh_cl1 + 
+model.ngo.int.demote <- glm(crim1 ~ ngos_ave + fh_cl1 + 
                      new_watch3 + new_watch2 + new_watch1 + 
                      ngos_ave * new_watch3 + 
                      ngos_ave * new_watch2 + 
@@ -2360,10 +2360,10 @@ var.labs <- c("NGO engagement",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.ngo.simple, model.ngo.int), 
+                      sapply(list(model.ngo.simple.demote, model.ngo.int.demote), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.ngo.simple, model.ngo.int,
+stargazer(model.ngo.simple.demote, model.ngo.int.demote,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -2378,7 +2378,7 @@ stargazer(model.ngo.simple, model.ngo.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.ngo.int
+model <- model.ngo.int.demote
 
 covars <- model$model %>%
   select(-ngos_ave, -starts_with("new_watch")) %>%
@@ -2464,14 +2464,14 @@ p.media.prob.demote
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.media.simple <- glm(crim1 ~ ht_news_country1 + fh_cl1 + 
+model.media.simple.demote <- glm(crim1 ~ ht_news_country1 + fh_cl1 + 
                           new_watch3 + new_watch2 + new_watch1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.media.int <- glm(crim1 ~ ht_news_country1 + fh_cl1 + 
+model.media.int.demote <- glm(crim1 ~ ht_news_country1 + fh_cl1 + 
                        new_watch3 + new_watch2 + new_watch1 + 
                      ht_news_country1 * new_watch3 + 
                      ht_news_country1 * new_watch2 + 
@@ -2495,10 +2495,10 @@ var.labs <- c("Media coverage",
 
 extra.lines <- list(c("Year fixed effects", c("Yes", "Yes")),
                     c("Pseudo R-squared",
-                      sapply(list(model.media.simple, model.media.int), 
+                      sapply(list(model.media.simple.demote, model.media.int.demote), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.media.simple,  model.media.int,
+stargazer(model.media.simple.demote,  model.media.int.demote,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -2513,7 +2513,7 @@ stargazer(model.media.simple,  model.media.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.media.int
+model <- model.media.int.demote
 
 covars <- model$model %>%
   select(-ht_news_country1, -starts_with("new_watch")) %>%
@@ -2599,14 +2599,14 @@ p.aid.prob.demote
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.aid.simple <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + 
+model.aid.simple.demote <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + 
                         new_watch3 + new_watch2 + new_watch1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.aid.int <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + 
+model.aid.int.demote <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + 
                      new_watch3 + new_watch2 + new_watch1 + 
                      logeconasstP_1 * new_watch3 + 
                      logeconasstP_1 * new_watch2 + 
@@ -2630,10 +2630,10 @@ var.labs <- c("US aid (logged)",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.aid.simple, model.aid.int), 
+                      sapply(list(model.aid.simple.demote, model.aid.int.demote), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.aid.simple, model.aid.int,
+stargazer(model.aid.simple.demote, model.aid.int.demote,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -2648,7 +2648,7 @@ stargazer(model.aid.simple, model.aid.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.aid.int
+model <- model.aid.int.demote
 
 covars <- model$model %>%
   select(-logeconasstP_1, -starts_with("new_watch")) %>%
@@ -2734,14 +2734,14 @@ p.trade.prob.demote
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.trade.simple <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 +
+model.trade.simple.demote <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 +
                           new_watch3 + new_watch2 + new_watch1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.trade.int <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 +
+model.trade.int.demote <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 +
                        new_watch3 + new_watch2 + new_watch1 + 
                      newus_tradeshare_gdp * new_watch3 + 
                      newus_tradeshare_gdp * new_watch2 + 
@@ -2765,10 +2765,10 @@ var.labs <- c("Share of US trade (part of GDP)",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.trade.simple, model.trade.int), 
+                      sapply(list(model.trade.simple.demote, model.trade.int.demote), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.trade.simple, model.trade.int,
+stargazer(model.trade.simple.demote, model.trade.int.demote,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -2783,7 +2783,7 @@ stargazer(model.trade.simple, model.trade.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.trade.int
+model <- model.trade.int.demote
 
 covars <- model$model %>%
   select(-newus_tradeshare_gdp, -starts_with("new_watch")) %>%
@@ -2863,14 +2863,14 @@ p.rat.prob.demote
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.rat.simple <- glm(crim1 ~ fh_cl1 + 
+model.rat.simple.demote <- glm(crim1 ~ fh_cl1 + 
                         new_watch3 + new_watch2 + new_watch1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.rat.int <- glm(crim1 ~ fh_cl1 + 
+model.rat.int.demote <- glm(crim1 ~ fh_cl1 + 
                      new_watch3 + new_watch2 + new_watch1 + 
                      ratproto2000_1 * new_watch3 + 
                      ratproto2000_1 * new_watch2 + 
@@ -2893,10 +2893,10 @@ var.labs <- c("Worse democracy (Freedom House civil liberties)",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.rat.simple, model.rat.int), 
+                      sapply(list(model.rat.simple.demote, model.rat.int.demote), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.rat.simple, model.rat.int,
+stargazer(model.rat.simple.demote, model.rat.int.demote,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -2911,7 +2911,7 @@ stargazer(model.rat.simple, model.rat.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.rat.int
+model <- model.rat.int.demote
 
 covars <- model$model %>%
   select(-ratproto2000_1, -starts_with("new_watch")) %>%
@@ -2999,14 +2999,14 @@ p.wl.prob.demote
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.wl.simple <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + 
+model.wl.simple.demote <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + 
                        new_watch3 + new_watch2 + new_watch1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.wl.int <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + 
+model.wl.int.demote <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + 
                     new_watch3 + new_watch2 + new_watch1 + 
                      prop_tip_wl1 * new_watch3 + 
                      prop_tip_wl1 * new_watch2 + 
@@ -3030,10 +3030,10 @@ var.labs <- c("Proportion of TIP-related cables (observed in Wikileaks)",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.wl.simple, model.wl.int), 
+                      sapply(list(model.wl.simple.demote, model.wl.int.demote), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.wl.simple, model.wl.int,
+stargazer(model.wl.simple.demote, model.wl.int.demote,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -3048,7 +3048,7 @@ stargazer(model.wl.simple, model.wl.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.wl.int
+model <- model.wl.int.demote
 
 covars <- model$model %>%
   select(-prop_tip_wl1, -starts_with("new_watch")) %>%
@@ -3135,14 +3135,14 @@ p.ngos_new.prob.demote
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.ngo.new.simple <- glm(crim1 ~ ht_ngos + fh_cl1 + 
+model.ngo.new.simple.demote <- glm(crim1 ~ ht_ngos + fh_cl1 + 
                             new_watch3 + new_watch2 + new_watch1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.ngo.new.int <- glm(crim1 ~ ht_ngos + fh_cl1 + 
+model.ngo.new.int.demote <- glm(crim1 ~ ht_ngos + fh_cl1 + 
                          new_watch3 + new_watch2 + new_watch1 + 
                      ht_ngos * new_watch3 + 
                      ht_ngos * new_watch2 + 
@@ -3166,10 +3166,10 @@ var.labs <- c("Number of anti-TIP NGOs",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.ngo.new.simple, model.ngo.new.int), 
+                      sapply(list(model.ngo.new.simple.demote, model.ngo.new.int.demote), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.ngo.new.simple, model.ngo.new.int,
+stargazer(model.ngo.new.simple.demote, model.ngo.new.int.demote,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -3184,7 +3184,7 @@ stargazer(model.ngo.new.simple, model.ngo.new.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.ngo.new.int
+model <- model.ngo.new.int.demote
 
 covars <- model$model %>%
   select(-ht_ngos, -starts_with("new_watch")) %>%
@@ -3271,14 +3271,14 @@ p.funding.prob.demote
 ### Interactions (models)
 
 ```{r, results='asis', echo=FALSE}
-model.funding.simple <- glm(crim1 ~ log.total.funding1 + fh_cl1 + 
+model.funding.simple.demote <- glm(crim1 ~ log.total.funding1 + fh_cl1 + 
                             new_watch3 + new_watch2 + new_watch1 + 
                           women1 + ratproto2000_1 + 
                     corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
                     # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
                   data=df.logit.models,
                   family=binomial(link="logit"))
-model.funding.int <- glm(crim1 ~ log.total.funding1 + fh_cl1 + 
+model.funding.int.demote <- glm(crim1 ~ log.total.funding1 + fh_cl1 + 
                          new_watch3 + new_watch2 + new_watch1 + 
                      log.total.funding1 * new_watch3 + 
                      log.total.funding1 * new_watch2 + 
@@ -3302,10 +3302,10 @@ var.labs <- c("Total anti-TIP funding from US (log)",
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Pseudo R-squared",
-                      sapply(list(model.funding.simple, model.funding.int), 
+                      sapply(list(model.funding.simple.demote, model.funding.int.demote), 
                              calc.pseudo.r.squared)))
 
-stargazer(model.funding.simple, model.funding.int,
+stargazer(model.funding.simple.demote, model.funding.int.demote,
           covariate.labels=var.labs, 
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
@@ -3320,7 +3320,7 @@ stargazer(model.funding.simple, model.funding.int,
 *Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-model <- model.funding.int
+model <- model.funding.int.demote
 
 covars <- model$model %>%
   select(-log.total.funding1, -starts_with("new_watch")) %>%
