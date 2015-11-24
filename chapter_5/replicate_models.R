@@ -87,7 +87,7 @@ model1.3.fit <- summary(survfit(model1.3))$table
 model1.4 <- coxph(Surv(start_time, yrfromj2, fail) ~ logpop_1 + missinfo8_1 +
                     ngos_ave + totalfreedom1 + corrected_regcrim1_1 + ratproto2000_1 +
                     ht_incidence_origin + ht_incidence_transit +
-                    ht_incidence_destination + total.funding1 + cluster(name),
+                    ht_incidence_destination + log.total.funding1 + cluster(name),
                   data=df.survivalized.report.correct, ties="efron")
 summary(model1.4)
 model1.4.fit <- summary(survfit(model1.4))$table
@@ -210,7 +210,7 @@ model3.5.good.fit <- summary(survfit(model3.5.good))$table
 model3.6 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 + 
                     fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 + 
                     missinfo8_2 + logpop_1 + ngos_ave + loggdppercap_1 + 
-                    corruption_1 + total.funding1 + cluster(name),
+                    corruption_1 + log.total.funding1 + cluster(name),
                   data=df.survivalized.crim.correct, ties="efron")
 # summary(model3.6)
 model3.6.fit <- summary(survfit(model3.6))$table
@@ -319,7 +319,7 @@ df.table5 <- reactions %>%
          L.adj_ratproto2000 = lag(adj_ratproto2000),
          L.bigaid = lag(bigaid),  # bigaid = 100000000 threshold
          L.corrected_regcrim = lag(corrected_regcrim)) %>%
-  mutate(total.funding1 = lag(total.funding),
+  mutate(log.total.funding1 = lag(total.funding),
          avg.funding1 = lag(avg.funding),
          total.funding.ngos1 = lag(total.funding.ngos),
          avg.funding.ngos1 = lag(avg.funding.ngos),
@@ -352,7 +352,7 @@ model5.4 <- glm(crim1 ~ L.totalreactionnomedia + L.women_par + L.totalfreedom +
 
 model5.5 <- glm(crim1 ~ L.totalreactionnomedia + L.women_par + L.totalfreedom + 
                   L.adj_ratproto2000 + L.bigaid + L.corrected_regcrim + 
-                  total.funding1 + as.factor(year),
+                  log.total.funding1 + as.factor(year),
                 data=df.table5,
                 family=binomial(link="logit"))
 # summary(model5.5)
@@ -385,7 +385,7 @@ model5.8 <- glm(crim1 ~ L.totalreactionnomedia + L.women_par + L.totalfreedom +
 # -----------
 # ----------------------
 # Explanatory variables to test:
-#    total.funding1
+#    log.total.funding1
 #    prop_tip_wl1
 #    prop_tip_estimated1
 #    polity1
@@ -407,7 +407,7 @@ model5.8 <- glm(crim1 ~ L.totalreactionnomedia + L.women_par + L.totalfreedom +
 # ------------------------------------------
 # TIP-specific funding and criminalization
 # ------------------------------------------
-ext1.0 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 + 
+ext1.0 <- coxph(Surv(start_time, yrfromj2, fail) ~ log.total.funding1 + 
                   women1 + totalfreedom1 + ratproto2000 + 
                   corrected_regcrim1_1 + missinfo8_2 +
                   cluster(name),
@@ -415,7 +415,7 @@ ext1.0 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 +
 # summary(ext1.1)
 ext1.0.fit <- summary(survfit(ext1.0))$table
 
-# Coefficient = 1; no standard errors for total.funding1
+# Coefficient = 1; no standard errors for log.total.funding1
 #
 # This is because of an issue with the variable---according to 
 # http://www.stata.com/support/faqs/statistics/stcox-producing-missing-standard-errors/
@@ -425,28 +425,28 @@ ext1.0.fit <- summary(survfit(ext1.0))$table
 #    overall, but for each death event, it does not vary within the 
 #    associated risk set.
 # model.df <- df.survivalized.crim.correct %>%
-#   select(year, name, start_time, yrfromj2, fail, total.funding1, cum.funding1,
+#   select(year, name, start_time, yrfromj2, fail, log.total.funding1, cum.funding1,
 #            women1, totalfreedom1, ratproto2000,
 #            corrected_regcrim1_1, missinfo8_2)
 # model.df1 <- df.complete.with.lags.correct %>%
-#   select(year, name, crim1, total.funding1, cum.funding1,
+#   select(year, name, crim1, log.total.funding1, cum.funding1,
 #          women1, totalfreedom1, ratproto2000,
 #          corrected_regcrim1_1, missinfo8_2)
 # write_csv(model.df, path="~/Desktop/borked_model1.csv", na=".")
 # write_csv(model.df, path="~/Desktop/borked_model.csv")
 
-logit.funding <- glm(crim1 ~ total.funding1, 
+logit.funding <- glm(crim1 ~ log.total.funding1, 
                      data=df.complete.with.lags.correct, 
                      family=binomial(link="logit"))
-logit.funding.no.outliers <- glm(crim1 ~ total.funding1, 
-                     data=filter(df.complete.with.lags.correct, total.funding1 < 10000000), 
+logit.funding.no.outliers <- glm(crim1 ~ log.total.funding1, 
+                     data=filter(df.complete.with.lags.correct, log.total.funding1 < 10000000), 
                      family=binomial(link="logit"))
 logit.women <- glm(crim1 ~ women1, 
                    data=df.complete.with.lags.correct, 
                    family=binomial(link="logit"))
 
 
-ext1.1 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 + 
+ext1.1 <- coxph(Surv(start_time, yrfromj2, fail) ~ log.total.funding1 + 
                   women1 + totalfreedom1 + ratproto2000 + 
                   corrected_regcrim1_1 + missinfo8_2 +
                   logpop_1 + loggdppercap_1 + corruption_1 + 
@@ -456,7 +456,7 @@ ext1.1 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 +
 # summary(ext1.1)
 ext1.1.fit <- summary(survfit(ext1.1))$table
 
-ext1.2 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 + 
+ext1.2 <- coxph(Surv(start_time, yrfromj2, fail) ~ log.total.funding1 + 
                   women1 + totalfreedom1 + ratproto2000 + 
                   corrected_regcrim1_1 + missinfo8_2 +
                   logpop_1 + loggdppercap_1 + corruption_1 + 
@@ -466,7 +466,7 @@ ext1.2 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 +
 # summary(ext1.2)
 ext1.2.fit <- summary(survfit(ext1.2))$table
 
-ext1.3 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 + 
+ext1.3 <- coxph(Surv(start_time, yrfromj2, fail) ~ log.total.funding1 + 
                   women1 + totalfreedom1 + ratproto2000 + 
                   corrected_regcrim1_1 + missinfo8_2 +
                   ht_incidence_origin + ht_incidence_transit + 
@@ -476,7 +476,7 @@ ext1.3 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 +
 # summary(ext1.3)
 ext1.3.fit <- summary(survfit(ext1.3))$table
 
-ext1.4 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 + inreport1 +
+ext1.4 <- coxph(Surv(start_time, yrfromj2, fail) ~ log.total.funding1 + inreport1 +
                   women1 + totalfreedom1 + ratproto2000 + 
                   corrected_regcrim1_1 + missinfo8_2 +
                   cluster(name),
@@ -484,7 +484,7 @@ ext1.4 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 + inreport1 +
 # summary(ext1.2)
 ext1.4.fit <- summary(survfit(ext1.4))$table
 
-ext1.5 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 + 
+ext1.5 <- coxph(Surv(start_time, yrfromj2, fail) ~ log.total.funding1 + 
                   tier1_1 + tier1_2 + tier1_25 + tier1_3 + 
                   women1 + totalfreedom1 + ratproto2000 + 
                   corrected_regcrim1_1 + missinfo8_2 +
@@ -493,7 +493,7 @@ ext1.5 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 +
 # summary(ext1.2)
 ext1.5.fit <- summary(survfit(ext1.5))$table
 
-ext1.6 <- coxph(Surv(start_time, yrfromj2, fail) ~ total.funding1 + inreport1 + 
+ext1.6 <- coxph(Surv(start_time, yrfromj2, fail) ~ log.total.funding1 + inreport1 + 
                   new_watch3 + new_watch2 + new_watch1 + 
                   women1 + totalfreedom1 + ratproto2000 + 
                   corrected_regcrim1_1 + missinfo8_2 +
