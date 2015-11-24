@@ -6,11 +6,12 @@ output:
   html_document: 
     css: fixes.css
     highlight: pygments
-    number_sections: yes
-    theme: flatly
-    toc: yes
     includes:
       in_header: scripts.html
+    number_sections: yes
+    self_contained: no
+    theme: flatly
+    toc: yes
 ---
 
 ```{r setup, include=FALSE}
