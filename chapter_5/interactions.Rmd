@@ -20,6 +20,21 @@ library(broom)
 library(ggplot2)
 library(scales)
 library(stargazer)
+library(pander)
+
+parens <- function(model, variable, statistic) {
+  df <- model %>% tidy() %>%
+    filter(term == variable) %>%
+    select(statistic, p.value)
+  
+  if (df$p.value > 0.001) {
+    out <- sprintf("%s = %.2f, p = %.3f", statistic, df$statistic, df$p.value)
+  } else {
+    out <- sprintf("%s = %.2f, p < 0.001", statistic, df$statistic)
+  }
+  
+  return(out)
+}
 
 # Multiplier for standard error areas
 std <- qnorm(0.95 / 2 + 0.5)
@@ -3361,3 +3376,44 @@ p.funding.int.demote <- ggplot(plot.predict, aes(x=log.total.funding1, y=prob)) 
   theme_light()
 p.funding.int.demote
 ```
+
+# Summary
+
+Different forms of scorecard diplomacy have varying effects on the probability of TIP criminalization in a country when interacted with other explanatory variables. These interactive effects are summarized visually and in prose in the table below.
+
+## Monitoring (presence in the TIP report)
+
+```{r, echo=FALSE, results='asis'}
+monitoring <- data_frame(Variable = c("Democracy", 
+                                      "NGO engagement",
+                                      "Media coverage",
+                                      "Foreign aid",
+                                      "US trade",
+                                      "2000 protocol ratification",
+                                      "US engagement (observed Wikileaks cables)",
+                                      "TIP NGO count",
+                                      "TIP funding"),
+                         Descriptive = c("Countries with greater civil liberties are more likely to criminalize in general, but the relative impact of being in the report appears to be higher for countries with worse civil liberties (see [figure](#descriptive)). No countries with bad civil liberties criminalized without being in the report.",
+                                         "Countries with more active anti-TIP NGOs are more likely to criminalize in general, and presence in the TIP report appears to increase the probability of criminalization—the likelihood of criminalization in cases where a country is not included in the report is about 5% regardless of NGO engagement, while the probability doubles or triples when a case is in the report (see [figure](#descriptive-1)).",
+                                         "Presence in the report appears to increase the probability of criminalization much faster when interacted with media coverage—that is, increased media coverage improves the likelihood of criminalization in general, but in cases where the country is included in the TIP report, that probability improves even more (see [figure](#descriptive-2)).",
+                                         "Foreign aid has little apparent effect on the probability of criminalization—cases maintain approximately the same probability as logged foreign aid increases. However, for cases *not* included in the report, the probability of criminalization appears to decrease slightly as aid increases. Presence in the report thus may mitigate any negative effects aid might have (see [figure](#descriptive-3)).",
+                                         "In general, trade with the US alone does little to change the probability of criminalization, except in cases with the highest amounts of trade (where trade is 0.5–0.6% of the case's GDP). Presence in the TIP report increases that probability at every level of trade. However, it does not appear that trade and presence in the report interact (see [figure](#descriptive-4)).",
+                                         "Ratification of the UN's 2000 anti-TIP protocol appears to improve the probability of criminalization, and scorecard diplomacy increases that probability even more, as presence in the TIP report combined with protocol ratification yields the highest probability of criminalization (see [figure](#descriptive-5))",
+                                         "Increased US engagement in TIP issues in a country (as measured by TIP-related State Department cables *observed* in Wikileaks) at first appears to increase the probability of criminalization, but it is difficult to determine if engagement interacts with presence in the TIP report because there are so few cases of countries with observed cables that aren't included in the report (see [figure](#descriptive-6)).",
+                                         "The number of anti-TIP NGOs in a country (as measured by our own database of NGOs) descriptively appears to have an interactive effect with the TIP report on the probability of criminalization. In general, cases with more NGOs are more likely to criminalize, and cases where the country is included in the report are even more likely to do so  (see [figure](#descriptive-7)).",
+                                         "Descriptively, more funding for anti-TIP endeavors appears to increase the probability of criminalization. However, determining the interaction between scorecard diplomacy and funding is difficult—no cases with substantial funding were not included in the TIP report (see [figure](#descriptive-8))."),
+                         Interactions = c(paste0("Statistically, this interactive effect is significant. Having worse democracy reduces the likelihood of criminalization by almost 70% for every increase in the Freedom House score (", parens(model.dem.int.report, "inreport1", "z"), "), but the interaction with the TIP report increases that likelihood more than twofold (", parens(model.dem.int.report, "fh_cl1:inreport1", "z"), "). The effect of this interaction on the predicted probabilities of criminalization is apparent visually (see [figure](#interactions-visualized))."),
+                                          paste0("This interactive effect is visible when modeled statistically (see [figure](#interactions-visualized-1), though it is not significant (", parens(model.ngo.int.report, "ngos_ave:inreport1", "z"), "). That said, when looking at the model's predicted probabilities, the probability of criminalization decreases slightly as NGO engagement increases for cases *not* in the report, while the probability increases for cases included in the report."),
+                                          paste0("Increased media coverage does appear to increase the probability of criminalization slightly (Model 1: ", parens(model.media.simple.report, "ht_news_country1", "z"), ") but the effect of the interaction of coverage and presence in the report is difficult to determine because no under-covered cases were ever not present in the report. This uncertainty is quite evident in the [figure of predicted probabilities](#interactions-visualized-2)."),
+                                          paste0("The statistical model bears out this finding. For every increase in logged foreign aid, the probability of criminalization decreases by 8% (", parens(model.aid.int.report, "logeconasstP_1", "z"), "), but presence in the TIP report has a counteracting significant positive effect (", parens(model.aid.int.report, "logeconasstP_1:inreport1", "z"), "). This is apparent in the [figure of predicted probabilities](#interactions-visualized-3), with the caveat that cases receiving no aid are driving some of this effect."),
+                                          paste0("Modeling the relationship confirms this hunch. Increased trade has no significant effect on the likelihood of criminalization (", parens(model.trade.int.report, "newus_tradeshare_gdp", "z"), "), while presence in the report increases that probability by more than 4 times (", parens(model.trade.int.report, "inreport1", "z"), "). The interaction between the two is insignificant (", parens(model.trade.int.report, "newus_tradeshare_gdp:inreport1", "z"), "), both mathematically and visually (see [figure](#interactions-visualized-4))."),
+                                          paste0("Statistics confirm this finding, to some extent. Presence in the report increases the probability of criminalization by almost 4 times (", parens(model.rat.int.report, "inreport1", "z"), "), while protocol ratification has a negligible positive effect (", parens(model.rat.int.report, "ratproto2000_1", "z"), "; notably, this effect *is* significant when not interacting with the TIP report). The interaction term is positive, but insignificant (", parens(model.rat.int.report, "inreport1:ratproto2000_1", "z"), ") (see [figure](#interactions-visualized-5))."),
+                                          paste0("Statistical models again confirm that presence in the TIP report is a powerful predictor of criminalization (Model 2: ", parens(model.wl.int.report, "inreport1", "z"), "), but there is no relationship between observed US engagement and criminalization (", parens(model.wl.int.report, "prop_tip_wl1:inreport1", "z"), ") or the interaction between engagement and presence in the report. This is confirmed graphically (see [figure](#interactions-visualized-6))."),
+                                          paste0("Statistical models again confirm presence in the TIP report is a powerful predictor of criminalization (Model 2: ", parens(model.ngo.new.int.report, "inreport1", "z"), "), but there is no relationship between the number of NGOs and criminalization (", parens(model.ngo.new.int.report, "ht_ngos:inreport1", "z"), ") or the interaction between the number of NGOs and presence in the report. This finding may be driven by the fact that there are so few countries with high numbers of NGOs that aren't included in the report (see the huge confidence intervals for the \"not in report\" predicted probabilities in the [figure](#interactions-visualized-7))."),
+                                          paste0("When considering only funding and presence in the report, anti-TIP funding has an insignificant positive effect on the probability of criminalization (Model 1: ", parens(model.funding.simple.report, "log.total.funding1", "z"), "), while presence in the report boost that probability more that four times (Model1: ", parens(model.funding.simple.report, "inreport1", "z"), "). When interacting the two variables, though, the funding effect disappears because of the instability of the interaction term (", parens(model.funding.int.report, "log.total.funding1:inreport1", "z"), ")—the huge confidence intervals in the [figure](#interactions-visualized-8) confirm this. There is no interactive relationship between the funding and presence in the report.")))
+
+pandoc.table(monitoring, style="multiline", split.tables=Inf, justify="lll")
+```
+
+## Lower tier ratings
+
