@@ -717,7 +717,7 @@ Countries with worse freedom are around 10% more likely to enter the TIP report 
 
 *Proposition: Countries with more TIP-specific funding from the US will criminalize faster.*
 
-There is no relationship between US funding and time to criminalization. In addition, this variable makes the hazard model unstable and causes mathematical issues.
+There is generally a weak relationship between US funding and time to criminalization.
 
 *Proposition: Countries where the US is more diplomatically involved in anti-TIP discussions with senior officials (as measured by Wikileaks cables) will criminalize faster.*
 
@@ -731,7 +731,11 @@ More NGOs in a country leads to minor, insubstantial, and generally insignifican
 
 Countries with worse civil rights and political liberties are more likely to enter the TIP report and less likely to criminalize trafficking. 
 
+---
+
 ***NOTE***: Far more detailed analysis of interactive effects can be seen [here](interactions.html).
+
+---
 
 ---
 
