@@ -12,3 +12,5 @@ data/*.dta
 # Replication output
 chapter_5/*.html
 !chapter_5/scripts.html
+chapter_5/*_cache/*
+chapter_5/*_files/*

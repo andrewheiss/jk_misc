@@ -1,21 +1,22 @@
 ---
 title: "Interactions by treatment"
 author: "Andrew Heiss"
-date: "November 16, 2015"
+date: "November 24, 2015"
 output: 
   html_document: 
     css: fixes.css
     highlight: pygments
-    number_sections: yes
-    theme: flatly
-    toc: yes
     includes:
       in_header: scripts.html
+    number_sections: yes
+    self_contained: no
+    theme: flatly
+    toc: yes
 ---
 
 ```{r setup, include=FALSE}
 source("clean_data.R")
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo=TRUE, cache=TRUE)
 library(broom)
 library(ggplot2)
 library(scales)
@@ -3461,8 +3462,24 @@ downgrading <- data_frame(Variable = c("Democracy",
                                        "US engagement (observed Wikileaks cables)",
                                        "TIP NGO count",
                                        "TIP funding"),
-                          Descriptive = c("asdf"),
-                          Interactions = c("qwer"))
+                          Descriptive = c("Receiving a demotion in TIP rating has different effects on criminalization at different levels of democracy. In the first year after a demotion, countries with better civil liberties are generally more likely to criminalize, while worse democracies are less likely to do so. However, by the third year after a demotion, that trend reverses, with worse democracies becoming more likely to criminalize (see [figure](#descriptive-18)).",
+                                          "Descriptively, there is no clear relationship between demotion, NGO engagement and criminalization. The probability of criminalization does not increase with more NGO engagement, and the time since demotion does not consistently interact with more engagement (see [figure](#descriptive-19)).",
+                                          "In the third year after demotion, cases where media coverage is low are more likely to criminalize TIP, while cases with high media coverage are more likely to criminalize in the first year after demotion. Much of this effect is likely driven by outliers, though (see [figure](#descriptive-20)).",
+                                          "It is difficult to observe the interaction between US aid, time since demotion, and criminalization descriptively, as there appears to be no systematic relationship (see [figure](#descriptive-21)).",
+                                          "As with aid, there is no clear relationship between trade with the US, time since demotion, and criminalization—increased trade with the US has little apparent effect on criminalization, and time since demotion does not influence that probability systematically as trade increases (see [figure](#descriptive-22)).",
+                                          "Descriptively, cases that have ratified the 2000 UN anti-TIP protocol are far more likely to criminalize TIP, regardless of tier rating demotion. Countries that have ratified the protocol are the most likely to criminalize three years after a demotion, while countries that have not ratified the protocol are more likely to criminalize two years after a demotion. It thus appears that time since demotion has some interactive effect on the likelihood of criminalization (see [figure](#descriptive-23)).",
+                                          "Descriptively, it appears that increased US engagement in anti-TIP discussions increase the likelihood of criminalization, and this effect seems to increase faster in the second year after a TIP tier demotion (see [figure](#descriptive-24)).",
+                                          "Again, it is difficult to see any systematic interactive relationship between the number of anti-TIP NGOs in a country, TIP tier demotion, and criminalization. In the third year after a demotion, cases with few NGOs are more likely to criminalize, while cases with more NGOs are more likely to criminalize in years 1 or 2 (see [figure](#descriptive-25)).",
+                                          "Descriptively, it appears that cases three years after receiving a TIP rating demotion are more likely to criminalize when when receiving lower amounts of anti-TIP funding from the US, possibly because it takes longer to criminalize in the absence of US assistance. Cases with more funding seem more likely to criminalize after either one or two years (see [figure](#descriptive-26))."),
+                          Interactions = c(paste0("This finding is borne out in statistical models and is very visible visually (see [figure](#interactions-visualized-18)). Worse democracies are around 20–25% less likely to criminalize (Model 2: ", parens(model.dem.int.demote, "fh_cl1", "z"), "), and TIP rating demotions have increasingly powerful effects on criminalization, boosting the likelihood by 2 times (after 1 year (", parens(model.dem.int.demote, "new_watch1", "z"), ")), 2.5 times (after 2 years (", parens(model.dem.int.demote, "new_watch2", "z"), ")), and 3 times (after 3 years (", parens(model.dem.int.demote, "new_watch3", "z"), ")) when not interacting democracy with demotions. The interactions between democracy and demotion are negative in the first year after a demotion and positive thereafter, and significant in the third year (", parens(model.dem.int.demote, "fh_cl1:new_watch1", "z"), "). The predicted probabilities of criminalization clearly demonstrate this inverse relationship, with worse democracies most likely to criminalize in the third year."),
+                                           paste0("There is no statistical relationship between these interaction terms and criminalization either. NGO engagement is not statistically significant (", parens(model.ngo.int.demote, "ngos_ave", "z"), "), and though the coefficients for time since demotion generally follow the same order (i.e. the probability of criminalization increases as time since demotion increases), this has little substantial effect. This is apparent in the [figure of predicted probabilities](#interactions-visualized-19), which shows three nearly parallel flat curves."),
+                                           paste0("Statistical models confirm this finding. Increased media coverage has a marginally positive (yet significant) effect, boosting the probability of criminalization by 0.4% (", parens(model.media.int.demote, "ht_news_country1", "z"), "), and TIP rating demotion has an increasing and significant effect for each year since demotion (2 times after 1 year, 3 times after 2 years, nearly 5 times after 3 years). The interactions between these terms are insignificant, but indicate somewhat of a differential effect in the [predicted probabilities](#interactions-visualized-20), with cases with low media coverage three years after a demotion the most likely to criminalize. However, the huge standard errors make these models highly suspect."),
+                                           paste0("However, statistical models reveal more of the underlying relationship between the three variables. Increased US aid does not have a significant impact on the likelihood of criminalization (", parens(model.aid.int.demote, "logeconasstP_1", "z"), "), and when not interacting with aid, demotions increase the probability (2 times after 1 year, 2.5 times after 2 years, 3 times after 3 years). The interaction of aid and time since demotion is significant after only the first year (", parens(model.aid.int.demote, "logeconasstP_1:new_watch1", "z"), ") and is clearly visible in the [predicted probabilities](#interactions-visualized-21). Countries receiving more aid are most likely to criminalize TIP in the first year after a demotion."),
+                                           paste0("Unlike aid, there is no underlying statistical relationship between the three variables. Increased trade does not affect the probability of criminalization (", parens(model.trade.int.demote, "newus_tradeshare_gdp", "z"), "), and demotions only influence that likelihood after three years (", parens(model.trade.int.demote, "new_watch3", "z"), "). No interaction terms are significant, as is visible in the [predicted probabilities](#interactions-visualized-22), which show three mostly parallel flat lines with incredibly large confidence intervals."),
+                                           paste0("Statistically, however, there is no interactive relationship. Protocol ratification more than doubles the probability of criminalization (", parens(model.rat.int.demote, "ratproto2000_1", "z"), "), and demotion boosts that chance even more (3 times after 1 year, 4.5 times after 2 and 3 years), but no interaction terms are significant. This is apparent in the [predicted probabilities](#interactions-visualized-23), which show no rank reordering in the different times since demotion."),
+                                           "However, this effect disappears in the statistical models because of large amounts of uncertainty. The [plot of predicted probabilities](#interactions-visualized-24) shows this clearly—cases in the third year after criminalization are more likely to criminalize as US engagement increases (and less likely to do so when engagement is low), but the confidence intervals for each type of demotion yield rather useless results.",
+                                           paste0("The statistical model confirms this lack of relationship. The number of anti-TIP NGOs does have a small and significant effect, increasing the likelihood of criminalization by 2% (", parens(model.ngo.new.int.demote, "ht_ngos", "z"), "), and time since demotion boosts that chance even more (2 times after 1 year, nearly 3 times after 2 years, and nearly 4 times after 3 years), but substantively those coefficients mean little. As seen in the [predicted probabilities](#interactions-visualized-25), the three times since demotion are statistically indistinguishable, and while there is a change in rank ordering (indicating an interactive effect), it is insignificant."),
+                                           paste0("This finding does not hold up statistically, however. Though time since demotion does change the likelihood of criminalization (boosting—similar to all other models—by 2 times after 1 and 2 years and 4 times after 3 years), anti-TIP funding does not improve that probability (", parens(model.funding.int.demote, "log.total.funding1", "z"), "). Additionally, no interaction terms are statistically significant, which is apparent in the [predicted probabilities](#interactions-visualized-26). While some changes in rank ordering of time since demotion occur as anti-TIP funding increase, none of those shifts are significantly different from each other.")))
 
 pandoc.table(downgrading, style="multiline", split.tables=Inf, justify="lll")
 ```
