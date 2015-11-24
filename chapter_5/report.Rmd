@@ -1,7 +1,7 @@
 ---
 title: "Replication and extension report"
 author: "Andrew Heiss"
-date: "November 3, 2015"
+date: "November 24, 2015"
 output: 
   html_document: 
     css: fixes.css
@@ -328,7 +328,7 @@ To test the effect of these new explanatory variables on criminalization, I had 
 * Percent of women in parliament
 * Total freedom (the sum of Freedom House's political rights and civil liberties; higher values are worse)
 * 2000 TIP protocol ratification
-* Big aid (a mysterious variable…)
+* Big aid (1 if aid > $100,000,000)
 * Regional density of criminalization
 
 Table 3 of the article tests the effect of scrutiny (presence of the country in the TIP report) and US aid on criminalization. It uses "Percent of women in parliament", "Regional density of criminalization" and "2000 TIP protocol ratification" just like the chapter, but it also uses some slightly different controls:
@@ -364,7 +364,7 @@ In some models I also include the key explanatory variables from previous propos
 
 Before looking at the determinants of criminalization, it might be useulf to see if these new variables help explain the process of being included in the TIP report. According to the original article, missing information and trafficking intensity lead to inclusion in the TIP report—countries with more missing information are *less* likely to appear in the report since the State Department cannot know about the severity of trafficking, while countries with worse and more intense visible trafficking are *more* likely to be included.
 
-The new variables add some additional nuance to the selection process, but not much. Funding from the United States has a statistically significant effect, but it most likely because of mathematical issues, given that the hazard ratio is 1 and the standard error is 0—too many country-years with zero funding distorts the model. 
+The new variables add some additional nuance to the selection process, but not much. Funding from the United States (logged) appears to have a slightly negative—but statistically insignificant—effect (`r I(parens(model1.4, "log.total.funding1", "z"))`). 
 
 More engagement from the State Department has a significant and substantive positive effect on inclusion in the report, but again, with many caveats. If we measure engagement with the proportion of *observed* TIP-related cables in the Wikileaks dump, for every percent increase in State Department back chatter on trafficking, a country is 17 times more likely to enter the report (`r I(parens(model1.5, "prop_tip_wl1", "z"))`). However, if we measure engagement with the *estimated* proportion of TIP-related cables, the effect disappears entirely (`r I(parens(model1.6, "prop_tip_estimated1", "z"))`). Additionally, models using cable data are noticeably smaller than other models, with roughly 100 observations in only 24 countries, and the number of inclusions inexplicably exceeds the number of countries—there might be too much missing data. Also, the coefficient for the estimated number of TIP cables is ridiculously huge and most likely wrong.
 
@@ -378,7 +378,7 @@ var.labs <- c("Total population (logged)", "Missing information",
               "Trafficking intensity in countries of origin", 
               "Trafficking intensity in transit countries", 
               "Trafficking intensity in destination countries", 
-              "Total US funding for TIP", 
+              "Total US funding for TIP (logged)", 
               "Proportion of TIP-related cables (observed in Wikileaks)", 
               "Proportion of TIP-related cables (estimated)", 
               "Number of NGOs (survey database)")
@@ -409,13 +409,20 @@ stargazer(model1.3, model1.4, model1.5, model1.6, model1.7,
 
 ## The effect of TIP-specific funding on criminalization
 
-Using the amount of total TIP-specific funding to estimate the hazard of criminalizing trafficking does not reveal any additional insight.
+TIP-specific funding generally has a positive effect on the time to criminalization, increasing the probability of criminalization by 3–4% for each increase in logged funding in a given year (Extension 1.1: `r I(parens(ext1.1, "log.total.funding1", "z"))`). This finding is not necessarily robust to other specifications of the model, though, and weakens or disappears when using our own measure of NGOs, including incidence data, or controlling for tier ratings and demotions. 
 
 ```{r, results='asis', echo=FALSE}
-# var.labs <- c("Total population (logged)", "Missing information", 
-#               "NGO density", "Worse civil liberties", 
-#               "Regional density of criminalization", 
-#               "2000 TIP protocol ratification")
+var.labs <- c("Total US funding for TIP (logged)", "Share of women in parliament",
+              "Worse total freedom (political rights + civil liberties)",
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing information", "Total population (logged)",
+              "GDP per capita (logged)", "Corruption", 
+              "NGO density", "Number of NGOs (survey database)",
+              "Trafficking intensity in countries of origin", 
+              "Trafficking intensity in transit countries", 
+              "Trafficking intensity in destination countries")
+
 col.labs <- c("Extension 1.0", "Extension 1.1", "Extension 1.2", "Extension 1.3")
 
 ses <- list(sqrt(diag(ext1.1$var)), sqrt(diag(ext1.1$var)), 
@@ -429,7 +436,7 @@ extra.lines <- list(c("Number of countries",
                         ext1.2.fit["events"], ext1.3.fit["events"])))
 
 stargazer(ext1.0, ext1.1, ext1.2, ext1.3, 
-          apply.coef=exp, column.labels=col.labs, #covariate.labels=var.labs,
+          apply.coef=exp, column.labels=col.labs, covariate.labels=var.labs,
           keep.stat=c("n", "ll"), model.numbers=FALSE, dep.var.labels.include=FALSE,
           dep.var.caption="Time to Criminalization", 
           se=ses, p.auto=FALSE, type="html",
@@ -438,10 +445,14 @@ stargazer(ext1.0, ext1.1, ext1.2, ext1.3,
 ```
 
 ```{r, results='asis', echo=FALSE}
-# var.labs <- c("Total population (logged)", "Missing information", 
-#               "NGO density", "Worse civil liberties", 
-#               "Regional density of criminalization", 
-#               "2000 TIP protocol ratification")
+var.labs <- c("Total US funding for TIP (logged)", "In report", 
+              "Tier 1", "Tier 2", "Watch list", "Tier 3", 
+              "First demotion (t−3)", "First demotion (t−2)", 
+              "First demotion (t−1)", "Share of women in parliament",
+              "Worse total freedom (political rights + civil liberties)",
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing information")
 col.labs <- c("Extension 1.4", "Extension 1.5", "Extension 1.6")
 
 ses <- list(sqrt(diag(ext1.4$var)), sqrt(diag(ext1.5$var)), 
@@ -455,7 +466,7 @@ extra.lines <- list(c("Number of countries",
                         ext1.6.fit["events"])))
 
 stargazer(ext1.4, ext1.5, ext1.6,
-          apply.coef=exp, column.labels=col.labs, #covariate.labels=var.labs, 
+          apply.coef=exp, column.labels=col.labs, covariate.labels=var.labs, 
           keep.stat=c("n", "ll"), model.numbers=FALSE, dep.var.labels.include=FALSE,
           dep.var.caption="Time to Criminalization", 
           se=ses, p.auto=FALSE, type="html",
@@ -463,112 +474,23 @@ stargazer(ext1.4, ext1.5, ext1.6,
           notes=c("Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
-&nbsp;
-
-Importantly, the variable faces substantial mathematical issues and yields useless coefficients when used in models. A coefficient of 1 with no errors in a hazard model is generally indicative of a complicated form of multicollinearity where the variable does not vary within the risk set.^[See type 4 listed at [http://www.stata.com/support/faqs/statistics/stcox-producing-missing-standard-errors/](http://www.stata.com/support/faqs/statistics/stcox-producing-missing-standard-errors/).] That is, in every country in the model, it appears that total funding increases at the same rate.
-
-The same phenomenon occurs when running a more simple logistic regression model predicting criminalization with funding:
-
-```{r, results='asis', echo=FALSE}
-var.labs <- c("Total funding", "Share of women in parliament")
-col.labs <- c("Funding only", "Funding only (no outliers)", 
-              "Women in parliament only")
-
-extra.lines <- list(c("Pseudo R-squared",
-                      sapply(list(logit.funding, logit.funding.no.outliers, 
-                                  logit.women), 
-                             calc.pseudo.r.squared)))
-
-stargazer(logit.funding, logit.funding.no.outliers, logit.women,
-          covariate.labels=var.labs, column.labels=col.labs,
-          model.numbers=FALSE, dep.var.labels.include=FALSE,
-          dep.var.caption="Criminalization",
-          apply.coef=exp, type="html", p.auto=FALSE, 
-          keep.stat=c("n", "ll"), 
-          notes.align="l", add.lines=extra.lines,
-          notes=c("Standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
-```
-
-&nbsp;
-
-The effect (or rather, lack of effect) is clear when plotting the model. Funding does very little to explain anything, and while the higher levels of funding only appear where criminalization occurs, those few outliers drive the findings.
-
-```{r, echo=FALSE, fig.width=10, fig.height=3, warning=FALSE}
-temp.data <- data.frame(total.funding1 = seq(min(df.complete.with.lags.correct$total.funding1, na.rm=TRUE),
-                                             max(df.complete.with.lags.correct$total.funding1, na.rm=TRUE),
-                                             1000))
-predicted.data <- as.data.frame(predict(logit.funding, newdata = temp.data,
-                                        type="link", se=TRUE))
-
-std <- qnorm(0.95 / 2 + 0.5)
-new.data <- cbind(temp.data, predicted.data) %>%
-  mutate(ymin = logit.funding$family$linkinv(fit - std * se.fit),
-         ymax = logit.funding$family$linkinv(fit + std * se.fit),
-         fit = logit.funding$family$linkinv(fit))
-
-p.funding <- ggplot(df.complete.with.lags.correct, aes(x=total.funding1, y=crim1)) + 
-  geom_point() +
-  geom_ribbon(data=new.data, aes(y=fit, ymin=ymin, ymax=ymax), alpha=0.5) +
-  geom_line(data=new.data, aes(y=fit)) +
-  labs(x="Total funding", y="Criminalization") +
-  scale_x_continuous(labels=dollar) + 
-  theme_light()
-
-
-temp.data <- data.frame(total.funding1 = seq(min(df.complete.with.lags.correct$total.funding1, na.rm=TRUE),
-                                             max(filter(df.complete.with.lags.correct, total.funding1 < 10000000)$total.funding1, na.rm=TRUE),
-                                             1000))
-predicted.data <- as.data.frame(predict(logit.funding.no.outliers, 
-                                        newdata = temp.data,
-                                        type="link", se=TRUE))
-
-std <- qnorm(0.95 / 2 + 0.5)
-new.data <- cbind(temp.data, predicted.data) %>%
-  mutate(ymin = logit.funding.no.outliers$family$linkinv(fit - std * se.fit),
-         ymax = logit.funding.no.outliers$family$linkinv(fit + std * se.fit),
-         fit = logit.funding.no.outliers$family$linkinv(fit))
-
-p.funding1 <- ggplot(df.complete.with.lags.correct, aes(x=total.funding1, y=crim1)) + 
-  geom_point() +
-  geom_ribbon(data=new.data, aes(y=fit, ymin=ymin, ymax=ymax), alpha=0.5) +
-  geom_line(data=new.data, aes(y=fit)) +
-  labs(x="Total funding (outliers omitted)", y="Criminalization") +
-  scale_x_continuous(labels=dollar) + 
-  theme_light()
-
-
-temp.data <- data.frame(women1 = seq(min(df.complete.with.lags.correct$women1, na.rm=TRUE),
-                                             max(df.complete.with.lags.correct$women1, na.rm=TRUE),
-                                             0.1))
-predicted.data <- as.data.frame(predict(logit.women, newdata = temp.data,
-                                        type="link", se=TRUE))
-
-std <- qnorm(0.95 / 2 + 0.5)
-new.data <- cbind(temp.data, predicted.data) %>%
-  mutate(ymin = logit.women$family$linkinv(fit - std * se.fit),
-         ymax = logit.women$family$linkinv(fit + std * se.fit),
-         fit = logit.women$family$linkinv(fit))
-
-p.women <- ggplot(df.complete.with.lags.correct, aes(x=women1, y=crim1)) + 
-  geom_point() +
-  geom_ribbon(data=new.data, aes(y=fit, ymin=ymin, ymax=ymax), alpha=0.5) +
-  geom_line(data=new.data, aes(y=fit)) +
-  labs(x="Share of women in parliament", y="Criminalization") +
-  theme_light()
-
-grid.arrange(p.funding, p.funding1, p.women, nrow=1)
-```
-
-
 ## The effect of US engagement on criminalization
 
 State Department cable discussions about host country TIP efforts have no effect on the time to criminalization, looking at both the observed (`r I(parens(ext2.0, "prop_tip_wl1", "z"))`) and the estimated (`r I(parens(ext2.00, "prop_tip_estimated1", "z"))`) number of cables.
 
 ```{r, results='asis', echo=FALSE}
-# var.labs <- c("Total population (logged)", "Missing information", 
-#               "NGO density", "Worse civil liberties", 
-#               "Regional density of criminalization", 
-#               "2000 TIP protocol ratification")
+var.labs <- c("Proportion of TIP-related cables (observed in Wikileaks)", 
+              "Proportion of TIP-related cables (estimated)",
+              "Share of women in parliament",
+              "Worse total freedom (political rights + civil liberties)",
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing information", "Total population (logged)",
+              "GDP per capita (logged)", "Corruption", 
+              "NGO density", "Number of NGOs (survey database)",
+              "Trafficking intensity in countries of origin", 
+              "Trafficking intensity in transit countries", 
+              "Trafficking intensity in destination countries")
 col.labs <- c("Ext. 2.0", "Ext. 2.00",
               "Ext. 2.1", "Ext. 2.2", "Ext. 2.3",
               "Ext. 2.4", "Ext. 2.5", "Ext. 2.6")
@@ -590,7 +512,7 @@ extra.lines <- list(c("Number of countries",
                         ext2.5.fit["events"], ext2.6.fit["events"])))
 
 stargazer(ext2.0, ext2.00, ext2.1, ext2.2, ext2.3, ext2.4, ext2.5, ext2.6,
-          apply.coef=exp, column.labels=col.labs, #covariate.labels=var.labs,
+          apply.coef=exp, column.labels=col.labs, covariate.labels=var.labs,
           keep.stat=c("n", "ll"), model.numbers=FALSE, dep.var.labels.include=FALSE,
           dep.var.caption="Time to Criminalization", 
           se=ses, p.auto=FALSE, type="html",
@@ -599,10 +521,15 @@ stargazer(ext2.0, ext2.00, ext2.1, ext2.2, ext2.3, ext2.4, ext2.5, ext2.6,
 ```
 
 ```{r, results='asis', echo=FALSE}
-# var.labs <- c("Total population (logged)", "Missing information", 
-#               "NGO density", "Worse civil liberties", 
-#               "Regional density of criminalization", 
-#               "2000 TIP protocol ratification")
+var.labs <- c("Proportion of TIP-related cables (observed in Wikileaks)", 
+              "Proportion of TIP-related cables (estimated)", "In report", 
+              "Tier 1", "Tier 2", "Watch list", "Tier 3", 
+              "First demotion (t−3)", "First demotion (t−2)", 
+              "First demotion (t−1)", "Share of women in parliament",
+              "Worse total freedom (political rights + civil liberties)",
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing information")
 col.labs <- c("Extension 2.7", "Extension 2.8", "Extension 2.9",
               "Extension 2.10", "Extension 2.11", "Extension 2.12")
 
@@ -620,7 +547,7 @@ extra.lines <- list(c("Number of countries",
                         ext2.11.fit["events"], ext2.12.fit["events"])))
 
 stargazer(ext2.7, ext2.8, ext2.9, ext2.10, ext2.11, ext2.12,
-          apply.coef=exp, column.labels=col.labs, #covariate.labels=var.labs, 
+          apply.coef=exp, column.labels=col.labs, covariate.labels=var.labs, 
           keep.stat=c("n", "ll"), model.numbers=FALSE, dep.var.labels.include=FALSE,
           dep.var.caption="Time to Criminalization", 
           se=ses, p.auto=FALSE, type="html",
@@ -640,7 +567,7 @@ var.labs <- c("Total reactions (no media)",
               "Worse total freedom (political rights + civil liberties)", 
               "2000 TIP protocol ratification", "Big aid", 
               "Regional density of criminalization", 
-              "Total US funding for TIP", 
+              "Total US funding for TIP (logged)", 
               "Proportion of TIP-related cables (observed in Wikileaks)", 
               "Proportion of TIP-related cables (estimated)", 
               "Number of NGOs (survey database)")
@@ -680,7 +607,7 @@ var.labs <- c("In report", "Share of women in parliament", "Worse civil libertie
               "Regional density of criminalization", "2000 TIP protocol ratification",
               "Missing information (t−2)", "Total population (logged)",
               "NGO density", "GDP per capita (logged)", "Corruption",
-              "Total US funding for TIP", 
+              "Total US funding for TIP (logged)", 
               "Proportion of TIP-related cables (observed in Wikileaks)", 
               "Proportion of TIP-related cables (estimated)", 
               "Number of NGOs (survey database)")
@@ -716,10 +643,15 @@ We can use a similar set of survival models to see which factors influence a cou
 Scorecard diplomacy does not appear to have an effect on the decision to ratify the protocol—neither presence in the TIP report nor the assignment of any specific tier rating changes the likelihood of adopting the protocol (see Extensions 4.4–4.6). However, the initial placement on the watchlist *does* appear to have some impact, as a country is almost 70% more likely to ratify in the year following the assignment (`r I(parens(ext4.6, "new_watch1", "z"))`).
 
 ```{r, results='asis', echo=FALSE}
-# var.labs <- c("Total population (logged)", "Missing information", 
-#               "NGO density", "Worse civil liberties", 
-#               "Regional density of criminalization", 
-#               "2000 TIP protocol ratification")
+var.labs <- c("Share of women in parliament",
+              "Worse total freedom (political rights + civil liberties)",
+              "Regional density of criminalization",
+              "Missing information", "Total population (logged)",
+              "GDP per capita (logged)", "Corruption", 
+              "NGO density", "Number of NGOs (survey database)",
+              "Trafficking intensity in countries of origin", 
+              "Trafficking intensity in transit countries", 
+              "Trafficking intensity in destination countries")
 col.labs <- c("Extension 4.0", "Extension 4.1", "Extension 4.2", "Extension 4.3")
 
 ses <- list(sqrt(diag(ext4.1$var)), sqrt(diag(ext4.1$var)), 
@@ -733,7 +665,7 @@ extra.lines <- list(c("Number of countries",
                         ext4.2.fit["events"], ext4.3.fit["events"])))
 
 stargazer(ext4.0, ext4.1, ext4.2, ext4.3, 
-          apply.coef=exp, column.labels=col.labs, #covariate.labels=var.labs,
+          apply.coef=exp, column.labels=col.labs, covariate.labels=var.labs,
           keep.stat=c("n", "ll"), model.numbers=FALSE, dep.var.labels.include=FALSE,
           dep.var.caption="Time to Ratification", 
           se=ses, p.auto=FALSE, type="html",
@@ -742,10 +674,13 @@ stargazer(ext4.0, ext4.1, ext4.2, ext4.3,
 ```
 
 ```{r, results='asis', echo=FALSE}
-# var.labs <- c("Total population (logged)", "Missing information", 
-#               "NGO density", "Worse civil liberties", 
-#               "Regional density of criminalization", 
-#               "2000 TIP protocol ratification")
+var.labs <- c("In report", 
+              "Tier 1", "Tier 2", "Watch list", "Tier 3", 
+              "First demotion (t−3)", "First demotion (t−2)", 
+              "First demotion (t−1)", "Share of women in parliament",
+              "Worse total freedom (political rights + civil liberties)",
+              "Regional density of criminalization",
+              "Missing information")
 col.labs <- c("Extension 4.4", "Extension 4.5", "Extension 4.6")
 
 ses <- list(sqrt(diag(ext4.4$var)), sqrt(diag(ext4.5$var)), 
@@ -759,7 +694,7 @@ extra.lines <- list(c("Number of countries",
                         ext4.6.fit["events"])))
 
 stargazer(ext4.4, ext4.5, ext4.6,
-          apply.coef=exp, column.labels=col.labs, #covariate.labels=var.labs, 
+          apply.coef=exp, column.labels=col.labs, covariate.labels=var.labs, 
           keep.stat=c("n", "ll"), model.numbers=FALSE, dep.var.labels.include=FALSE,
           dep.var.caption="Time to Ratification", 
           se=ses, p.auto=FALSE, type="html",
@@ -794,6 +729,8 @@ More NGOs in a country leads to minor, insubstantial, and generally insignifican
 *Proposition: The relationship between inclusion in the report and time to criminalization will be stronger for less democratic countries.*
 
 Countries with worse civil rights and political liberties are more likely to enter the TIP report and less likely to criminalize trafficking. 
+
+***NOTE***: Far more detailed analysis of interactive effects can be seen [here](interactions.html).
 
 ---
 
