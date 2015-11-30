@@ -20,6 +20,7 @@ knitr::opts_chunk$set(echo=TRUE, cache=TRUE)
 library(broom)
 library(ggplot2)
 library(scales)
+library(stringr)
 library(stargazer)
 library(pander)
 
@@ -61,7 +62,7 @@ calc.pseudo.r.squared <- function(x.model) {
   return(round(1 - (x.model$deviance / x.model$null.deviance), 4))
 }
 
-clean.labs <- function(x) {
+clean.labs <- function(x, adjust=FALSE) {
   # Divide into comma-separated parts
   separated <- unlist(strsplit(x, ","))
   
@@ -69,8 +70,15 @@ clean.labs <- function(x) {
   cleaned <- sapply(separated, FUN=function (y) 
     as.numeric(gsub("\\[|\\]|\\(|\\)", "", y)))
   
-  # Concatenate remaining digits
-  return(paste(cleaned, collapse="-"))
+  if (adjust) {
+    cleaned <- signif(exp(cleaned), 2)
+    cleaned <- str_trim(formatC(cleaned, big.mark=",", format="fg", digits=3))
+    return(paste0("$", paste(cleaned, collapse="-")))
+    # return(cleaned)
+  } else {
+    # Concatenate remaining digits
+    return(paste(cleaned, collapse="-"))
+  }
 }
 ```
 
@@ -450,7 +458,8 @@ full <- prob.crim.aid.report %>% ungroup() %>%
   do(expand.grid(in.report = levels(.$in.report), aid_bin = levels(.$aid_bin))) %>%
   left_join(prob.crim.aid.report, by=c("in.report", "aid_bin")) %>%
   mutate(aid_bin = factor(aid_bin, 
-                           labels=sapply(levels(aid_bin), FUN=clean.labs))) %>%
+                           labels=sapply(levels(aid_bin), FUN=clean.labs,
+                                         adjust=TRUE))) %>%
   filter(crim.yes > 0)
 
 p.aid.prob.report <- ggplot(full, aes(x=aid_bin, y=prob.yes, 
@@ -538,6 +547,7 @@ p.aid.int.report <- ggplot(plot.predict, aes(x=logeconasstP_1, y=prob)) +
   geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
   labs(x="US foreign aid (logged)", y="Predicted probability of criminalization") + 
   scale_y_continuous(labels=percent) + 
+  scale_x_continuous(labels=trans_format("exp", dollar_format())) +
   scale_fill_manual(values=report.colors, name=NULL) + 
   scale_colour_manual(values=report.colors, name=NULL)+
   theme_light()
@@ -1031,7 +1041,8 @@ full <- prob.crim.funding.report %>% ungroup() %>%
   do(expand.grid(in.report = levels(.$in.report), funding_bin = levels(.$funding_bin))) %>%
   left_join(prob.crim.funding.report, by=c("in.report", "funding_bin")) %>%
   mutate(funding_bin = factor(funding_bin, 
-                           labels=sapply(levels(funding_bin), FUN=clean.labs))) %>%
+                           labels=sapply(levels(funding_bin), FUN=clean.labs, 
+                                         adjust=TRUE))) %>%
   filter(crim.yes > 0)
 
 p.funding.prob.report <- ggplot(full, aes(x=funding_bin, y=prob.yes, 
@@ -1120,6 +1131,7 @@ p.funding.int.report <- ggplot(plot.predict, aes(x=log.total.funding1, y=prob)) 
   labs(x="Total anti-TIP funding from US (log)", 
        y="Predicted probability of criminalization") + 
   scale_y_continuous(labels=percent) + 
+  scale_x_continuous(labels=trans_format("exp", dollar_format())) +
   scale_fill_manual(values=report.colors, name=NULL) + 
   scale_colour_manual(values=report.colors, name=NULL)+
   theme_light()
@@ -1493,7 +1505,8 @@ full <- prob.crim.aid.rating %>% ungroup() %>%
   do(expand.grid(lower.rating = levels(.$lower.rating), aid_bin = levels(.$aid_bin))) %>%
   left_join(prob.crim.aid.rating, by=c("lower.rating", "aid_bin")) %>%
   mutate(aid_bin = factor(aid_bin, 
-                           labels=sapply(levels(aid_bin), FUN=clean.labs))) %>%
+                           labels=sapply(levels(aid_bin), FUN=clean.labs,
+                                         adjust=TRUE))) %>%
   filter(crim.yes > 0)
 
 p.aid.prob.rating <- ggplot(full, aes(x=aid_bin, y=prob.yes, 
@@ -1581,6 +1594,7 @@ p.aid.int.rating <- ggplot(plot.predict, aes(x=logeconasstP_1, y=prob)) +
   geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
   labs(x="US foreign aid (logged)", y="Predicted probability of criminalization") + 
   scale_y_continuous(labels=percent) + 
+  scale_x_continuous(labels=trans_format("exp", dollar_format())) +
   scale_fill_manual(values=rating.colors, name=NULL) + 
   scale_colour_manual(values=rating.colors, name=NULL)+
   theme_light()
@@ -2074,7 +2088,8 @@ full <- prob.crim.funding.rating %>% ungroup() %>%
   do(expand.grid(lower.rating = levels(.$lower.rating), funding_bin = levels(.$funding_bin))) %>%
   left_join(prob.crim.funding.rating, by=c("lower.rating", "funding_bin")) %>%
   mutate(funding_bin = factor(funding_bin, 
-                           labels=sapply(levels(funding_bin), FUN=clean.labs))) %>%
+                           labels=sapply(levels(funding_bin), FUN=clean.labs,
+                                         adjust=TRUE))) %>%
   filter(crim.yes > 0)
 
 p.funding.prob.rating <- ggplot(full, aes(x=funding_bin, y=prob.yes, 
@@ -2163,6 +2178,7 @@ p.funding.int.rating <- ggplot(plot.predict, aes(x=log.total.funding1, y=prob)) 
   labs(x="Total anti-TIP funding from US (log)", 
        y="Predicted probability of criminalization") + 
   scale_y_continuous(labels=percent) + 
+  scale_x_continuous(labels=trans_format("exp", dollar_format())) +
   scale_fill_manual(values=rating.colors, name=NULL) + 
   scale_colour_manual(values=rating.colors, name=NULL)+
   theme_light()
@@ -2597,7 +2613,8 @@ full <- prob.crim.aid.demote %>% ungroup() %>%
   do(expand.grid(demote_type = levels(.$demote_type), aid_bin = levels(.$aid_bin))) %>%
   left_join(prob.crim.aid.demote, by=c("demote_type", "aid_bin")) %>%
   mutate(aid_bin = factor(aid_bin, 
-                           labels=sapply(levels(aid_bin), FUN=clean.labs))) %>%
+                           labels=sapply(levels(aid_bin), FUN=clean.labs,
+                                         adjust=TRUE))) %>%
   filter(crim.yes > 0)
 
 p.aid.prob.demote <- ggplot(full, aes(x=aid_bin, y=prob.yes, 
@@ -2699,6 +2716,7 @@ p.aid.int.demote <- ggplot(plot.predict, aes(x=logeconasstP_1, y=prob)) +
   geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
   labs(x="US foreign aid (logged)", y="Predicted probability of criminalization") + 
   scale_y_continuous(labels=percent) + 
+  scale_x_continuous(labels=trans_format("exp", dollar_format())) +
   scale_fill_manual(values=demote.colors, name="Time since\ndemotion") + 
   scale_colour_manual(values=demote.colors, name="Time since\ndemotion")+
   theme_light()
@@ -3269,7 +3287,8 @@ full <- prob.crim.funding.demote %>% ungroup() %>%
   do(expand.grid(demote_type = levels(.$demote_type), funding_bin = levels(.$funding_bin))) %>%
   left_join(prob.crim.funding.demote, by=c("demote_type", "funding_bin")) %>%
   mutate(funding_bin = factor(funding_bin, 
-                           labels=sapply(levels(funding_bin), FUN=clean.labs))) %>%
+                           labels=sapply(levels(funding_bin), FUN=clean.labs,
+                                         adjust=TRUE))) %>%
   filter(crim.yes > 0)
 
 p.funding.prob.demote <- ggplot(full, aes(x=funding_bin, y=prob.yes, 
@@ -3372,6 +3391,7 @@ p.funding.int.demote <- ggplot(plot.predict, aes(x=log.total.funding1, y=prob)) 
   labs(x="Total anti-TIP funding from US (log)", 
        y="Predicted probability of criminalization") + 
   scale_y_continuous(labels=percent) + 
+  scale_x_continuous(labels=trans_format("exp", dollar_format())) +
   scale_fill_manual(values=demote.colors, name="Time since\ndemotion") + 
   scale_colour_manual(values=demote.colors, name="Time since\ndemotion")+
   theme_light()
