@@ -208,3 +208,12 @@ It might be too much info to contain in one graphic. I suppose a table might wor
 ## US effort
 
 We calculated US effort as TIP cables as % all cables issue by the embassy in a given year. However, another measure would be  TIP cables as % all cables released by wikileaks in a given year). Can you also calculate the latter?
+
+
+# Even more TODO:
+
+* arrests and prosecutions graph from chapter 2
+* Protection project data (back burner) @later
+* Fill in the blanks in chapter 3 @later
+
+Check media in general models + trade

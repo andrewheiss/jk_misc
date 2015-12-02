@@ -701,3 +701,25 @@ ext4.6 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 +
                 data=df.survivalized.rat, ties="efron")
 # summary(ext4.2)
 ext4.6.fit <- summary(survfit(ext4.6))$table
+
+
+# -----------------------------------------------------------
+# Predicting presence in TIP report based on media coverage
+# -----------------------------------------------------------
+df.media <- df.complete.with.lags.correct %>%
+  filter(year > 1998)
+
+model.change <- lm(logstory_diff ~ inreport_diff + logstory1 + 
+                     fh_cl1 + loggdppercap_1 + ratproto2000_1 + logpop_1 + 
+                     year.factor + as.factor(cowcode),
+                   data=df.media)
+
+model.coverage <- lm(logstory ~ inreport1 + logstory1 + 
+                       fh_cl1 + loggdppercap_1 + ratproto2000_1 + logpop_1 + 
+                       year.factor + as.factor(cowcode), 
+                     data=df.media)
+
+model.coverage1 <- lm(logstory ~ inreport1 + inreport_diff + logstory1 + 
+                        fh_cl1 + loggdppercap_1 + ratproto2000_1 + logpop_1 + 
+                        year.factor + as.factor(cowcode), 
+                      data=df.media)

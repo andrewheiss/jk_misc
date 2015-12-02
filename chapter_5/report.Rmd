@@ -703,6 +703,29 @@ stargazer(ext4.4, ext4.5, ext4.6,
           notes=c("Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+## The relationship between media coverage of TIP issues and presence in the TIP report
+
+```{r, results='asis', echo=FALSE}
+var.labs <- c("In report (difference from previous year)",
+              "In report", "Number of stories (logged)",
+              "Worse civil liberties", "GDP per capita (logged)",
+              "2000 TIP protocol ratification", "Population (logged)")
+
+col.labs <- c("Media coverage 1", "Media coverage 2", "Media coverage 3")
+dv.labs <- c("Change in coverage", "Coverage", "Coverage")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 3)),
+                    c("Country fixed effects", rep("Yes", 3)))
+
+stargazer(model.change, model.coverage, model.coverage1,
+          column.labels=col.labs, covariate.labels=var.labs,
+          dep.var.labels=dv.labs,
+          dep.var.caption="", model.numbers=FALSE,
+          type="html", omit="\\.factor",
+          notes.align="l", add.lines=extra.lines,
+          notes=c("All explanatory variables are lagged one period unless otherwise noted."))
+```
+
 ## Updated number of human trafficking NGOs
 
 Substituting the number of NGOs in the database used for the survey yields smaller (and seemingly more precise) effects on both the time to entering the report (explained in section 3.3 above) and the time to criminalization. In Extension 1.2, an additional NGO in a country increases the odds of criminalization in a given year by 2% (`r I(parens(ext1.2, "ht_ngos", "z"))`), which is a smaller and more precise effect than the original NGO density variable in Extension 1.1 (`r I(parens(ext1.1, "ngos_ave", "z"))`). The new measure has no effect when used as a covariate for estimating the effect of US engagement. In Extensions 2.1 and 2.2, the original NGO density variable increases the odds of criminalization by roughly 25% (Extension 2.1: `r I(parens(ext2.1, "ngos_ave", "z"))`), but that effect drops to an insignificant 2% with the updated measure (Extension 2.3: `r I(parens(ext2.3, "ht_ngos", "z"))`). It is likely, however, that the effects are generally similar, since the two measures use different scales.

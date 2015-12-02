@@ -47,7 +47,10 @@ df.orig <- read_dta("../original_files/kelley_simmons_ajps_2014_replication.dta"
          econasstP = econasst * 1000000,
          econasstP = ifelse(econasstP == 0 | is.na(econasstP), 1, econasstP),
          logeconasstP = log(econasstP),
-         totalfreedom = fh_pr + fh_cl)
+         totalfreedom = fh_pr + fh_cl,
+         loggdppercap = log(data4),
+         logstory = log1p(ht_news_country),
+         cubestory = ht_news_country^(1/3))
 
 # Calculate grouped summary statistics
 # Generate the mean tier rating for each country and mark when it's always 1 or 3
@@ -220,7 +223,11 @@ df.complete.with.lags.correct <- df.complete %>%
          protection_1 = lag(protection),
          totalaidave1 = lag(totalaidave),
          newus_tradeshare_gdp1 = lag(newus_tradeshare_gdp),
-         ht_news_country1 = lag(ht_news_country)) %>%
+         ht_news_country1 = lag(ht_news_country),
+         logstory1 = lag(logstory),
+         cubestory1 = lag(cubestory),
+         logstory_diff = lag(logstory) - logstory,
+         inreport_diff = lag(inreport1) - inreport1) %>%
   # Deal with new variables
   mutate(total.funding1 = lag(total.funding),
          log.total.funding1 = log1p(total.funding1),
