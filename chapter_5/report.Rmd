@@ -707,7 +707,7 @@ stargazer(ext4.4, ext4.5, ext4.6,
 
 ```{r, results='asis', echo=FALSE}
 var.labs <- c("In report (difference from previous year)",
-              "In report", "Number of stories (logged)",
+              "In report", "Coverage (lagged)",
               "Worse civil liberties", "GDP per capita (logged)",
               "2000 TIP protocol ratification", "Population (logged)")
 
