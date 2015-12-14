@@ -227,7 +227,7 @@ df.complete.with.lags.correct <- df.complete %>%
          logstory1 = lag(logstory),
          cubestory1 = lag(cubestory),
          logstory_diff = lag(logstory) - logstory,
-         inreport_diff = lag(inreport1) - inreport1) %>%
+         inreport_diff = abs(lag(inreport1) - inreport1)) %>%
   # Deal with new variables
   mutate(total.funding1 = lag(total.funding),
          log.total.funding1 = log1p(total.funding1),

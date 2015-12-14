@@ -708,6 +708,7 @@ ext4.6.fit <- summary(survfit(ext4.6))$table
 # -----------------------------------------------------------
 df.media <- df.complete.with.lags.correct %>%
   filter(year > 1998)
+# hist(df.media$inreport_diff)
 
 model.change <- lm(logstory_diff ~ inreport_diff + logstory1 + 
                      fh_cl1 + loggdppercap_1 + ratproto2000_1 + logpop_1 + 
@@ -721,5 +722,12 @@ model.coverage <- lm(logstory ~ inreport1 + logstory1 +
 
 model.coverage1 <- lm(logstory ~ inreport1 + inreport_diff + logstory1 + 
                         fh_cl1 + loggdppercap_1 + ratproto2000_1 + logpop_1 + 
+                        year.factor + as.factor(cowcode), 
+                      data=df.media)
+
+model.coverage2 <- lm(logstory ~ inreport1 + inreport_diff + logstory1 + 
+                        fh_cl1 + loggdppercap_1 + ratproto2000_1 + logpop_1 + 
+                        ht_incidence_origin + ht_incidence_transit +
+                        ht_incidence_destination +
                         year.factor + as.factor(cowcode), 
                       data=df.media)

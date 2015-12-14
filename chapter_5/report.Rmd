@@ -706,18 +706,22 @@ stargazer(ext4.4, ext4.5, ext4.6,
 ## The relationship between media coverage of TIP issues and presence in the TIP report
 
 ```{r, results='asis', echo=FALSE}
-var.labs <- c("In report (difference from previous year)",
+var.labs <- c("First year in report",
               "In report", "Coverage (lagged)",
               "Worse civil liberties", "GDP per capita (logged)",
-              "2000 TIP protocol ratification", "Population (logged)")
+              "2000 TIP protocol ratification", "Population (logged)",
+              "Trafficking intensity in countries of origin", 
+              "Trafficking intensity in transit countries", 
+              "Trafficking intensity in destination countries")
 
-col.labs <- c("Media coverage 1", "Media coverage 2", "Media coverage 3")
-dv.labs <- c("Change in coverage", "Coverage", "Coverage")
+col.labs <- c("Media coverage 1", "Media coverage 2", 
+              "Media coverage 3", "Media coverage and incidence")
+dv.labs <- c("Change in logged coverage", rep("Logged coverage", 3))
 
 extra.lines <- list(c("Year fixed effects", rep("Yes", 3)),
                     c("Country fixed effects", rep("Yes", 3)))
 
-stargazer(model.change, model.coverage, model.coverage1,
+stargazer(model.change, model.coverage, model.coverage1, model.coverage2,
           column.labels=col.labs, covariate.labels=var.labs,
           dep.var.labels=dv.labs,
           dep.var.caption="", model.numbers=FALSE,
