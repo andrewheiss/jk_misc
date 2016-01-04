@@ -705,6 +705,17 @@ stargazer(ext4.4, ext4.5, ext4.6,
 
 ## The relationship between media coverage of TIP issues and presence in the TIP report
 
+```{r, echo=FALSE, include=FALSE}
+library(broom)
+calc.change <- function(actual.coef) {
+  round((exp(actual.coef) - 1) * 100, 1)
+}
+
+```
+
+The amount of media coverage of TIP issues in a country appears to be related to that country's presence in the TIP report. On average, being in the report boosts media coverage by `r I(calc.change(filter(tidy(model.coverage), term == "inreport")$estimate))`% (Media Coverage 2: `r I(parens(model.coverage, "inreport", "t"))`). This holds true even when controlling for the initial media coverage when a country is first added to the TIP report—coverage is still boosted by `r I(calc.change(filter(tidy(model.coverage1), term == "inreport")$estimate))`% (Media Coverage 3: `r I(parens(model.coverage1, "inreport", "t"))`). If we control for the actual incidence of human trafficking, the report effect decreases slightly to `r I(calc.change(filter(tidy(model.coverage2), term == "inreport")$estimate))`% but remains significant (Media Coverage and incidence: `r I(parens(model.coverage2, "inreport", "t"))`). Because the dependent variable in each of the logged coverage models is different in each case (since we include lagged coverage as an independent variable), we can interpret the "In report" coefficient as an indicator of continued growth in coverage for each additional year in the report. That is, the effect of being in the report on media coverage intensifies the longer a country is in the report.
+
+
 ```{r, results='asis', echo=FALSE}
 var.labs <- c("First year in report",
               "In report", "Coverage (lagged)",
