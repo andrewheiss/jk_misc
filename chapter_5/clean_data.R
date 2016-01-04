@@ -39,6 +39,8 @@ df.orig <- read_dta("../original_files/kelley_simmons_ajps_2014_replication.dta"
          # using the notier variable for 3 and 4.
          notier = ifelse(!(tier %in% c(555, 666)) | is.na(tier), 0, 1),  # For 3/4
          tier = ifelse(tier %in% c(555, 666) | is.na(tier), 0, tier),
+         inreport = ifelse(tier > 0 & tier < 4, 1, 0),
+         inreport = ifelse(tier == 555, 0, inreport),
          logpop = log(data9),
          crim1 = ifelse(adjbicrimlevel == 0, 0, 1),
          uspressure = ifelse(tier %in% c(2.5, 3), 1, 0),
@@ -200,6 +202,7 @@ df.complete.with.lags.correct <- df.complete %>%
          fullwaiver1 = lag(fullwaiver),
          notier1 = lag(notier),
          inreport1 = ifelse(notier1 == 0, 1, 0),
+         inreport.lag = lag(inreport),
          notinreport1 = lag(notinreport),
          special1 = lag(special),
          dostier1 = lag(dostier),
@@ -226,8 +229,8 @@ df.complete.with.lags.correct <- df.complete %>%
          ht_news_country1 = lag(ht_news_country),
          logstory1 = lag(logstory),
          cubestory1 = lag(cubestory),
-         logstory_diff = lag(logstory) - logstory,
-         inreport_diff = abs(lag(inreport1) - inreport1)) %>%
+         logstory_diff = logstory - lag(logstory),
+         inreport_diff = abs(inreport - lag(inreport))) %>%
   # Deal with new variables
   mutate(total.funding1 = lag(total.funding),
          log.total.funding1 = log1p(total.funding1),
