@@ -8,6 +8,7 @@
 #'     toc: yes
 #'     highlight: pygments
 #'     theme: flatly
+#'     self_contained: no
 #' ---
 
 #+ include=FALSE
@@ -59,9 +60,8 @@ separate.answers.summary <- function(df, cols, labels, total=FALSE) {
 
 # Load pre-cleaned data from TIP NGO article
 # TODO: Add anonymized data to this repository?
-phone <- c("R_6LtFazScXoe9Ghn", "R_1zGgLHVDJ7zjMsR", "R_1RXP2n3Mfo1G72t", "R_8J71M4uvcEtul6d", "R_0xD0ZL0EtiunkIl", "R_6z2ml48L9alMliR", "R_b8CWsdk9NQ92TDD", "R_ai7LwL15oKE1yLz", "R_9YTUYHjbnVsc8DP", "R_cZVA0PUYhCfdH2l", "R_ehuLVSh6mlPO9HT", "R_3Cc7TZ8Q7REb9k1", "R_3wVReMnO6uS4Lat", "R_56zsFOZcq2ceNwN")
-
-linkedin <- c("R_daIbVJuXdccyJU1", "R_02iOgW9hAxLGdJr", "R_1XqAXcms7A52Okl", "R_cVfWt7ooTCsCee9", "R_0oerAAwD33YRIPP", "R_bOtLb37U4uoPgfH", "R_07FPaO59PTZRPoh", "R_5vFLG1eQl7ZwtHD", "R_5z2t8Pn0LHN6nDD", "R_0r0UnzXUP3Ot8Pz", "R_3vXTjhBAzkgoa6p", "R_3VQPZS31kueRf01", "R_ctOVf4JqajviXUV", "R_aWP2loRHMh5VhBj", "R_9Ak81i9i2Ovyvzv", "R_9QtABKriYqPtnbD", "R_eKe6KPNjJZQMF2R", "R_0CxnQvaHUAJ4PYN", "R_9TPGVrLaXwLiIe1", "R_3gDsycZfTJSTsXP", "R_cLW165CtBFvAmqx", "R_80q9YgXimZBurqZ", "R_8e8oOEOnHXOzxbv", "R_6sdNfHkg9h8wKMZ", "R_eD5Zd8oOxHEg29v", "R_a93q5ITARCY2rLT", "R_9NabGsD2zZhEzMp", "R_3e0IxpHaWRj1YC9", "R_6JrMcyw1meIaTQh")
+phone <- readRDS("/Users/andrew/Research/••Projects/Human trafficking/Anti-TIP NGOs and the US/data_raw/phone.rds")
+linkedin <- readRDS("/Users/andrew/Research/••Projects/Human trafficking/Anti-TIP NGOs and the US/data_raw/linkedin.rds")
 
 responses.full <- readRDS("/Users/andrew/Research/••Projects/Human trafficking/Anti-TIP NGOs and the US/data/responses_full.rds") %>%
   mutate(survey.method = ifelse(survey.id %in% phone, "Phone", 
