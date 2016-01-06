@@ -51,7 +51,9 @@ df.correct <- df.correct %>%
                             ordered=TRUE),
          lower.rating = ifelse(tier1 %in% c(1, 2), "1 or 2", "Watchlist or 3"),
          lower.rating = factor(lower.rating, levels=c("1 or 2", "Watchlist or 3"), 
-                               ordered=TRUE))
+                               ordered=TRUE)) %>%
+  mutate(no.demotion = ifelse(new_watch1 + new_watch2 + new_watch3 == 0, 
+                              TRUE, FALSE))
 
 df.logit.models <- df.correct %>% 
   filter(lag(adjbicrimlevel) == 0 & year > 2001 & year < 2011)
