@@ -2287,9 +2287,14 @@ covars <- model$model %>%
 
 new.combinations <- expand.grid(fh_cl1 = seq(1, 7, 0.1),
                                 new_watch = c("1", "2", "3"))
+
+baseline.combinations <- data_frame(fh_cl1 = seq(1, 7, 0.1)) %>%
+  mutate(new_watch = NA, new_watch1 = 0, new_watch2 = 0, new_watch3 = 0)
+
 new.data <- new.combinations %>%
   bind_cols(data.frame(model.matrix(fh_cl1 ~ new_watch + 0, 
                                     data=new.combinations))) %>%
+  bind_rows(baseline.combinations) %>%
   mutate(id = 1) %>% left_join(covars, by="id") %>%
   select(-c(id, new_watch))
 
@@ -2427,9 +2432,14 @@ covars <- model$model %>%
 
 new.combinations <- expand.grid(ngos_ave = seq(0, 10, 0.1),
                                 new_watch = c("1", "2", "3"))
+
+baseline.combinations <- data_frame(ngos_ave = seq(0, 10, 0.1)) %>%
+  mutate(new_watch = NA, new_watch1 = 0, new_watch2 = 0, new_watch3 = 0)
+
 new.data <- new.combinations %>%
   bind_cols(data.frame(model.matrix(ngos_ave ~ new_watch + 0, 
                                     data=new.combinations))) %>%
+  bind_rows(baseline.combinations) %>%
   mutate(id = 1) %>% left_join(covars, by="id") %>%
   select(-c(id, new_watch))
 
@@ -2437,10 +2447,11 @@ plot.predict <- augment(model, newdata=new.data) %>%
   mutate(prob = model$family$linkinv(.fitted),
          prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
          prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
-  gather(demote_type, demote_value, starts_with("new_watch")) %>%
-  filter(demote_value == 1) %>%
-  mutate(demote_type = factor(demote_type, 
-                              labels=c("1 year", "2 years", "3 years")))
+  mutate(demote_type = ifelse(new_watch1 == 1, "1 year", NA),
+         demote_type = ifelse(new_watch2 == 1, "2 years", demote_type),
+         demote_type = ifelse(new_watch3 == 1, "3 years", demote_type),
+         demote_type = ifelse(new_watch1 + new_watch2 + new_watch3 == 0, 
+                              "No demotion", demote_type))
 
 plot.data <- augment(model, type.predict="response") %>%
   rename(prob = .fitted)
@@ -2564,9 +2575,14 @@ covars <- model$model %>%
 
 new.combinations <- expand.grid(ht_news_country1 = seq(0, 1000, 0.1),
                                 new_watch = c("1", "2", "3"))
+
+baseline.combinations <- data_frame(ht_news_country1 = seq(0, 1000, 0.1)) %>%
+  mutate(new_watch = NA, new_watch1 = 0, new_watch2 = 0, new_watch3 = 0)
+
 new.data <- new.combinations %>%
   bind_cols(data.frame(model.matrix(ht_news_country1 ~ new_watch + 0, 
                                     data=new.combinations))) %>%
+  bind_rows(baseline.combinations) %>%
   mutate(id = 1) %>% left_join(covars, by="id") %>%
   select(-c(id, new_watch))
 
@@ -2574,10 +2590,11 @@ plot.predict <- augment(model, newdata=new.data) %>%
   mutate(prob = model$family$linkinv(.fitted),
          prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
          prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
-  gather(demote_type, demote_value, starts_with("new_watch")) %>%
-  filter(demote_value == 1) %>%
-  mutate(demote_type = factor(demote_type, 
-                              labels=c("1 year", "2 years", "3 years")))
+  mutate(demote_type = ifelse(new_watch1 == 1, "1 year", NA),
+         demote_type = ifelse(new_watch2 == 1, "2 years", demote_type),
+         demote_type = ifelse(new_watch3 == 1, "3 years", demote_type),
+         demote_type = ifelse(new_watch1 + new_watch2 + new_watch3 == 0, 
+                              "No demotion", demote_type))
 
 plot.data <- augment(model, type.predict="response") %>%
   rename(prob = .fitted)
@@ -2702,9 +2719,14 @@ covars <- model$model %>%
 
 new.combinations <- expand.grid(logeconasstP_1 = seq(0, 23, 0.1),
                                 new_watch = c("1", "2", "3"))
+
+baseline.combinations <- data_frame(logeconasstP_1 = seq(0, 23, 0.1)) %>%
+  mutate(new_watch = NA, new_watch1 = 0, new_watch2 = 0, new_watch3 = 0)
+
 new.data <- new.combinations %>%
   bind_cols(data.frame(model.matrix(logeconasstP_1 ~ new_watch + 0, 
                                     data=new.combinations))) %>%
+  bind_rows(baseline.combinations) %>%
   mutate(id = 1) %>% left_join(covars, by="id") %>%
   select(-c(id, new_watch))
 
@@ -2712,10 +2734,11 @@ plot.predict <- augment(model, newdata=new.data) %>%
   mutate(prob = model$family$linkinv(.fitted),
          prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
          prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
-  gather(demote_type, demote_value, starts_with("new_watch")) %>%
-  filter(demote_value == 1) %>%
-  mutate(demote_type = factor(demote_type, 
-                              labels=c("1 year", "2 years", "3 years")))
+  mutate(demote_type = ifelse(new_watch1 == 1, "1 year", NA),
+         demote_type = ifelse(new_watch2 == 1, "2 years", demote_type),
+         demote_type = ifelse(new_watch3 == 1, "3 years", demote_type),
+         demote_type = ifelse(new_watch1 + new_watch2 + new_watch3 == 0, 
+                              "No demotion", demote_type))
 
 plot.data <- augment(model, type.predict="response") %>%
   rename(prob = .fitted)
@@ -2840,9 +2863,14 @@ covars <- model$model %>%
 
 new.combinations <- expand.grid(newus_tradeshare_gdp = seq(0, 0.6, 0.05),
                                 new_watch = c("1", "2", "3"))
+
+baseline.combinations <- data_frame(newus_tradeshare_gdp = seq(0, 0.6, 0.05)) %>%
+  mutate(new_watch = NA, new_watch1 = 0, new_watch2 = 0, new_watch3 = 0)
+
 new.data <- new.combinations %>%
   bind_cols(data.frame(model.matrix(newus_tradeshare_gdp ~ new_watch + 0, 
                                     data=new.combinations))) %>%
+  bind_rows(baseline.combinations) %>%
   mutate(id = 1) %>% left_join(covars, by="id") %>%
   select(-c(id, new_watch))
 
@@ -2850,10 +2878,11 @@ plot.predict <- augment(model, newdata=new.data) %>%
   mutate(prob = model$family$linkinv(.fitted),
          prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
          prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
-  gather(demote_type, demote_value, starts_with("new_watch")) %>%
-  filter(demote_value == 1) %>%
-  mutate(demote_type = factor(demote_type, 
-                              labels=c("1 year", "2 years", "3 years")))
+  mutate(demote_type = ifelse(new_watch1 == 1, "1 year", NA),
+         demote_type = ifelse(new_watch2 == 1, "2 years", demote_type),
+         demote_type = ifelse(new_watch3 == 1, "3 years", demote_type),
+         demote_type = ifelse(new_watch1 + new_watch2 + new_watch3 == 0, 
+                              "No demotion", demote_type))
 
 plot.data <- augment(model, type.predict="response") %>%
   rename(prob = .fitted)
@@ -2970,9 +2999,14 @@ covars <- model$model %>%
 
 new.combinations <- expand.grid(ratproto2000_1 = c(0, 1),
                                 new_watch = c("1", "2", "3"))
+
+baseline.combinations <- data_frame(ratproto2000_1 = c(0, 1)) %>%
+  mutate(new_watch = NA, new_watch1 = 0, new_watch2 = 0, new_watch3 = 0)
+
 new.data <- new.combinations %>%
   bind_cols(data.frame(model.matrix(ratproto2000_1 ~ new_watch + 0, 
                                     data=new.combinations))) %>%
+  bind_rows(baseline.combinations) %>%
   mutate(id = 1) %>% left_join(covars, by="id") %>%
   select(-c(id, new_watch))
 
@@ -2980,10 +3014,11 @@ plot.predict <- augment(model, newdata=new.data) %>%
   mutate(prob = model$family$linkinv(.fitted),
          prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
          prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
-  gather(demote_type, demote_value, starts_with("new_watch")) %>%
-  filter(demote_value == 1) %>%
-  mutate(demote_type = factor(demote_type, 
-                              labels=c("1 year", "2 years", "3 years")),
+  mutate(demote_type = ifelse(new_watch1 == 1, "1 year", NA),
+         demote_type = ifelse(new_watch2 == 1, "2 years", demote_type),
+         demote_type = ifelse(new_watch3 == 1, "3 years", demote_type),
+         demote_type = ifelse(new_watch1 + new_watch2 + new_watch3 == 0, 
+                              "No demotion", demote_type),
          ratproto2000_1 = factor(ratproto2000_1, 
                                  labels=c("Not ratified", "Ratified"), 
                                  ordered=TRUE))
@@ -3109,9 +3144,14 @@ covars <- model$model %>%
 
 new.combinations <- expand.grid(prop_tip_wl1 = seq(0, 1, 0.05),
                                 new_watch = c("1", "2", "3"))
+
+baseline.combinations <- data_frame(prop_tip_wl1 = seq(0, 1, 0.05)) %>%
+  mutate(new_watch = NA, new_watch1 = 0, new_watch2 = 0, new_watch3 = 0)
+
 new.data <- new.combinations %>%
   bind_cols(data.frame(model.matrix(prop_tip_wl1 ~ new_watch + 0, 
                                     data=new.combinations))) %>%
+  bind_rows(baseline.combinations) %>%
   mutate(id = 1) %>% left_join(covars, by="id") %>%
   select(-c(id, new_watch))
 
@@ -3119,10 +3159,11 @@ plot.predict <- augment(model, newdata=new.data) %>%
   mutate(prob = model$family$linkinv(.fitted),
          prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
          prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
-  gather(demote_type, demote_value, starts_with("new_watch")) %>%
-  filter(demote_value == 1) %>%
-  mutate(demote_type = factor(demote_type, 
-                              labels=c("1 year", "2 years", "3 years")))
+  mutate(demote_type = ifelse(new_watch1 == 1, "1 year", NA),
+         demote_type = ifelse(new_watch2 == 1, "2 years", demote_type),
+         demote_type = ifelse(new_watch3 == 1, "3 years", demote_type),
+         demote_type = ifelse(new_watch1 + new_watch2 + new_watch3 == 0, 
+                              "No demotion", demote_type))
 
 plot.data <- augment(model, type.predict="response") %>%
   rename(prob = .fitted)
@@ -3247,9 +3288,14 @@ covars <- model$model %>%
 
 new.combinations <- expand.grid(ht_ngos = seq(0, 100, 0.5),
                                 new_watch = c("1", "2", "3"))
+
+baseline.combinations <- data_frame(ht_ngos = seq(0, 100, 0.5)) %>%
+  mutate(new_watch = NA, new_watch1 = 0, new_watch2 = 0, new_watch3 = 0)
+
 new.data <- new.combinations %>%
   bind_cols(data.frame(model.matrix(ht_ngos ~ new_watch + 0, 
                                     data=new.combinations))) %>%
+  bind_rows(baseline.combinations) %>%
   mutate(id = 1) %>% left_join(covars, by="id") %>%
   select(-c(id, new_watch))
 
@@ -3257,10 +3303,11 @@ plot.predict <- augment(model, newdata=new.data) %>%
   mutate(prob = model$family$linkinv(.fitted),
          prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
          prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
-  gather(demote_type, demote_value, starts_with("new_watch")) %>%
-  filter(demote_value == 1) %>%
-  mutate(demote_type = factor(demote_type, 
-                              labels=c("1 year", "2 years", "3 years")))
+  mutate(demote_type = ifelse(new_watch1 == 1, "1 year", NA),
+         demote_type = ifelse(new_watch2 == 1, "2 years", demote_type),
+         demote_type = ifelse(new_watch3 == 1, "3 years", demote_type),
+         demote_type = ifelse(new_watch1 + new_watch2 + new_watch3 == 0, 
+                              "No demotion", demote_type))
 
 plot.data <- augment(model, type.predict="response") %>%
   rename(prob = .fitted)
@@ -3386,9 +3433,14 @@ covars <- model$model %>%
 
 new.combinations <- expand.grid(log.total.funding1 = seq(0, 16, 0.5),
                                 new_watch = c("1", "2", "3"))
+
+baseline.combinations <- data_frame(log.total.funding1 = seq(0, 16, 0.5)) %>%
+  mutate(new_watch = NA, new_watch1 = 0, new_watch2 = 0, new_watch3 = 0)
+
 new.data <- new.combinations %>%
   bind_cols(data.frame(model.matrix(log.total.funding1 ~ new_watch + 0, 
                                     data=new.combinations))) %>%
+  bind_rows(baseline.combinations) %>%
   mutate(id = 1) %>% left_join(covars, by="id") %>%
   select(-c(id, new_watch))
 
@@ -3396,10 +3448,11 @@ plot.predict <- augment(model, newdata=new.data) %>%
   mutate(prob = model$family$linkinv(.fitted),
          prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
          prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
-  gather(demote_type, demote_value, starts_with("new_watch")) %>%
-  filter(demote_value == 1) %>%
-  mutate(demote_type = factor(demote_type, 
-                              labels=c("1 year", "2 years", "3 years")))
+  mutate(demote_type = ifelse(new_watch1 == 1, "1 year", NA),
+         demote_type = ifelse(new_watch2 == 1, "2 years", demote_type),
+         demote_type = ifelse(new_watch3 == 1, "3 years", demote_type),
+         demote_type = ifelse(new_watch1 + new_watch2 + new_watch3 == 0, 
+                              "No demotion", demote_type))
 
 plot.data <- augment(model, type.predict="response") %>%
   rename(prob = .fitted)
