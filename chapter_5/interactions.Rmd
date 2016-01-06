@@ -43,7 +43,7 @@ std <- qnorm(0.95 / 2 + 0.5)
 
 report.colors <- c("#E97F01", "#014358")
 rating.colors <- c("#490A3D", "#EA2E49")
-demote.colors <- c("#00A0B0", "#6A4A3C", "#CC333F", "#2ECC40")
+demote.colors <- c("#00A0B0", "#6A4A3C", "#CC333F", "#8A9B0F")
 
 df.correct <- df.correct %>%
   mutate(in.report = ifelse(tier1 == 0, "Not in report", "In report"),
