@@ -66,9 +66,9 @@ tier.plot <- ggplot(tiers.summary,
   scale_colour_manual(values=c("grey80", "grey50", "grey50", "black"), name="") + 
   scale_linetype_manual(values=c("solid", "solid", "dashed", "solid"), name="") + 
   scale_x_datetime(limits=ymd(c("2000-01-01", "2015-01-01"))) + 
-  theme_clean(7) + theme(legend.key = element_blank(), 
-                         legend.margin = unit(0.25, "lines"),
-                         plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
+  theme_clean(10) + theme(legend.key = element_blank(), 
+                          legend.margin = unit(0.25, "lines"),
+                          plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
 tier.plot
 # ggsave(tier.plot, filename="figures/tier_percents.pdf", 
 #        width=6, height=3, units="in", device=cairo_pdf)

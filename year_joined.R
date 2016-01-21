@@ -61,7 +61,7 @@ report.map <- ggplot(joined.full, aes(fill=year.level, map_id=id)) +
   coord_equal() +
   scale_fill_manual(values=c("grey85", "grey65", "grey30", "grey5", "white"), name="",
                     guide = guide_legend(override.aes=list(size = 0.1))) +
-  theme_blank_map() + 
+  theme_blank_map(base_size=10) + 
   theme(legend.position="top", legend.key.size=unit(0.65, "lines"),
         legend.key = element_blank(),
         strip.background=element_rect(colour="#FFFFFF", fill="#FFFFFF"))

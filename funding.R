@@ -357,7 +357,7 @@ map.funding <- ggplot(all.countries, aes(fill=total, map_id=id)) +
                       labels=dollar, name="", limits=c(0, max(all.countries$total)),
                       guide=guide_colorbar(draw.llim=TRUE, barwidth=15, 
                                            barheight=0.5, ticks=FALSE)) +
-  theme_blank_map() + 
+  theme_blank_map(base_size=10) + 
   theme(legend.position="top")
 map.funding
 # ggsave(map.funding, filename="figures/map_funding.pdf", device=cairo_pdf)
