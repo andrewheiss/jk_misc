@@ -85,7 +85,8 @@ cables.tip <- cables.geocoded %>%
 
 # Expand to full country-year panel format
 cables.panel <- cables.tip %>% 
-  expand(country, Year) %>%  # Magic dataframe expansion
+  ungroup() %>%
+  expand(Year, country) %>%  # Magic dataframe expansion
   left_join(cables.tip, by=c("country", "Year")) %>%
   mutate(cow = countrycode(country, "country.name", "cown")) %>%
   select(country, cow, year = Year, cables_in_wl = cables.in.wl, 
@@ -101,22 +102,22 @@ cables.panel <- cables.tip %>%
 # ----------------
 # Write to Stata
 # ----------------
-# Add fancy Stata labels
-labs <- c("Country name", "COW code", "Year", 
-          "Number of cables originating from country (in Wikileaks)", 
-          "Number of cables related to TIP (in Wikileaks)", 
-          "Estimated number of cables per day",
-          "Estimated number of cables that year",
-          "Proportion of cables related to TIP (in Wikileaks)", 
-          "Proportion of total number of cables that year (in Wikileaks)",
-          "Proportion of cables related to TIP (estimated)", 
-          "Proportion of total number of cables that year (estimated)")
-
-cables.panel %<>% add_labels(labs)  # For haven and RStudio
-attr(cables.panel, "var.labels") <- labs  # For foreign
-
-# write_dta(cables.panel, "data/cables_panel.dta")
-write.dta(cables.panel, "data/cables_panel.dta")
+# # Add fancy Stata labels
+# labs <- c("Country name", "COW code", "Year", 
+#           "Number of cables originating from country (in Wikileaks)", 
+#           "Number of cables related to TIP (in Wikileaks)", 
+#           "Estimated number of cables per day",
+#           "Estimated number of cables that year",
+#           "Proportion of cables related to TIP (in Wikileaks)", 
+#           "Proportion of total number of cables that year (in Wikileaks)",
+#           "Proportion of cables related to TIP (estimated)", 
+#           "Proportion of total number of cables that year (estimated)")
+# 
+# cables.panel %<>% add_labels(labs)  # For haven and RStudio
+# attr(cables.panel, "var.labels") <- labs  # For foreign
+# 
+# # write_dta(cables.panel, "data/cables_panel.dta")
+# write.dta(cables.panel, "data/cables_panel.dta")
 
 
 # ------------------------
