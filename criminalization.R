@@ -7,6 +7,7 @@ library(haven)
 library(countrycode)
 library(maptools)
 library(rgdal)
+library(readr)
 
 source("shared_functions.R")
 
@@ -108,14 +109,14 @@ crim.map <- ggplot(all.countries, aes(fill=crim.level, map_id=id)) +
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
   facet_wrap(~ year, ncol=1) + 
-  scale_fill_manual(values=c("grey30", "grey60", "white", "grey90"), name="",
+  scale_fill_manual(values=c("grey30", "grey60", "white", "grey95"), name="",
                     guide = guide_legend(override.aes=list(size = 0.1))) +
   theme_blank_map() +
   theme(legend.position="top", legend.key.size=unit(0.65, "lines"),
         strip.background=element_rect(colour="#FFFFFF", fill="#FFFFFF"))
 crim.map
-ggsave(crim.map, filename="figures/map_criminalization.pdf", device=cairo_pdf)
-ggsave(crim.map, filename="figures/map_criminalization.png")
+# ggsave(crim.map, filename="figures/map_criminalization.pdf", device=cairo_pdf)
+# ggsave(crim.map, filename="figures/map_criminalization.png")
 
 
 # ------------------------------------
