@@ -1,1 +1,1 @@
-Collapsed sectors: Academic Fellowship, Individual, Private Firm, Think Tank, University 
+Collapsed sectors: Academic Fellowship, Individual, NGO, NPO, Private Firm, Think Tank, University 
