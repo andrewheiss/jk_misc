@@ -65,9 +65,9 @@ report.map <- ggplot(joined.full, aes(fill=year.level, map_id=id)) +
   theme(legend.position="top", legend.key.size=unit(0.65, "lines"),
         legend.key = element_blank(),
         strip.background=element_rect(colour="#FFFFFF", fill="#FFFFFF"))
-report.map
-ggsave(report.map, filename="figures/map_joined_report.pdf", device=cairo_pdf)
-ggsave(report.map, filename="figures/map_joined_report.png")
+# report.map
+# ggsave(report.map, filename="figures/map_joined_report.pdf", device=cairo_pdf)
+# ggsave(report.map, filename="figures/map_joined_report.png")
 
 
 # ------------------------------------

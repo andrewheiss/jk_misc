@@ -42,7 +42,7 @@ theme_blank_map <- function(base_size=12, base_family="Source Sans Pro Light") {
           axis.title=element_blank(), axis.text=element_blank(),
           legend.text=element_text(size=rel(0.7), family="Source Sans Pro Light"),
           legend.title=element_text(size=rel(0.9), family="Source Sans Pro Semibold"),
-          strip.text=element_text(size=rel(1), family="Source Sans Pro Semibold"))
+          strip.text=element_text(size=rel(0.8), family="Source Sans Pro Semibold"))
   ret
 }
 

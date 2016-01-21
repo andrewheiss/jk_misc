@@ -86,9 +86,9 @@ labs <- c("Row ID", "Country name", "Year of grant",
           "Region (alternate)", "Type of recipient")
 attr(funding.clean.stata, "var.labels") <- labs
 
-write.dta(funding.clean.stata, "data/funding_clean.dta")
-system("stata-se -b do funding_clean_stata.do")
-system("rm funding_clean_stata.log")
+# write.dta(funding.clean.stata, "data/funding_clean.dta")
+# system("stata-se -b do funding_clean_stata.do")
+# system("rm funding_clean_stata.log")
 
 
 # --------------------------------------------------------------------
@@ -143,36 +143,36 @@ funding.igos.indiv <- funding.igos.indiv.full %>%
 fig.total.to.igos <- ggplot(funding.igos.indiv, 
                             aes(x = recipient_factor_n, y = total)) + 
   geom_bar(stat="identity") + 
-  geom_text(aes(label = prop_grants), size=3.5, hjust=-0.3, 
+  geom_text(aes(label = prop_grants), size=1.5, hjust=-0.3, 
             family="Source Sans Pro Light") + 
-  scale_y_continuous(labels = dollar, expand = c(.1, .1)) + 
+  scale_y_continuous(labels = dollar, expand = c(.2, .2)) + 
   labs(x = NULL, y = "Total grant amount") + 
   coord_flip() + 
-  theme_clean() + 
+  theme_clean(6) + 
   theme(axis.text.y = element_text(hjust=0.5), 
         axis.line.y = element_blank(),
-        plot.margin = unit(c(1,1,1,0), "lines"))
-fig.total.to.igos
+        plot.margin = unit(c(1, 1.25, 0.25, 0), "lines"))
+# fig.total.to.igos
 
 fig.n.to.igos <- ggplot(funding.igos.indiv, 
                         aes(x = recipient_factor_n, y = number)) + 
   geom_bar(stat="identity") + 
-  geom_text(aes(label = prop_n), size=3.5, hjust=1.3, 
+  geom_text(aes(label = prop_n), size=1.5, hjust=1.3, 
             family="Source Sans Pro Light") + 
-  scale_y_reverse(expand = c(.1, .1)) + 
+  scale_y_reverse(expand = c(.2, .2)) + 
   labs(x = NULL, y = "Total number of grants") + 
   coord_flip() + 
-  theme_clean() + 
+  theme_clean(6) + 
   theme(axis.text.y = element_blank(), 
         axis.line.y = element_blank(),
-        plot.margin = unit(c(1,0.5,1,1), "lines"))
-fig.n.to.igos
+        plot.margin = unit(c(1, 0.5, 0.25, 0.75), "lines"))
+# fig.n.to.igos
 
 grants.to.igos <- arrangeGrob(fig.n.to.igos, fig.total.to.igos, nrow=1)
-ggsave(grants.to.igos, filename="figures/fig_grants_to_igos.pdf",
-       width=5, height=2.5, units="in", device=cairo_pdf, scale=2.5)
-ggsave(grants.to.igos, filename="figures/fig_grants_to_igos.png",
-       width=5, height=2.5, units="in", scale=2.5)
+# ggsave(grants.to.igos, filename="figures/fig_grants_to_igos.pdf",
+#        width=5, height=2.5, units="in", device=cairo_pdf, scale=2.5)
+# ggsave(grants.to.igos, filename="figures/fig_grants_to_igos.png",
+#        width=5, height=2.5, units="in", scale=2.5)
 
 funding.igos.indiv.full %>% select(recipient_clean) %>%
   filter(!(recipient_clean %in% igos.to.keep)) %>% 
@@ -220,34 +220,35 @@ funding.igos <- funding.igos.full %>%
 fig.total.all.sectors <- ggplot(funding.igos, 
                                 aes(x = recipient_type_factor_n, y = total)) + 
   geom_bar(stat="identity") + 
-  geom_text(aes(label = prop_grants), size=3.5, hjust=-0.3, 
+  geom_text(aes(label = prop_grants), size=1.5, hjust=-0.3, 
             family="Source Sans Pro Light") + 
   scale_y_continuous(labels = dollar, expand = c(.15, .15)) + 
   labs(x = NULL, y = "Total grant amount") + 
   coord_flip() + 
-  theme_clean() + 
+  theme_clean(6) + 
   theme(axis.text.y = element_text(hjust=0.5), 
         axis.line.y = element_blank(),
-        plot.margin = unit(c(1,1,1,0), "lines"))
+        plot.margin = unit(c(1, 1, 0.25, 0), "lines"))
 
 fig.n.all.sectors <- ggplot(funding.igos, 
                         aes(x = recipient_type_factor_n, y = number)) + 
   geom_bar(stat="identity") + 
-  geom_text(aes(label = prop_n), size=3.5, hjust=1.3, 
+  geom_text(aes(label = prop_n), size=1.5, hjust=1.3, 
             family="Source Sans Pro Light") + 
   scale_y_reverse(expand = c(.1, .1)) + 
   labs(x = NULL, y = "Total number of grants") + 
   coord_flip() + 
-  theme_clean() + 
+  theme_clean(6) + 
   theme(axis.text.y = element_blank(), 
         axis.line.y = element_blank(),
-        plot.margin = unit(c(1,0.5,1,1), "lines"))
+        plot.margin = unit(c(1, 0.5, 0.25, 0.5), "lines"))
 
-grants.to.all.sectors <- arrangeGrob(fig.n.all.sectors, fig.total.all.sectors, nrow=1)
-ggsave(grants.to.all.sectors, filename="figures/fig_grants_to_all_sectors.pdf",
-       width=5, height=2, units="in", device=cairo_pdf, scale=2.5)
-ggsave(grants.to.all.sectors, filename="figures/fig_grants_to_all_sectors.png",
-       width=5, height=2, units="in", scale=2.5)
+grants.to.all.sectors <- arrangeGrob(fig.n.all.sectors, 
+                                     fig.total.all.sectors, nrow=1)
+# ggsave(grants.to.all.sectors, filename="figures/fig_grants_to_all_sectors.pdf",
+#        width=5, height=2, units="in", device=cairo_pdf, scale=2.5)
+# ggsave(grants.to.all.sectors, filename="figures/fig_grants_to_all_sectors.png",
+#        width=5, height=2, units="in", scale=2.5)
 
 funding.igos.full %>% select(recipient_type) %>%
   filter(!(recipient_type %in% sectors.to.keep)) %>% 
@@ -285,10 +286,10 @@ fig.grant.purpose.total <- ggplot(funding.purpose,
   scale_y_continuous(labels = dollar, expand = c(.1, .1)) + 
   labs(x = NULL, y = "Total grant amount") + 
   coord_flip() + 
-  theme_clean() + 
+  theme_clean(7) + 
   theme(axis.text.y = element_text(hjust=0.5), 
         axis.line.y = element_blank(),
-        plot.margin = unit(c(1,1,1,0), "lines"))
+        plot.margin = unit(c(1, 1, 0.25, 0), "lines"))
 fig.grant.purpose.total
 
 fig.n.grant.purpose <- ggplot(funding.purpose, 
@@ -297,18 +298,18 @@ fig.n.grant.purpose <- ggplot(funding.purpose,
   scale_y_reverse(expand = c(.1, .1)) + 
   labs(x = NULL, y = "Total number of grants") + 
   coord_flip() + 
-  theme_clean() + 
+  theme_clean(7) + 
   theme(axis.text.y = element_blank(), 
         axis.line.y = element_blank(),
-        plot.margin = unit(c(1,0.5,1,1), "lines"))
+        plot.margin = unit(c(1, 0.5, 0.25, 0), "lines"))
 fig.n.grant.purpose
 
 grants.purpose <- arrangeGrob(fig.n.grant.purpose, 
                               fig.grant.purpose.total, nrow=1)
-ggsave(grants.purpose, filename="figures/fig_grants_purpose.pdf",
-       width=5, height=1.5, units="in", device=cairo_pdf, scale=2.5)
-ggsave(grants.purpose, filename="figures/fig_grants_purpose.png",
-       width=5, height=1.5, units="in", scale=2.5)
+# ggsave(grants.purpose, filename="figures/fig_grants_purpose.pdf",
+#        width=5, height=1.5, units="in", device=cairo_pdf, scale=2.5)
+# ggsave(grants.purpose, filename="figures/fig_grants_purpose.png",
+#        width=5, height=1.5, units="in", scale=2.5)
 
 
 # ------------------------
@@ -330,7 +331,7 @@ funding.all.countries.print <- funding.all.countries %>%
   mutate(total = dollar(total)) %>%
   set_colnames(c("Country", "Total awarded"))
 
-pandoc.table(head(funding.all.countries.print, 20))
+# pandoc.table(head(funding.all.countries.print, 20))
 
 # Load map information
 countries.map <- readOGR("map_data", "ne_110m_admin_0_countries")
@@ -357,7 +358,7 @@ map.funding <- ggplot(all.countries, aes(fill=total, map_id=id)) +
                       guide=guide_colorbar(draw.llim=TRUE, barwidth=15, 
                                            barheight=0.5, ticks=FALSE)) +
   theme_blank_map() + 
-  theme(legend.position="bottom")
+  theme(legend.position="top")
 map.funding
-ggsave(map.funding, filename="figures/map_funding.pdf", device=cairo_pdf)
-ggsave(map.funding, filename="figures/map_funding.png")
+# ggsave(map.funding, filename="figures/map_funding.pdf", device=cairo_pdf)
+# ggsave(map.funding, filename="figures/map_funding.png")

@@ -16,18 +16,20 @@ source("shared_functions.R")
 # Create lookup table for reaction variables
 # --------------------------------------------
 reaction.vars <- c("funding", "comparisonsratingnotfair", "publicfacesaving", 
-                   "embassment", "objection", "disappointment", "anger", 
-                   "negative", "usarrogance", "movinggoal", "harmingrelations", 
-                   "cooperative", "bragging", "howimprove")
+                   "embassment", "objection", "anger", 
+                   "negative", "usarrogance", "movinggoal", "harmingrelations",
+                   "cooperative", "disappointment",
+                   "bragging", "howimprove")
 
 reaction.names <- c("Funding", "Comparisons", "Public face saving", 
-                    "Embarrassment", "Objection", "Disappointment", 
+                    "Embarrassment", "Objection", 
                     "Anger or Frustration", "Other negative reaction", 
                     "US arrogance", "Moving goal", "Harming relations", 
-                    "Cooperative", "Appreciation/Bragging", "How improve")
+                    "Cooperative", "Disappointment",
+                    "Appreciation/Bragging", "How improve")
 
 reaction.groups <- c("Funding", rep("Image", 3), 
-                     rep("Negative", 7), rep("Positive", 3))
+                     rep("Negative", 6), rep("Concern about rating", 4))
 
 reaction.types <- data_frame(var.name = reaction.vars, 
                              type.name = reaction.names, 
@@ -138,13 +140,14 @@ p.reactions <- ggplot(reactions.plot,
   geom_bar(stat="identity") + 
   labs(x=NULL, y="Proportion of reports with reaction") + 
   scale_fill_manual(values=c("black", "grey60", "grey40", "grey80"), 
-                    name="Type of reaction",
-                    guide = guide_legend(override.aes=list(size = 0.1))) + 
+                    name="Type of reaction") + 
   scale_y_continuous(labels=percent) + 
-  coord_flip() + theme_clean() + 
-  theme(legend.position="bottom", legend.key.size=unit(0.65, "lines"))
-p.reactions
-ggsave(p.reactions, filename="figures/reactions.pdf", 
-       width=6, height=4, units="in", device=cairo_pdf)
-ggsave(p.reactions, filename="figures/reactions.png", 
-       width=6, height=4, units="in")
+  guides(fill=guide_legend(nrow=2)) +
+  coord_flip() + theme_clean(10) + 
+  theme(legend.position="bottom", legend.key.size=unit(0.65, "lines"),
+        legend.key = element_blank())
+# p.reactions
+# ggsave(p.reactions, filename="figures/reactions.pdf", 
+#        width=6, height=4, units="in", device=cairo_pdf)
+# ggsave(p.reactions, filename="figures/reactions.png", 
+#        width=6, height=4, units="in")
