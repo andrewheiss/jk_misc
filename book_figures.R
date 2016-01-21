@@ -300,19 +300,157 @@ ggsave(fig4.5, filename=file.path(base.folder, paste0(filename, ".png")),
 # Figure 5.1: Cycle of scorecard diplomacy
 
 # Figure 5.1: Criminalization and TIP report inclusion over time
-# Line graph
-# TODO: Make this in R
+df.fig5.1 <- read_csv("final_figures/data_figure5_1.csv") %>%
+  gather(Variable, num, -Year) %>%
+  filter(!is.na(num))
+
+fig5.1 <- ggplot(df.fig5.1, aes(x=Year, y=num, colour=Variable)) +
+  geom_line(size=0.75) + 
+  labs(x=NULL, y="Number of countries") + 
+  scale_colour_manual(values=c("grey30", "grey80"), name=NULL,
+                      labels=c("Included in the US TIP report    ",
+                               "Criminalized human trafficking")) +
+  scale_y_continuous(breaks=seq(0, 200, 25)) + 
+  scale_x_continuous(breaks=seq(2000, 2014, 2)) + 
+  theme_clean(10) + theme(legend.key.size=unit(0.65, "lines"),
+                          legend.key = element_blank(),
+                          legend.margin = unit(0.25, "lines"),
+                          plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
+
+filename <- "figure5_1_crim_report"
+width <- 4.5
+height <- 2.5
+ggsave(fig5.1, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(fig5.1, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
 
 # Figure 5.2: Number of anti-TIP laws passing, by month, 2001-2014
-# Bar chart
-# TODO: Get data for this
-# TODO: Make this in R
+df.fig5.2 <- read_stata("original_files/Criminalization Data UpdatedJK.dta") %>%
+  filter(crimlevel == 2) %>%
+  group_by(month) %>%
+  summarise(num = n()) %>%
+  filter(!is.na(month)) %>%
+  mutate(month = month.name[month],
+         month = factor(month, levels=month, ordered=TRUE))
+  
+fig5.2 <- ggplot(df.fig5.2, aes(x=month, y=num)) + 
+  geom_bar(stat="identity") +
+  labs(x=NULL, y="Anti-TIP laws passed") + 
+  theme_clean(10) + theme(axis.text.x = element_text(angle=45, hjust=0.5, vjust=0.5))
+
+filename <- "figure5_2_laws_passed"
+width <- 4.5
+height <- 2
+ggsave(fig5.2, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(fig5.2, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
 
 # Figure 5.3: Probability of criminalizing fully in a given year if a country had not already done so, 2001-2010
-# Bar chart
-# TODO: Make this in R
+ajps.raw <- read_dta("original_files/kelley_simmons_ajps_2014_replication.dta") %>%
+  group_by(cowcode) %>%
+  mutate(adjbicrimlevel.lag = lag(adjbicrimlevel),
+         tier.lag = lag(tier),
+         tier.lag2 = lag(tier, 2))
 
-# Figure 5.2: Incidence of criminalization in the following year, 2001-2010 for all countries included in the TIP report that had not yet criminalized in the year of the report
+# Summarize probability of criminalization based on presence in the report
+report.presence <- ajps.raw %>%
+  filter(year > 2000) %>%
+  mutate(tier.lag.bin = ifelse(tier.lag < 4, "In the report", 
+                               ifelse(tier.lag == 555, "Not in the report", NA))) %>%
+  group_by(tier.lag.bin, adjbicrimlevel.lag) %>%
+  summarise(total = n(),
+            crim.no = sum(adjbicrimlevel == 0),
+            crim.yes = sum(adjbicrimlevel == 2),
+            prob.yes = crim.yes / total) %>%
+  filter(adjbicrimlevel.lag == 0, !is.na(tier.lag.bin)) %>%
+  select(label = tier.lag.bin, num = crim.yes, total, prob.yes)
+
+# Summarize probability of criminalization based on assignment to a tier
+# Temporarily prefix an order number to get the tiers in the right order
+# *without* using an ordered factor (since conversion to factor happens at the
+# end after the dataframes are all merged)
+tiers.clean <- data_frame(tier.lag = c(1, 2, 2.5, 3, 666),
+                          label = c("4:Tier 1", "3:Tier 2", "2:Watchlist", 
+                                    "1:Tier 3", "5:Special case"))
+tier.assignments <- ajps.raw %>%
+  group_by(tier.lag, adjbicrimlevel.lag) %>%
+  summarise(total = n(),
+            crim.no = sum(adjbicrimlevel == 0),
+            crim.yes = sum(adjbicrimlevel == 2),
+            prob.yes = crim.yes / total) %>%
+  filter(adjbicrimlevel.lag == 0, !is.na(tier.lag), tier.lag != 555) %>%
+  ungroup() %>%
+  left_join(tiers.clean, by="tier.lag") %>%
+  select(label, num = crim.yes, total, prob.yes) %>%
+  # Sort and get rid of temporary prefix
+  arrange(label) %>% mutate(label = gsub("\\d:", "", label))
+
+# Summarize probability of criminalization based on changes in tier assignment
+no.change <- ajps.raw %>%
+  filter(adjbicrimlevel.lag == 0, tier.lag2 == tier.lag, tier.lag2 < 5, tier.lag < 5) %>%
+  group_by(adjbicrimlevel) %>%
+  summarise(num = n()) %>%
+  mutate(total = sum(num),
+         prob.yes = num / total) %>%
+  filter(adjbicrimlevel == 2) %>%
+  mutate(label = "No change") %>%
+  select(label, num, total, prob.yes)
+
+drop.to.3 <- ajps.raw %>%
+  filter(adjbicrimlevel.lag == 0, tier.lag == 3, tier.lag2 < 3) %>%
+  group_by(adjbicrimlevel) %>%
+  summarise(num = n()) %>%
+  mutate(total = sum(num),
+         prob.yes = num / total) %>%
+  filter(adjbicrimlevel == 2) %>%
+  mutate(label = "Drop to 3") %>%
+  select(label, num, total, prob.yes)
+
+tier.drop <- ajps.raw %>%
+  filter(adjbicrimlevel.lag == 0, tier.lag2 < tier.lag, tier.lag2 < 5, tier.lag < 5) %>%
+  group_by(adjbicrimlevel) %>%
+  summarise(num = n()) %>%
+  mutate(total = sum(num),
+         prob.yes = num / total) %>%
+  filter(adjbicrimlevel == 2) %>%
+  mutate(label = "Tier drop") %>%
+  select(label, num, total, prob.yes)
+
+
+tier.changes <- bind_rows(no.change, tier.drop, drop.to.3)
+
+# Combine all those dataframes and add spacer rows
+blank.row1 <- data_frame(label=" ", num=NA, total=NA, prob.yes=0)
+blank.row2 <- data_frame(label="  ", num=NA, total=NA, prob.yes=0)
+
+full.table <- bind_rows(report.presence, blank.row1,
+                        tier.assignments, blank.row2, 
+                        tier.changes) %>%
+  mutate(label.n = ifelse(!is.na(num), paste0(label, " (N = ", total, ")"), label),
+         label.n = factor(label.n, levels=rev(label.n), ordered=TRUE),
+         label = factor(label, levels=rev(label), ordered=TRUE))
+
+# Finally plot it all
+fig5.3 <- ggplot(full.table, aes(x=label.n, y=prob.yes)) + 
+  geom_bar(stat="identity") + 
+  labs(x=NULL, y="Probability of criminalizing") + 
+  scale_y_continuous(labels=percent) + 
+  coord_flip() + 
+  theme_clean(10)
+
+filename <- "figure5_3_prob_criminalize"
+width <- 4.5
+height <- 3
+ggsave(fig5.3, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(fig5.3, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+
+# Figure 5.2 (again): Incidence of criminalization in the following year, 2001-2010 for all countries included in the TIP report that had not yet criminalized in the year of the report
 # Bar chart
 # TODO: Make this in R
 # Use Figure 4.2 data
