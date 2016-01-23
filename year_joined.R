@@ -59,13 +59,13 @@ report.map <- ggplot(joined.full, aes(fill=year.level, map_id=id)) +
   geom_map(map=countries.ggmap, size=0.15, colour="black", show.legend=FALSE) + 
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
-  scale_fill_manual(values=c("grey85", "grey65", "grey30", "grey5", "white"), name="",
+  scale_fill_manual(values=c("grey90", "grey60", "grey30", "black"), name="",
                     guide = guide_legend(override.aes=list(size = 0.1))) +
   theme_blank_map(base_size=10) + 
   theme(legend.position="top", legend.key.size=unit(0.65, "lines"),
         legend.key = element_blank(),
         strip.background=element_rect(colour="#FFFFFF", fill="#FFFFFF"))
-# report.map
+report.map
 # ggsave(report.map, filename="figures/map_joined_report.pdf", device=cairo_pdf)
 # ggsave(report.map, filename="figures/map_joined_report.png")
 

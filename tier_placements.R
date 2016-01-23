@@ -60,7 +60,7 @@ tiers.summary <- tiers %>%
 # -----------
 tier.plot <- ggplot(tiers.summary, 
                     aes(x=year.actual, y=pct, colour=tier, linetype=tier)) + 
-  geom_line(size=0.5) + 
+  geom_line(size=0.75) + 
   labs(x=NULL, y="Percent assigned to tier") + 
   scale_y_continuous(labels=percent) + 
   scale_colour_manual(values=c("grey80", "grey50", "grey50", "black"), name="") + 

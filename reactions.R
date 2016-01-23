@@ -139,7 +139,7 @@ p.reactions <- ggplot(reactions.plot,
                       aes(x=type.name, y=prop.all.reactions, fill=type.group)) + 
   geom_bar(stat="identity") + 
   labs(x=NULL, y="Proportion of reports with reaction") + 
-  scale_fill_manual(values=c("black", "grey60", "grey40", "grey80"), 
+  scale_fill_manual(values=c("black", "grey50", "grey30", "grey80"), 
                     name="Type of reaction") + 
   scale_y_continuous(labels=percent) + 
   guides(fill=guide_legend(nrow=2)) +

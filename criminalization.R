@@ -109,7 +109,7 @@ crim.map <- ggplot(all.countries, aes(fill=crim.level, map_id=id)) +
   expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
   coord_equal() +
   facet_wrap(~ year, ncol=1) + 
-  scale_fill_manual(values=c("grey30", "grey60", "white", "grey95"), name="",
+  scale_fill_manual(values=c("grey30", "grey60", "white", "grey90"), name="",
                     guide=guide_legend(override.aes=list(colour="black", size=0.1))) +
   theme_blank_map(base_size=10) +
   theme(legend.position="top", legend.key.size=unit(0.65, "lines"),

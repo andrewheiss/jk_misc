@@ -13,6 +13,8 @@ library(Cairo)
 # ---------------
 # For regular plots
 theme_clean <- function(base_size=12, base_family="Source Sans Pro Light") {
+  update_geom_defaults("bar", list(fill = "grey30"))
+  update_geom_defaults("line", list(colour = "grey30"))
   ret <- theme_bw(base_size, base_family) + 
     theme(panel.background = element_rect(fill="#ffffff", colour=NA),
           axis.title.y = element_text(margin = margin(r = 10)),
