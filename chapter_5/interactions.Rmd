@@ -178,6 +178,10 @@ plot.data <- augment(model, type.predict="response") %>%
   mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
                             ordered=TRUE))
 
+# Save data for book
+write_csv(plot.predict, path="../final_figures/data_figure6_x_predict.csv")
+write_csv(plot.data, path="../final_figures/data_figure6_x_plot.csv")
+
 p.dem.int.report <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +  
   geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
               alpha=0.2) + 
@@ -1234,6 +1238,10 @@ plot.data <- augment(model, type.predict="response") %>%
   rename(prob = .fitted) %>%
   mutate(low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
                             ordered=TRUE))
+
+# Save data for book
+write_csv(plot.predict, path="../final_figures/data_figure6_x1_predict.csv")
+write_csv(plot.data, path="../final_figures/data_figure6_x1_plot.csv")
 
 p.dem.int.rating <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +  
   geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=low_tier1), 
