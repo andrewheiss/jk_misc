@@ -63,7 +63,6 @@ ggsave(crim.map, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
 # Figure 1.2: Cycle of scorecard diplomacy
-# TODO: Make more step-ful
 
 
 # -----------
@@ -135,8 +134,50 @@ ggsave(fig2.5, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
 # Figure 2.x: Embassies or foreign governments NGOs reported as active partners in the fight against human trafficking
-# Side-by-side bar chart from survey
-# TODO: Check dimensions and font size
+df.fig2.x.active <- read_csv(file.path(base.folder, 
+                                       "data_figure2_x_active_embassies_plot.csv")) %>%
+  mutate(country = factor(country, levels=country, ordered=TRUE),
+         prop.nice = ifelse(num > 0, percent(prop.nice / 100), prop.nice))
+
+df.fig2.x.most.active <- read_csv(file.path(base.folder, 
+                                            "data_figure2_x_most_active_embassies_plot.csv")) %>%
+  mutate(country = factor(country, levels=levels(df.fig2.x.active$country), ordered=TRUE),
+         prop.nice = percent(prop.nice / 100))
+
+fig.active <- ggplot(df.fig2.x.active, aes(x=country, y=num)) + 
+  geom_bar(stat="identity") + 
+  geom_text(aes(label = prop.nice), size=1.5, hjust=1.3, 
+            family="Source Sans Pro Light") + 
+  labs(x=NULL, y="Number of times country was mentioned\nas a partner in anti-TIP work") + 
+  scale_y_continuous(breaks=seq(0, max(df.fig2.x.active$num), by=50), 
+                     trans="reverse", expand = c(.15, .15)) + 
+  coord_flip() + 
+  theme_clean(6) + 
+  theme(axis.text.y = element_blank(), 
+        axis.line.y = element_blank(),
+        plot.margin = unit(c(0.5, 0.5, 0.25, 0.75), "lines"))
+
+fig.most.active <- ggplot(df.fig2.x.most.active, aes(x=country, y=total)) + 
+  geom_bar(stat="identity") + 
+  geom_text(aes(label = prop.nice), size=1.5, hjust=-0.3, 
+            family="Source Sans Pro Light") + 
+  labs(x=NULL, y="Number of times country was mentioned\nas the most active partner in anti-TIP work") + 
+  scale_y_continuous(expand = c(.2, .2)) + 
+  coord_flip() + 
+  theme_clean(6) + 
+  theme(axis.text.y = element_text(hjust=0.5), 
+        axis.line.y = element_blank(),
+        plot.margin = unit(c(0.5, 1.25, 0.25, 0), "lines"))
+
+fig.embassies <- arrangeGrob(fig.active, fig.most.active, nrow=1)
+
+filename <- "figure2_x_tip_partner_embassies"
+width <- 4.5
+height <- 2
+ggsave(fig.embassies, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(fig.embassies, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
 
 # Figure 2.6: Distribution of US grants across purposes
 filename <- "figure2_6_grants_purpose"
@@ -210,17 +251,84 @@ ggsave(grants.to.igos, filename=file.path(base.folder, paste0(filename, ".png"))
        width=width, height=height, type="cairo", dpi=300)
 
 # Figure 3.x: Q3.18 from survey
-# Bar chart about contact with the US embassy from survey
-# TODO: Make this match style
-# TODO: Remove "Q3.18"
+df.book.plots <- read_csv(file.path(base.folder, "data_q3_18_21.csv"))
 
-# Figure 3.x: Table row for Q3.21
-# TODO: Make this
+df.Q3.18.lookup <- data_frame(q.num = c("Q3.18_1", "Q3.18_2", 
+                                        "Q3.18_3", "Q3.18_4",
+                                        "Q3.18_5", "Q3.18_6"),
+                              q.label = c("Direct contact (meetings)", 
+                                          "Direct cooperation", 
+                                          "Our organization\nreceived funding", 
+                                          "Other", 
+                                          "We have not had any contact\nor funding from the US", 
+                                          "Don't know"))
+
+denom.Q3.18 <- df.book.plots %>%
+  select(starts_with("Q3.18")) %>%
+  mutate(num.answered = rowSums(., na.rm=TRUE)) %>%
+  filter(num.answered > 0) %>%
+  nrow()
+
+df.Q3.18 <- df.book.plots %>%
+  select(clean.id, starts_with("Q3.18")) %>%
+  gather(question, response, -clean.id) %>%
+  group_by(question) %>%
+  summarize(num = sum(response, na.rm=TRUE),
+            prop = num / denom.Q3.21) %>%
+  left_join(df.Q3.18.lookup, by=c("question" = "q.num")) %>%
+  mutate(q.label = factor(q.label, levels=rev(q.label), ordered=TRUE))
+
+fig3.x_3_18 <- ggplot(df.Q3.18, aes(x=q.label, y=prop)) +
+  geom_bar(stat="identity") + 
+  labs(x=NULL, y=NULL) + 
+  scale_y_continuous(labels=percent) +
+  coord_flip() + 
+  theme_clean(10)
+
+filename <- "figure3_x_3_18_contact_with_us"
+width <- 4.5
+height <- 2
+ggsave(fig3.x_3_18, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(fig3.x_3_18, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
 
 # Figure 3.4: Stakeholders with whom NGOs discuss the TIP report
-# Bar chart about who NGOs discuss the TIP report
-# TODO: Make this match style
-# TODO: Check dimensions and font size
+df.Q3.21.lookup <- data_frame(q.num = c("Q3.21_1", "Q3.21_2", 
+                                        "Q3.21_3", "Q3.21_4"),
+                              q.label = c("National government", 
+                                          "Another government",
+                                          "Other NGOs", "Other"))
+
+denom.Q3.21 <- df.book.plots %>%
+  select(starts_with("Q3.21")) %>%
+  mutate(num.answered = rowSums(., na.rm=TRUE)) %>%
+  filter(num.answered > 0) %>%
+  nrow()
+
+df.Q3.21 <- df.book.plots %>%
+  select(clean.id, starts_with("Q3.21")) %>%
+  gather(question, response, -clean.id) %>%
+  group_by(question) %>%
+  summarize(num = sum(response, na.rm=TRUE),
+            prop = num / denom.Q3.21) %>%
+  left_join(df.Q3.21.lookup, by=c("question" = "q.num")) %>%
+  mutate(q.label = factor(q.label, levels=rev(q.label), ordered=TRUE))
+
+fig3.4 <- ggplot(df.Q3.21, aes(x=q.label, y=prop)) +
+  geom_bar(stat="identity") + 
+  labs(x=NULL, y=NULL) + 
+  scale_y_continuous(labels=percent) +
+  coord_flip() + 
+  theme_clean(10)
+
+filename <- "figure3_4_discuss_tip_report"
+width <- 4.5
+height <- 1.75
+ggsave(fig3.4, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(fig3.4, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
 
 # Figure 3.x: Coverage in Oman
 df.fig3.x <- read_csv("final_figures/data_figure3_x.csv") %>%
