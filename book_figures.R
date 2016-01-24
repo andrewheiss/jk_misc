@@ -694,11 +694,66 @@ ggsave(fig5.2.2, filename=file.path(base.folder, paste0(filename, ".png")),
 # -----------
 # Chapter 6
 # -----------
-# Figure 6.x: Predicted probability of criminalization with worse democracy as X, colour=1/2 vs watchlist/3
-# TODO: Make this match style, colors
+# Figure 6.x: Predicted probability of criminalization, democracy × in report
+plot.predict <- read_csv("final_figures/data_figure6_x_predict.csv")
+plot.data <- read_csv("final_figures/data_figure6_x_plot.csv")
 
-# Figure 6.x: Predicted probability of criminalization with worse democracy as X, colour=in report
-# TODO: Make this match style, colors
+set.seed(1234)
+fig6.x <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=inreport1), size=0.75) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.1, sides="b", position="jitter") + 
+  labs(x="Worse democracy (Freedom House civil liberties)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent, limits=c(0, max(plot.predict$prob.upper))) + 
+  scale_x_continuous(breaks=seq(1, 7, 1)) +
+  scale_fill_manual(values=c("grey80", "grey30"), name=NULL, guide=FALSE) + 
+  scale_colour_manual(values=c("grey80", "grey30"), name=NULL,
+                      labels=c("In report    ", "Not in report")) +
+  theme_clean(10) + theme(legend.key.size=unit(0.65, "lines"),
+                          legend.key = element_blank(),
+                          legend.margin = unit(0.25, "lines"),
+                          plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
+
+filename <- "figure6_x_interactions_democracy_report"
+width <- 4.5
+height <- 3
+ggsave(fig6.x, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(fig6.x, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+
+# Figure 6.x: Predicted probability of criminalization, democracy × tier
+plot.predict <- read_csv("final_figures/data_figure6_x1_predict.csv")
+plot.data <- read_csv("final_figures/data_figure6_x1_plot.csv")
+
+set.seed(1234)
+fig6.x1 <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=low_tier1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=low_tier1), size=0.75) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.1, sides="b", position="jitter") + 
+  labs(x="Worse democracy (Freedom House civil liberties)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent, limits=c(0, max(plot.predict$prob.upper))) + 
+  scale_x_continuous(breaks=seq(1, 7, 1)) +
+  scale_fill_manual(values=c("grey80", "grey30"), name=NULL, guide=FALSE) + 
+  scale_colour_manual(values=c("grey80", "grey30"), name=NULL,
+                      labels=c("Tier 1 or 2    ", "Watchlist or Tier 3")) +
+  theme_clean(10) + theme(legend.key.size=unit(0.65, "lines"),
+                          legend.key = element_blank(),
+                          legend.margin = unit(0.25, "lines"),
+                          plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
+
+filename <- "figure6_x_interactions_democracy_tiers"
+width <- 4.5
+height <- 3
+ggsave(fig6.x1, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(fig6.x1, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
 
 
 # -----------
