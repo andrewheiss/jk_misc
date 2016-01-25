@@ -31,7 +31,6 @@
 #     * grey50 / #808080
 #     * grey80 / #CCCCCC
 
-# TODO: Second axis for wikileaks figure (figure 4_2)
 source("shared_functions.R")
 library(dplyr)
 library(tidyr)
@@ -356,6 +355,8 @@ ggsave(fig3.x, filename=file.path(base.folder, paste0(filename, ".png")),
 # Figure 4.x: Image from the Bangkok Post, 2014-12-29
 
 # Figure 4.2: Percent of TIP reports with a reported reaction
+# TODO: Second axis for wikileaks figure (figure 4_2) (or something else
+# because using two y axes is horrible)
 df.fig4.raw <- read_csv("final_figures/data_figure4_2.csv") 
 
 df.num.reports <- df.fig4.raw %>%
