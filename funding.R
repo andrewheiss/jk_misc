@@ -235,7 +235,7 @@ fig.n.all.sectors <- ggplot(funding.igos,
   geom_bar(stat="identity") + 
   geom_text(aes(label = prop_n), size=1.5, hjust=1.3, 
             family="Source Sans Pro Light") + 
-  scale_y_reverse(expand = c(.1, .1)) + 
+  scale_y_reverse(expand = c(.15, .15)) + 
   labs(x = NULL, y = "Total number of grants") + 
   coord_flip() + 
   theme_clean(6) + 

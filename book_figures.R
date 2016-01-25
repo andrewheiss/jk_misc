@@ -32,7 +32,6 @@
 #     * grey80 / #CCCCCC
 
 # TODO: Second axis for wikileaks figure (figure 4_2)
-# TODO: Fix figure3_2
 source("shared_functions.R")
 library(dplyr)
 library(tidyr)
