@@ -31,7 +31,8 @@
 #     * grey50 / #808080
 #     * grey80 / #CCCCCC
 
-# TODO: Second axis for wikileaks figure
+# TODO: Second axis for wikileaks figure (figure 4_2)
+# TODO: Fix figure3_2
 source("shared_functions.R")
 library(dplyr)
 library(tidyr)
@@ -274,7 +275,7 @@ df.Q3.18 <- df.book.plots %>%
   gather(question, response, -clean.id) %>%
   group_by(question) %>%
   summarize(num = sum(response, na.rm=TRUE),
-            prop = num / denom.Q3.21) %>%
+            prop = num / denom.Q3.18) %>%
   left_join(df.Q3.18.lookup, by=c("question" = "q.num")) %>%
   mutate(q.label = factor(q.label, levels=rev(q.label), ordered=TRUE))
 
@@ -649,7 +650,7 @@ df.reactions <- reactions.crim %>%
 
 # Summarize probability of criminalization given the type of reaction
 reactions.crim.long <- reactions.crim %>%
-  gather(var.name, value, one_of(reactions.to.plot), convert=TRUE) %>%
+  gather(var.name, value, one_of(reaction.vars), convert=TRUE) %>%
   left_join(reaction.types, by="var.name")
 
 df.reaction.types <- reactions.crim.long %>% 
