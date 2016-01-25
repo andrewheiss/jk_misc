@@ -61,8 +61,8 @@ p.index <- cho.orig %>% left_join(year.joined, by="cow") %>%
 # -------------------
 # Plot changes in p
 # -------------------
-countries.to.plot <- c("ARG", "ARM", "HND", "JPN", "OMN", "ARE", "ZWE", 
-                       "MOZ", "KAZ", "IDN", "ECU", "TCD", "ISR")
+countries.to.plot <- c("ARM", "IDN", "ECU", "MOZ", "KAZ", "ARG", "ISR", 
+                       "ARE", "NGA", "OMN", "HND", "JPN", "TCD", "ZWE", "MYS")
 
 plot.data <- p.index %>% 
   filter(iso %in% countries.to.plot) %>% 
@@ -71,18 +71,19 @@ plot.data <- p.index %>%
 plot.baselines <- plot.data %>%
   filter(year == min(year[in.report]))
 
-ggplot(plot.data, aes(x=year)) + 
+# Cho Chang!  (⌐○Ϟ○)
+fig.cho.changes <- ggplot(plot.data, aes(x=year)) + 
   geom_hline(data=plot.baselines, aes(yintercept=p.while.in.tip),
              size=0.25, color="grey50", linetype="dashed") + 
   geom_line(aes(y=p), size=0.25) +
-  geom_line(aes(y=p.while.in.tip), size=1) + 
+  geom_line(aes(y=p.while.in.tip), size=0.75) + 
   labs(x=NULL, y="Anti-TIP policy index") + 
   scale_y_continuous(limits=c(0, 15)) + 
   scale_x_continuous(limits=c(2000, 2015)) + 
-  facet_wrap(~ countryname, scales="free") + 
-  theme_clean() + 
+  facet_wrap(~ countryname, scales="free", ncol=3) + 
+  theme_clean(10) + 
   theme(panel.grid.minor=element_blank(), strip.text=element_text(size=rel(0.8)))
+# fig.cho.changes
 
 # TODO: Verify measure of changes / time in report
 # TODO: Save new variable to CSV/Stata
-# TODO: Save plot

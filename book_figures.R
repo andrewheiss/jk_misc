@@ -761,3 +761,15 @@ ggsave(fig6.x1, filename=file.path(base.folder, paste0(filename, ".png")),
 # Chapter 7
 # -----------
 # Figure 7.1: Summary of claims
+
+
+# --------------------
+# Unassigned figures
+# --------------------
+filename <- "figurex_1_cho_changes_case_studies"
+width <- 4.5
+height <- 6
+ggsave(fig.cho.changes, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(fig.cho.changes, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
