@@ -1,9 +1,4 @@
-# Results tables for chapter 2 and 4 - criminalization (2), determinants of documented reaction (4)
-# 5 too - effect of reactions on criminalization
-# 3 = determinants of media coverage
-# 6 = interactions - basic model + interaction with aid (not there), with democracy (there), rest just say nothing there, but don't show tables
-# Chapter 6 pred probs to appendix
-
+# Libraries
 library(magrittr)
 library(dplyr)
 library(tidyr)
@@ -11,6 +6,8 @@ library(readr)
 library(readxl)
 library(pander)
 library(scales)
+
+# Pandoc options
 panderOptions('pandoc.binary', '/Users/andrew/.cabal/bin/pandoc')
 panderOptions('table.split.table', Inf)
 panderOptions('table.split.cells', 50)
@@ -20,7 +17,6 @@ panderOptions('table.alignment.default', 'left')
 
 # Locations
 base.folder <- "final_tables"
-all.tables <- file.path(base.folder, "all_tables.xlsx")
 
 
 # -----------
@@ -28,6 +24,20 @@ all.tables <- file.path(base.folder, "all_tables.xlsx")
 # -----------
 # Table 1.1: Individual and country level drivers of concern for reputation
 # Included in all_tables.xlsx
+
+
+# -----------
+# Chapter 2
+# -----------
+# Table 2.x: Regression output for criminalization models
+# TODO: Do this
+
+
+# -----------
+# Chapter 3
+# -----------
+# Table 3.x: Regression output for determinants of media coverage
+# TODO: Do this
 
 
 # -----------
@@ -46,6 +56,9 @@ all.tables <- file.path(base.folder, "all_tables.xlsx")
 # Table 4.4: Summary of statistical results
 # Included in all_tables.xlsx
 
+# Table 4.x: Regression output for determinants of documented reaction models
+# TODO: Do this
+
 
 # -----------
 # Chapter 5
@@ -59,12 +72,20 @@ all.tables <- file.path(base.folder, "all_tables.xlsx")
 # Table 5.3: Impact on legislation and implementation in the case studies
 # Included in all_tables.xlsx
 
+# Table 5.x: Regression output for determinants of effect of reactions on criminalization
+# TODO: Do this
+
 
 # -----------
 # Chapter 6
 # -----------
 # Table 6.1: Most prominent modifying factors and their presence in the case studies
 # Included in all_tables.xlsx
+
+# Table 5.x: Regression output for interaction models
+# Basic model + interaction with aid + interaction with democracy
+# Since the rest have no effect...
+# TODO: Do this
 
 
 # -----------
