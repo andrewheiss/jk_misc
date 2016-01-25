@@ -46,8 +46,33 @@ tiers <- bind_rows(tiers.orig, tiers.2015) %>% arrange(countryname, year) %>%
                        labels=c("Tier 1    ", "Tier 2    ", "Watchlist    ", "Tier 3"), 
                        ordered=TRUE))
 
+present.2001 <- tiers %>% 
+  filter(year == 2001, !is.na(tier)) %>% select(iso) %>% 
+  c %>% unlist %>% unname
+
+present.2005 <- tiers %>% 
+  filter(year == 2005, !is.na(tier)) %>% select(iso) %>% 
+  c %>% unlist %>% unname
+
+
 # Calculate the percentage of tier assignments for each year
 tiers.summary <- tiers %>%
+  filter(!(is.na(tier))) %>%
+  count(year, tier) %>%
+  group_by(year) %>%
+  mutate(pct = n / sum(n),
+         year.actual = ymd(paste0(year, "-01-01")))
+
+tiers.summary.2001 <- tiers %>%
+  filter(iso %in% present.2001) %>%
+  filter(!(is.na(tier))) %>%
+  count(year, tier) %>%
+  group_by(year) %>%
+  mutate(pct = n / sum(n),
+         year.actual = ymd(paste0(year, "-01-01")))
+
+tiers.summary.2005 <- tiers %>%
+  filter(iso %in% present.2005) %>%
   filter(!(is.na(tier))) %>%
   count(year, tier) %>%
   group_by(year) %>%
@@ -74,6 +99,32 @@ tier.plot
 #        width=6, height=3, units="in", device=cairo_pdf)
 # ggsave(tier.plot, filename="figures/tier_percents.png", 
 #        width=6, height=3, units="in")
+
+tier.plot.2001 <- ggplot(tiers.summary.2001, 
+                         aes(x=year.actual, y=pct, colour=tier, linetype=tier)) + 
+  geom_line(size=0.75) + 
+  labs(x=NULL, y="Percent assigned to tier") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=c("grey80", "grey50", "grey50", "black"), name="") + 
+  scale_linetype_manual(values=c("solid", "solid", "dashed", "solid"), name="") + 
+  scale_x_datetime(limits=ymd(c("2000-01-01", "2015-01-01"))) + 
+  theme_clean(10) + theme(legend.key = element_blank(), 
+                          legend.margin = unit(0.25, "lines"),
+                          plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
+tier.plot.2001
+
+tier.plot.2005 <- ggplot(tiers.summary.2005, 
+                         aes(x=year.actual, y=pct, colour=tier, linetype=tier)) + 
+  geom_line(size=0.75) + 
+  labs(x=NULL, y="Percent assigned to tier") + 
+  scale_y_continuous(labels=percent) + 
+  scale_colour_manual(values=c("grey80", "grey50", "grey50", "black"), name="") + 
+  scale_linetype_manual(values=c("solid", "solid", "dashed", "solid"), name="") + 
+  scale_x_datetime(limits=ymd(c("2000-01-01", "2015-01-01"))) + 
+  theme_clean(10) + theme(legend.key = element_blank(), 
+                          legend.margin = unit(0.25, "lines"),
+                          plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
+tier.plot.2005
 
 
 # ------------------------------------

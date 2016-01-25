@@ -106,6 +106,22 @@ ggsave(tier.plot, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(tier.plot, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
+filename <- "figure2_3_tier_ratings_time_2001"
+width <- 4.5
+height <- 2.5
+ggsave(tier.plot.2001, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(tier.plot.2001, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+filename <- "figure2_3_tier_ratings_time_2005"
+width <- 4.5
+height <- 2.5
+ggsave(tier.plot.2005, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(tier.plot.2005, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
 # Figure 2.4: The Timing of inclusion of countries in the report
 filename <- "figure2_4_map_year_joined"
 width <- 4.5
