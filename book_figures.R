@@ -47,6 +47,7 @@ source("tier_placements.R")
 source("year_joined.R")
 source("funding.R")
 source("reactions.R")
+source("policy_index.R")
 
 
 # -----------
