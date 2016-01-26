@@ -31,6 +31,10 @@ base.folder <- "final_tables"
 # -----------
 # Table 2.x: Regression output for criminalization models
 # TODO: Do this
+# TODO: Write script to remove all rows with a colspan + add notes row?
+# Or
+# /Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to odt --infilter="HTML" testing.html
+# /Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to odt --infilter="HTML (StarWriter)" testing.html
 
 
 # -----------
@@ -82,7 +86,7 @@ base.folder <- "final_tables"
 # Table 6.1: Most prominent modifying factors and their presence in the case studies
 # Included in all_tables.xlsx
 
-# Table 5.x: Regression output for interaction models
+# Table 6.x: Regression output for interaction models
 # Basic model + interaction with aid + interaction with democracy
 # Since the rest have no effect...
 # TODO: Do this
