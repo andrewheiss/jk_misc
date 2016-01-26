@@ -73,7 +73,7 @@ stargazer(model2.1, model2.2,
           apply.coef=exp, covariate.labels=var.labs, column.labels=col.labs, 
           model.numbers=FALSE, dep.var.labels.include=FALSE,
           dep.var.caption="US Pressure", type="html",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), p.auto=FALSE,
           notes.align="l", add.lines=extra.lines,
           notes=c("Logit model; odds ratios reported. Non-robust standard errors in parentheses. All explanatory variables are lagged one period."))
 ```
@@ -208,7 +208,7 @@ stargazer(model2.1, model2.1.good, model2.2, model2.2.good,
           apply.coef=exp, covariate.labels=var.labs, column.labels=col.labs, 
           keep.stat=c("n"), model.numbers=FALSE, dep.var.labels.include=FALSE,
           dep.var.caption="US Pressure", type="html",
-          notes.align="l",
+          notes.align="l", p.auto=FALSE,
           notes=c("Logit model; odds ratios reported. Non-robust standard errors in parentheses. All explanatory variables are lagged one period."))
 ```
 
@@ -729,8 +729,8 @@ col.labs <- c("Media coverage 1", "Media coverage 2",
               "Media coverage 3", "Media coverage and incidence")
 dv.labs <- c("Change in logged coverage", rep("Logged coverage", 3))
 
-extra.lines <- list(c("Year fixed effects", rep("Yes", 3)),
-                    c("Country fixed effects", rep("Yes", 3)))
+extra.lines <- list(c("Year fixed effects", rep("Yes", 4)),
+                    c("Country fixed effects", rep("Yes", 4)))
 
 stargazer(model.change, model.coverage, model.coverage1, model.coverage2,
           column.labels=col.labs, covariate.labels=var.labs,
@@ -741,9 +741,15 @@ stargazer(model.change, model.coverage, model.coverage1, model.coverage2,
           notes=c("All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
-## Determinants of having a media reaction
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+# TODO: Graph impact of TIP report inclusion on media
+```
+
+## Determinants of having a reaction
 
 ### Original models
+
+In the original analysis, assignment to more severe tier ratings increases the probability of observing a reaction in the Wikileaks cables: assignment to Tier 2 does not have a significant impact on reactions (Reaction 2: `r I(parens(model.reaction2, "tier_2", "z"))`), while assignment to either the Watchlist or Tier 3 increases the odds by more than five times (Reaction 2: `r I(parens(model.reaction2, "tier_25", "z"))`; `r I(parens(model.reaction2, "tier_3", "z"))`). These results tend to hold up under different specifications of the model and different measurements of US pressure (i.e. combining Watchlist and Tier 3 assignment into one variable).
 
 ```{r, results='asis', echo=FALSE}
 var.labs <- c("Tier 2", "Watchlist", "Tier 3",
@@ -759,21 +765,29 @@ var.labs <- c("Tier 2", "Watchlist", "Tier 3",
 col.labs <- c("Reaction 1", "Reaction 2", 
               "Reaction 1", "Reaction 4", "Reaction 5")
 
-extra.lines <- list(c("Year fixed effects", rep("No", 5)),
-                    c("Country fixed effects", rep("No", 5)))
+extra.lines <- list(c("Pseudo R-squared",
+                      sapply(list(model.reaction1, model.reaction2, 
+                                  model.reaction3, model.reaction4, 
+                                  model.reaction5), 
+                             calc.pseudo.r.squared)),
+                    c("Year fixed effects", rep("No", 5)))
 
 stargazer(model.reaction1, model.reaction2, model.reaction3, 
           model.reaction4, model.reaction5,
-          apply.coef=exp,
+          apply.coef=exp, p.auto=FALSE,
           column.labels=col.labs, covariate.labels=var.labs,
           dep.var.labels.include=FALSE,
-          dep.var.caption="Reaction in media (original models)", model.numbers=FALSE,
-          type="html", omit="\\.factor",
+          dep.var.caption="Reaction in cables (original models)", model.numbers=FALSE,
+          type="html", omit="\\.factor", keep.stat=c("n", "ll"), 
           notes.align="l", add.lines=extra.lines,
           notes=c("Logit models; odds ratios reported. Non-robust standard errors in parentheses."))
 ```
 
 ### Expanded models (using standard controls)
+
+These findings also hold when using the more standardized controls used throughout this project (i.e. share of women in parliament, worse civil liberties, regional density of criminalization, 2000 TIP protocol ratification, etc.)—being assigned to the Watchlist generally increases the odds of a reaction by ≈4 times, while assignment to Tier 3 increases those odds by ≈5 times. 
+
+The new variables measuring US engagement (Wikileaks activity), US funding for TIP activities, and the number of NGOs from our survey database do not have any significant effect on the likelihood of a reaction. in the cables
 
 ```{r, results='asis', echo=FALSE}
 var.labs <- c("Tier 2", "Watchlist", "Tier 3", 
@@ -797,14 +811,16 @@ extra.lines <- list(c("Pseudo R-squared",
                                   model.react.new3, model.react.new4, 
                                   model.react.new5, model.react.new6, 
                                   model.react.new7), 
-                             calc.pseudo.r.squared)))
+                             calc.pseudo.r.squared)),
+                    c("Year fixed effects", c("No", rep("Yes", 6))))
 
 stargazer(model.react.new1, model.react.new2, model.react.new3,
           model.react.new4, model.react.new5, model.react.new6,
           model.react.new7,
-          apply.coef=exp, covariate.labels=var.labs, column.labels=col.labs, 
+          apply.coef=exp, p.auto=FALSE, 
+          covariate.labels=var.labs, column.labels=col.labs, 
           model.numbers=FALSE, dep.var.labels.include=FALSE,
-          dep.var.caption="Reaction in media (expanded models)", type="html",
+          dep.var.caption="Reaction in cables (expanded models)", type="html",
           keep.stat=c("n", "ll"), omit="\\.factor",
           notes.align="l", add.lines=extra.lines,
           notes=c("Logit model; odds ratios reported. Non-robust standard errors in parentheses. With the exception of tier ratings, all explanatory variables are lagged one period."))
