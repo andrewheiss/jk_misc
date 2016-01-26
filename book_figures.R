@@ -783,10 +783,31 @@ ggsave(fig6.x1, filename=file.path(base.folder, paste0(filename, ".png")),
 # --------------------
 # Unassigned figures
 # --------------------
+# Cho changes for case studies
 filename <- "figurex_1_cho_changes_case_studies"
 width <- 4.5
 height <- 6
 ggsave(fig.cho.changes, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
 ggsave(fig.cho.changes, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+
+# Impact of report on media coverage
+plot.predict <- read_csv("final_figures/data_figurex_x_media_predict.csv") %>%
+  mutate(inreport = factor(inreport, levels=c("Not in report", "In report"), 
+                           ordered=TRUE))
+
+fig.media.report <- ggplot(plot.predict, aes(x=inreport, y=pred)) + 
+  geom_pointrange(aes(ymax=pred.upper, ymin=pred.lower), size=.75,
+                  position=position_dodge(width=0.25)) + 
+  labs(x=NULL, y="Predicted number of TIP-related stories") + 
+  theme_clean(10)
+
+filename <- "figurex_2_media_inreport_predict"
+width <- 4.5
+height <- 3
+ggsave(fig.media.report, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(fig.media.report, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)

@@ -741,8 +741,37 @@ stargazer(model.change, model.coverage, model.coverage1, model.coverage2,
           notes=c("All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
-```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
-# TODO: Graph impact of TIP report inclusion on media
+```{r, echo=FALSE, fig.width=4.5, fig.height=3, warning=FALSE}
+std <- qnorm(0.95 / 2 + 0.5)
+model <- model.coverage
+
+new.data.covars <- model$model %>%
+  summarise_each(funs(mean), -c(year.factor, `as.factor(cowcode)`)) %>%
+  mutate(year.factor = factor(2005),
+         cowcode = factor(92),
+         index = 1) %>%
+  select(-inreport)
+
+new.data <- data_frame(inreport = c(0, 1), index = 1) %>% 
+  left_join(new.data.covars, by="index") %>%
+  select(-index)
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(pred = exp(.fitted),
+         pred.lower = exp(.fitted - (std * .se.fit)),
+         pred.upper = exp(.fitted + (std * .se.fit)),
+         inreport = factor(inreport, labels=c("Not in report", "In report"),
+                           ordered=TRUE))
+
+write_csv(plot.predict, path="../final_figures/data_figurex_x_media_predict.csv")
+
+p.media.report <- ggplot(plot.predict, aes(x=inreport, y=pred)) + 
+  geom_pointrange(aes(ymax=pred.upper, ymin=pred.lower), size=.75,
+                  position=position_dodge(width=0.25)) + 
+  labs(x=NULL, y="Predicted number of TIP-related stories") + 
+  theme_light(10)
+p.media.report
+
 ```
 
 ## Determinants of having a reaction
