@@ -730,3 +730,84 @@ model.coverage2 <- lm(logstory ~ inreport + inreport_diff + logstory1 +
                         ht_incidence_destination +
                         year.factor + as.factor(cowcode), 
                       data=df.media)
+
+
+# ----------------------------------
+# Predicting reaction in the media
+# ----------------------------------
+df.reactions <- df.correct %>%
+  filter(cowcode != 2) %>%
+  mutate(pressure = ifelse(tier_25 == 1 | tier_3 == 1, 1, 0))
+
+model.reaction1 <- glm(reactionnomedia ~ tier_2 + tier_25 + tier_3, 
+                       data=df.reactions,
+                       family=binomial(link="logit"))
+
+model.reaction2 <- glm(reactionnomedia ~ tier_2 + tier_25 + tier_3 +
+                         logeconasstP_1 + loggdppercap_1 + logpop_1, 
+                       data=df.reactions,
+                       family=binomial(link="logit"))
+
+model.reaction3 <- glm(reactionnomedia ~ tier_2 + tier_25 + tier_3 +
+                         logeconasstP_1 + logeconasstP_1 * tier_3, 
+                       data=df.reactions,
+                       family=binomial(link="logit"))
+
+model.reaction4 <- glm(reactionnomedia ~ tier_2 +
+                         logeconasstP_1 + pressure + pressure * logeconasstP_1, 
+                       data=df.reactions,
+                       family=binomial(link="logit"))
+
+model.reaction5 <- glm(reactionnomedia ~ tier_2 + tier_25 + tier_3 +
+                         logeconasstP_1 + loggdppercap_1 + logpop_1 + 
+                         newus_share_tot_trade1 + totalfreedom1 + 
+                         ratproto2000_1 + loght_news_country, 
+                       data=df.reactions,
+                       family=binomial(link="logit"))
+
+# Models with consistent controls
+model.react.new1 <- glm(reactionnomedia ~ tier_2 + tier_25 + tier_3,
+                        data=df.reactions,
+                        family=binomial(link="logit"))
+
+model.react.new2 <- glm(reactionnomedia ~ tier_2 + tier_25 + tier_3 +
+                          women1 + totalfreedom1 + corrected_regcrim1_1 + ratproto2000_1 + 
+                          as.factor(year),
+                        data=df.reactions,
+                        family=binomial(link="logit"))
+
+model.react.new3 <- glm(reactionnomedia ~ tier_2 + tier_25 + tier_3 +
+                          women1 + totalfreedom1 + corrected_regcrim1_1 + ratproto2000_1 +
+                          logeconasstP_1 + loggdppercap_1 + logpop_1 + corruption_1 + ngos_ave +
+                          as.factor(year),
+                        data=df.reactions,
+                        family=binomial(link="logit"))
+
+model.react.new4 <- glm(reactionnomedia ~ tier_2 + tier_25 + tier_3 +
+                          women1 + totalfreedom1 + corrected_regcrim1_1 + ratproto2000_1 +
+                          log.total.funding1 + as.factor(year),
+                        data=df.reactions,
+                        family=binomial(link="logit"))
+
+model.react.new5 <- glm(reactionnomedia ~ tier_2 + tier_25 + tier_3 +
+                          women1 + totalfreedom1 + corrected_regcrim1_1 + ratproto2000_1 +
+                          prop_tip_wl1 + as.factor(year),
+                        data=df.reactions,
+                        family=binomial(link="logit"))
+
+model.react.new6 <- glm(reactionnomedia ~ tier_2 + tier_25 + tier_3 +
+                          women1 + totalfreedom1 + corrected_regcrim1_1 + ratproto2000_1 +
+                          prop_tip_estimated1 + as.factor(year),
+                        data=df.reactions,
+                        family=binomial(link="logit"))
+
+model.react.new7 <- glm(reactionnomedia ~ tier_2 + tier_25 + tier_3 +
+                          women1 + totalfreedom1 + corrected_regcrim1_1 + ratproto2000_1 +
+                          ht_ngos + as.factor(year),
+                        data=df.reactions,
+                        family=binomial(link="logit"))
+
+# stargazer::stargazer(model.react.new1, model.react.new2, model.react.new3,
+#                      model.react.new4, model.react.new5, model.react.new6,
+#                      model.react.new7, omit="\\.factor",
+#                      type="text", apply.coef=exp)

@@ -225,6 +225,7 @@ df.complete.with.lags.correct <- df.complete %>%
          totalfreedom1 = lag(totalfreedom),
          protection_1 = lag(protection),
          totalaidave1 = lag(totalaidave),
+         newus_share_tot_trade1 = lag(newus_share_tot_trade),
          newus_tradeshare_gdp1 = lag(newus_tradeshare_gdp),
          ht_news_country1 = lag(ht_news_country),
          logstory1 = lag(logstory),
@@ -491,13 +492,20 @@ reactions <- read_dta("../original_files/mergedreaction8_new.dta") %>%
   mutate(totalfreedom = fh_pr + fh_cl)
 
 reactions.small <- reactions %>% 
-  select(year, cowcode, totalreactionnomedia, reactionnomedia, aid, bigaid)
+  select(year, cowcode, totalreactionnomedia, reactionnomedia, aid, 
+         bigaid, loght_news_country)
+
 df.correct <- df.complete.with.lags.correct %>%
   left_join(reactions.small, by=c("year", "cowcode")) %>%
   group_by(cowcode) %>%
   mutate(totalreactionnomedia1 = lag(totalreactionnomedia),
          reactionnomedia1 = lag(reactionnomedia),
-         bigaid1 = lag(bigaid))
+         bigaid1 = lag(bigaid),
+         loght_news_country1 = lag(loght_news_country)) %>%
+  mutate(tier_1 = ifelse(tier == 1, 1, 0),
+         tier_2 = ifelse(tier == 2, 1, 0),
+         tier_25 = ifelse(tier == 2.5, 1, 0),
+         tier_3 = ifelse(tier == 3, 1, 0))
 
 df.table5 <- reactions %>%
   filter(lag(adjbicrimlevel) == 0 & year > 2001 & year < 2011) %>%

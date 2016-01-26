@@ -741,6 +741,76 @@ stargazer(model.change, model.coverage, model.coverage1, model.coverage2,
           notes=c("All explanatory variables are lagged one period unless otherwise noted."))
 ```
 
+## Determinants of having a media reaction
+
+### Original models
+
+```{r, results='asis', echo=FALSE}
+var.labs <- c("Tier 2", "Watchlist", "Tier 3",
+              "US aid (logged, lagged)", "GDP per capita (logged, lagged)",
+              "Population (logged, lagged)", "Tier 3 × US aid (logged, lagged)",
+              "US pressure (Watchlist or Tier 3)", 
+              "US aid (logged, lagged) × US pressure",
+              "Share of total trade with US (lagged)",
+              "Worse total freedom (lagged)", 
+              "2000 TIP protocol ratification (lagged)",
+              "Human trafficking news (logged)")
+
+col.labs <- c("Reaction 1", "Reaction 2", 
+              "Reaction 1", "Reaction 4", "Reaction 5")
+
+extra.lines <- list(c("Year fixed effects", rep("No", 5)),
+                    c("Country fixed effects", rep("No", 5)))
+
+stargazer(model.reaction1, model.reaction2, model.reaction3, 
+          model.reaction4, model.reaction5,
+          apply.coef=exp,
+          column.labels=col.labs, covariate.labels=var.labs,
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Reaction in media (original models)", model.numbers=FALSE,
+          type="html", omit="\\.factor",
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Logit models; odds ratios reported. Non-robust standard errors in parentheses."))
+```
+
+### Expanded models (using standard controls)
+
+```{r, results='asis', echo=FALSE}
+var.labs <- c("Tier 2", "Watchlist", "Tier 3", 
+              "Share of women in parliament", "Worse civil liberties", 
+              "Regional density of criminalization",
+              "2000 TIP protocol ratification",
+              "US aid (logged)", "GDP per capita (logged)", 
+              "Total population (logged)", "Corruption", 
+              "NGO density", 
+              "Proportion of TIP-related cables (observed in Wikileaks)",
+              "Proportion of TIP-related cables (estimated)",
+              "Number of NGOs (survey database)",
+              "Total US funding for TIP (logged)",
+              "Constant")
+col.labs <- c("New reaction 1", "New reaction 2", "New reaction 3", 
+              "New reaction 4", "New reaction 5", "New reaction 6",
+              "New reaction 7")
+
+extra.lines <- list(c("Pseudo R-squared",
+                      sapply(list(model.react.new1, model.react.new2, 
+                                  model.react.new3, model.react.new4, 
+                                  model.react.new5, model.react.new6, 
+                                  model.react.new7), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.react.new1, model.react.new2, model.react.new3,
+          model.react.new4, model.react.new5, model.react.new6,
+          model.react.new7,
+          apply.coef=exp, covariate.labels=var.labs, column.labels=col.labs, 
+          model.numbers=FALSE, dep.var.labels.include=FALSE,
+          dep.var.caption="Reaction in media (expanded models)", type="html",
+          keep.stat=c("n", "ll"), omit="\\.factor",
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Logit model; odds ratios reported. Non-robust standard errors in parentheses. With the exception of tier ratings, all explanatory variables are lagged one period."))
+```
+
+
 ## Updated number of human trafficking NGOs
 
 Substituting the number of NGOs in the database used for the survey yields smaller (and seemingly more precise) effects on both the time to entering the report (explained in section 3.3 above) and the time to criminalization. In Extension 1.2, an additional NGO in a country increases the odds of criminalization in a given year by 2% (`r I(parens(ext1.2, "ht_ngos", "z"))`), which is a smaller and more precise effect than the original NGO density variable in Extension 1.1 (`r I(parens(ext1.1, "ngos_ave", "z"))`). Importantly, however, this effect is only significant at a p=0.1 threshold. The new measure has no effect when used as a covariate for estimating the effect of US engagement. In Extensions 2.1 and 2.2, the original NGO density variable increases the odds of criminalization by roughly 25% (Extension 2.1: `r I(parens(ext2.1, "ngos_ave", "z"))`), but that effect drops to an insignificant 2% with the updated measure (Extension 2.3: `r I(parens(ext2.3, "ht_ngos", "z"))`). It is likely, however, that the effects are generally similar, since the two measures use different scales.
