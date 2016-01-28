@@ -373,7 +373,7 @@ ggsave(fig3.x, filename=file.path(base.folder, paste0(filename, ".png")),
 
 # Figure 4.2: Percent of TIP reports with a reported reaction
 # TODO: Second axis for wikileaks figure (figure 4_2) (or something else
-# because using two y axes is horrible)
+# because using two y axes is bad)
 df.fig4.raw <- read_csv("final_figures/data_figure4_2.csv") 
 
 df.num.reports <- df.fig4.raw %>%
@@ -793,8 +793,11 @@ ggsave(fig.cho.changes, filename=file.path(base.folder, paste0(filename, ".png")
        width=width, height=height, type="cairo", dpi=300)
 
 
+# ------------------
+# Appendix figures
+# ------------------
 # Impact of report on media coverage
-plot.predict <- read_csv("final_figures/data_figurex_x_media_predict.csv") %>%
+plot.predict <- read_csv("final_figures/data_figureA_3_media_predict.csv") %>%
   mutate(inreport = factor(inreport, levels=c("Not in report", "In report"), 
                            ordered=TRUE))
 
@@ -804,7 +807,7 @@ fig.media.report <- ggplot(plot.predict, aes(x=inreport, y=pred)) +
   labs(x=NULL, y="Predicted number of TIP-related stories") + 
   theme_clean(10)
 
-filename <- "figurex_2_media_inreport_predict"
+filename <- "figureA_3_media_inreport_predict"
 width <- 4.5
 height <- 3
 ggsave(fig.media.report, filename=file.path(base.folder, paste0(filename, ".pdf")), 
