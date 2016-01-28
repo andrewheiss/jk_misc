@@ -763,7 +763,7 @@ plot.predict <- augment(model, newdata=new.data) %>%
          inreport = factor(inreport, labels=c("Not in report", "In report"),
                            ordered=TRUE))
 
-write_csv(plot.predict, path="../final_figures/data_figurex_x_media_predict.csv")
+# write_csv(plot.predict, path="../final_figures/data_figurex_x_media_predict.csv")
 
 p.media.report <- ggplot(plot.predict, aes(x=inreport, y=pred)) + 
   geom_pointrange(aes(ymax=pred.upper, ymin=pred.lower), size=.75,

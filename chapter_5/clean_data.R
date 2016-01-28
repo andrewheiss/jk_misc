@@ -278,6 +278,8 @@ df.complete.with.lags.correct <- df.complete %>%
          new_watch2 = ifelse(new_watch2 != 1 | is.na(new_watch2), 0, new_watch2),
          new_watch3 = ifelse(new_watch3 != 1 | is.na(new_watch3), 0, new_watch3))
 
+saveRDS(df.complete.with.lags.correct, file="../final_tables/df_complete.rds")
+
 # library(testthat)
 # print(expect_equal(df.complete.with.lags.orig$logpop_1,
 #                    df.complete.with.lags.correct$logpop_1, tolerance=0.001,
@@ -492,8 +494,10 @@ reactions <- read_dta("../original_files/mergedreaction8_new.dta") %>%
   mutate(totalfreedom = fh_pr + fh_cl)
 
 reactions.small <- reactions %>% 
-  select(year, cowcode, totalreactionnomedia, reactionnomedia, aid, 
+  select(year, cowcode, totalreactionnomedia, reactionnomedia,
          bigaid, loght_news_country)
+
+saveRDS(reactions.small, file="../final_tables/df_reactions_small.rds")
 
 df.correct <- df.complete.with.lags.correct %>%
   left_join(reactions.small, by=c("year", "cowcode")) %>%
