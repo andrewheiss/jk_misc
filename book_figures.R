@@ -792,6 +792,15 @@ ggsave(fig.cho.changes, filename=file.path(base.folder, paste0(filename, ".pdf")
 ggsave(fig.cho.changes, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
+# Average Cho scores for all countries vs. case countries
+filename <- "figurex_2_avg_all_vs_cases"
+width <- 4.5
+height <- 2.5
+ggsave(fig.cho.all.vs.cases, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(fig.cho.all.vs.cases, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
 
 # ------------------
 # Appendix figures

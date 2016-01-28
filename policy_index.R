@@ -85,5 +85,31 @@ fig.cho.changes <- ggplot(plot.data, aes(x=year)) +
   theme(panel.grid.minor=element_blank(), strip.text=element_text(size=rel(0.8)))
 # fig.cho.changes
 
+# Plot average changes for 15 case study countries vs. all countries
+all.countries <- p.index %>% 
+  filter(year != 2014, year != 1999) %>%
+  group_by(year) %>% summarise(avg.all = mean(p, na.rm=TRUE))
+
+just.cases <- plot.data %>%
+  filter(year != 2014, year != 1999) %>%
+  group_by(year) %>% summarise(avg.cases = mean(p, na.rm=TRUE))
+
+plot.data <- all.countries %>% left_join(just.cases, by="year") %>%
+  gather(Variable, Value, -year) %>%
+  mutate(Variable = factor(Variable, levels=c("avg.all", "avg.cases"),
+                           labels=c("All countries    ", "Selected case countries"),
+                           ordered=TRUE))
+
+fig.cho.all.vs.cases <- ggplot(plot.data, 
+                               aes(x=year, y=Value, colour=Variable)) + 
+  geom_line(size=0.75) + 
+  labs(x=NULL, y="Anti-TIP policy index") + 
+  scale_colour_manual(values=c("grey80", "grey30"), name=NULL) +
+  theme_clean(10) + theme(panel.grid.minor=element_blank(),
+                          legend.key.size=unit(0.65, "lines"),
+                          legend.key = element_blank(),
+                          legend.margin = unit(0.25, "lines"),
+                          plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
+
 # TODO: Verify measure of changes / time in report
 # TODO: Save new variable to CSV/Stata
