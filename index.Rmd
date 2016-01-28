@@ -20,3 +20,7 @@ Links to different figures here
 * [Numbers for chapter 3 (now not chapter 3)](http://stats.andrewheiss.com/judith/chapter_3_blanks.html)
 * [AJPS replication and extension for chapter 5 (now probably not chapter 5)](http://stats.andrewheiss.com/judith/chapter_5/report.html)
 * [Analysis of all the different interactions between variables for AJPS extension](http://stats.andrewheiss.com/judith/chapter_5/interactions.html)
+
+# NGO survey article
+
+* [NGO survey article raw analysis](http://stats.andrewheiss.com/judith/ngo_survey/)
