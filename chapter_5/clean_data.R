@@ -495,7 +495,7 @@ reactions <- read_dta("../original_files/mergedreaction8_new.dta") %>%
 
 reactions.small <- reactions %>% 
   select(year, cowcode, totalreactionnomedia, reactionnomedia,
-         bigaid, loght_news_country)
+         bigaid, loght_news_country, adj_ratproto2000)
 
 saveRDS(reactions.small, file="../final_tables/df_reactions_small.rds")
 
