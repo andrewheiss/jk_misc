@@ -24,6 +24,7 @@ library(countrycode)
 # Easy to do on OS X: `brew install geos gdal`
 # Then install these packages from source
 # install.packages(c("rgeos", "rgdal"), type="source")
+library(rgeos)
 library(rgdal)
 
 source("shared_functions.R")
