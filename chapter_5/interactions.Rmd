@@ -179,8 +179,8 @@ plot.data <- augment(model, type.predict="response") %>%
                             ordered=TRUE))
 
 # Save data for book
-write_csv(plot.predict, path="../final_figures/data_figure6_x_predict.csv")
-write_csv(plot.data, path="../final_figures/data_figure6_x_plot.csv")
+# write_csv(plot.predict, path="../final_figures/data_figure6_x_predict.csv")
+# write_csv(plot.data, path="../final_figures/data_figure6_x_plot.csv")
 
 p.dem.int.report <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +  
   geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
@@ -1240,8 +1240,8 @@ plot.data <- augment(model, type.predict="response") %>%
                             ordered=TRUE))
 
 # Save data for book
-write_csv(plot.predict, path="../final_figures/data_figure6_x1_predict.csv")
-write_csv(plot.data, path="../final_figures/data_figure6_x1_plot.csv")
+# write_csv(plot.predict, path="../final_figures/data_figure6_x1_predict.csv")
+# write_csv(plot.data, path="../final_figures/data_figure6_x1_plot.csv")
 
 p.dem.int.rating <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +  
   geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=low_tier1), 
