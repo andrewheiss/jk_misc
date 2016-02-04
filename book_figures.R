@@ -760,10 +760,12 @@ fig.media.report <- ggplot(plot.predict, aes(x=inreport, y=pred)) +
 filename <- "figureA_3_media_inreport_predict"
 width <- 4.5
 height <- 3
+caption <- "Predicted number of TIP-related stories given a country’s presence in the annual TIP report (Model 3.1.1)"
 ggsave(fig.media.report, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
 ggsave(fig.media.report, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # Predicted probability of criminalization, democracy × in report
@@ -785,15 +787,17 @@ fig.dem.report.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +
                           legend.margin = unit(0.25, "lines"),
                           plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
 
-filename <- "figureA_6_interactions_democracy_report"
+filename <- "figureA_6_1_interactions_democracy_report"
 width <- 4.5
 height <- 3
+caption <- "Predicted probability of criminalization across different levels of democracy, given presence in the annual TIP report (Model 6.1.1)"
 ggsave(fig.dem.report.predict, 
        filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
 ggsave(fig.dem.report.predict, 
        filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # Predicted probability of criminalization, democracy × lowest tier
@@ -815,15 +819,17 @@ fig.dem.lowest.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +
                           legend.margin = unit(0.25, "lines"),
                           plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
 
-filename <- "figureA_6_interactions_democracy_lowest"
+filename <- "figureA_6_2_interactions_democracy_lowest"
 width <- 4.5
 height <- 3
+caption <- "Predicted probability of criminalization across different levels of democracy, given assignment to the lowest TIP tier (Model 6.1.2)"
 ggsave(fig.dem.lowest.predict, 
        filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
 ggsave(fig.dem.lowest.predict, 
        filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # Predicted probability of criminalization, democracy × downgrading
@@ -846,13 +852,15 @@ fig.dem.down.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +
                           legend.key = element_blank(),
                           legend.margin = unit(0.25, "lines"),
                           plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
-fig.dem.down.predict
-filename <- "figureA_6_interactions_democracy_demote"
+
+filename <- "figureA_6_3_interactions_democracy_demote"
 width <- 4.5
 height <- 3
+caption <- "Predicted probability of criminalization across different levels of democracy, given the time elapsed since receiving a demotion in TIP rating (Model 6.1.3)"
 ggsave(fig.dem.down.predict, 
        filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
 ggsave(fig.dem.down.predict, 
        filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
