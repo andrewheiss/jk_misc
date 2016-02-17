@@ -733,11 +733,121 @@ ggsave(fig.cho.changes, filename=file.path(base.folder, paste0(filename, ".png")
 # Figure 7.1: Summary of claims
 
 
-# -------------------------------
-# Unassigned figures and tables
-# -------------------------------
+# ------------------
+# Appendix figures
+# ------------------
+# Appendix 1
+# ----------
+# Figure A1: Map of survey participation
+hq.countries <- read_csv("final_figures/data_figureA_hq_map.csv")
+work.countries <- read_csv("final_figures/data_figureA_work_map.csv")
+
+hq.map <- ggplot(hq.countries, aes(fill=num.ceiling, map_id=id)) +
+  geom_map(map=countries.ggmap, size=0.15, colour="black") + 
+  expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
+  coord_equal() +
+  scale_fill_gradient(low="grey95", high="grey20", breaks=seq(2, 10, 2), 
+                      labels=c(paste(seq(2, 8, 2), "  "), "10+"),
+                      na.value="#FFFFFF", name="NGOs based in country",
+                      guide=guide_colourbar(ticks=FALSE, barwidth=6)) + 
+  theme_blank_map(base_size=10) +
+  theme(legend.position="bottom", legend.key.size=unit(0.5, "lines"),
+        strip.background=element_rect(colour="#FFFFFF", fill="#FFFFFF"))
+
+filename <- "figureA1_hq_map"
+width <- 4.5
+height <- 3.5
+ggsave(hq.map, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(hq.map, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+
+work.map <- ggplot(work.countries, aes(fill=num.ceiling, map_id=id)) +
+  geom_map(map=countries.ggmap, size=0.15, colour="black") + 
+  expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
+  coord_equal() +
+  scale_fill_gradient(low="grey95", high="grey20", breaks=seq(2, 10, 2), 
+                      labels=c(paste(seq(2, 8, 2), "  "), "10+"),
+                      na.value="#FFFFFF", name="NGOs working in country",
+                      guide=guide_colourbar(ticks=FALSE, barwidth=6)) + 
+  theme_blank_map(base_size=10) +
+  theme(legend.position="bottom", legend.key.size=unit(0.5, "lines"),
+        strip.background=element_rect(colour="#FFFFFF", fill="#FFFFFF"))
+
+filename <- "figureA1_work_map"
+width <- 4.5
+height <- 3.5
+ggsave(work.map, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(work.map, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+
+# Figure A2: Percent of total estimated cables
+df.reports.with.reaction <- data_frame(year = 2001:2009,
+                                       with.reaction = c(1, 0, 6, 16, 17,
+                                                         41, 39, 43, 54))
+
+df.cables.est.year <- read_rds("final_figures/data_figureA_cables.rds") %>%
+  group_by(year) %>%
+  summarise(cables.in.wl = sum(cables_in_wl, na.rm=TRUE),
+            tip.cables.in.wl = sum(tip_cables_in_wl, na.rm=TRUE),
+            estimated.cables.year = sum(estimated_cables_year, na.rm=TRUE)) %>%
+  ungroup() %>%
+  left_join(df.reports.with.reaction, by="year") %>%
+  mutate(pct.available = cables.in.wl / estimated.cables.year,
+         pct.available.tip = tip.cables.in.wl / cables.in.wl,
+         pct.available.reaction = with.reaction / cables.in.wl) %>%
+  filter(year >= 2000) %>% mutate(year = factor(year))
+
+figA2 <- ggplot(df.cables.est.year, aes(x=year, y=pct.available)) + 
+  geom_bar(stat="identity") + 
+  labs(x=NULL, y="Percent of total estimated cables") + 
+  scale_y_continuous(labels=percent) + 
+  theme_clean(10)
+figA2
+
+filename <- "figureA2_wikileaks_prop_estimated"
+width <- 4.5
+height <- 2
+ggsave(figA2, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(figA2, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+
+# Figure A3: All cables vs. TIP cables vs. cables with reaction
+df.cable.missingness <- df.cables.est.year %>%
+  select(year, cables.in.wl, tip.cables.in.wl, with.reaction) %>%
+  gather(variable, value, -year) %>%
+  mutate(variable = factor(variable, 
+                           levels=c("cables.in.wl", "tip.cables.in.wl", 
+                                    "with.reaction"),
+                           labels=c("Number of observed Wikileaks cables",
+                                    "Number of TIP-related cables",
+                                    "Number of TIP-related cables with a documented reaction")))
+
+figA3 <- ggplot(df.cable.missingness, aes(x=year, y=value)) + 
+  geom_bar(stat="identity", fill="grey30") + 
+  labs(x=NULL, y=NULL) + 
+  scale_y_continuous(labels=comma) + 
+  facet_wrap(~ variable, ncol=1, scales="free") + 
+  theme_clean(10)
+figA3
+
+filename <- "figureA3_wikileaks_missingness"
+width <- 4.5
+height <- 4
+ggsave(figA3, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(figA3, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+
+# Figure A4: Cho for all countries vs. case countries
 # Average Cho scores for all countries vs. case countries
-filename <- "figurex_2_avg_all_vs_cases"
+filename <- "figureA4_avg_all_vs_cases"
 width <- 4.5
 height <- 2.5
 ggsave(fig.cho.all.vs.cases, filename=file.path(base.folder, paste0(filename, ".pdf")), 
@@ -745,24 +855,23 @@ ggsave(fig.cho.all.vs.cases, filename=file.path(base.folder, paste0(filename, ".
 ggsave(fig.cho.all.vs.cases, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-# Total TIP funding to case study countries
-cases <- c("ARM", "IDN", "ECU", "MOZ", "KAZ", "ARG", "ISR", 
-           "ARE", "NGA", "OMN", "HND", "JPN", "TCD", "ZWE", "MYS")
+# # Total TIP funding to case study countries
+# cases <- c("ARM", "IDN", "ECU", "MOZ", "KAZ", "ARG", "ISR", 
+#            "ARE", "NGA", "OMN", "HND", "JPN", "TCD", "ZWE", "MYS")
+# 
+# funding.cases <- funding.all.countries %>%
+#   filter(id %in% cases) %>%
+#   mutate(total = dollar(total),
+#          id = countrycode(id, "iso3c", "country.name")) %>%
+#   set_colnames(c("Country", "Total awarded"))
+# 
+# cat(pandoc.table.return(funding.cases, justify="lr", style="simple",
+#                         caption="Total TIP funding awarded to case study countries between 2002-2014"), 
+#     file=file.path(base.folder, "tablex_x_funding_cases.md"))
 
-funding.cases <- funding.all.countries %>%
-  filter(id %in% cases) %>%
-  mutate(total = dollar(total),
-         id = countrycode(id, "iso3c", "country.name")) %>%
-  set_colnames(c("Country", "Total awarded"))
 
-cat(pandoc.table.return(funding.cases, justify="lr", style="simple",
-             caption="Total TIP funding awarded to case study countries between 2002-2014"), 
-    file=file.path(base.folder, "tablex_x_funding_cases.md"))
-
-
-# ------------------
-# Appendix figures
-# ------------------
+# Appendix 2
+# ----------
 # Impact of report on media coverage
 plot.predict <- read_csv("final_figures/data_figureA_3_media_predict.csv") %>%
   mutate(inreport = factor(inreport, levels=c("Not in report", "In report"), 
