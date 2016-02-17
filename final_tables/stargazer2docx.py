@@ -6,11 +6,11 @@ from collections import namedtuple
 from glob import glob
 from PIL import Image  # Actually Pillow...
 
-final_name = "Statistical appendix"
+final_name = "Appendix 2"
 
 tables = glob('table_*.html')
-fig_images = glob('../final_figures/figureA*.png')
-fig_captions = glob('../final_figures/figureA*.txt')
+fig_images = glob('../final_figures/figureA_*.png')
+fig_captions = glob('../final_figures/figureA_*.txt')
 
 figure = namedtuple('Figure', ['chapter', 'image', 'caption'])
 figures = [figure(re.search(r"figureA_(\d)_", x[0]).group(1), *x)
@@ -52,10 +52,10 @@ for i, table in enumerate(tables):
         raw_html = f.read()
 
     # Parse the HTML
-    soup = BeautifulSoup(raw_html)
+    soup = BeautifulSoup(raw_html, 'html.parser')
 
     if current_chapter != last_chapter:
-        h2 = soup.new_tag('h2')
+        h2 = soup.new_tag('h1')
         h2.append('Chapter {0}'.format(current_chapter))
         soup.body.insert(0, h2)
 
@@ -65,7 +65,7 @@ for i, table in enumerate(tables):
     title = table.caption.get_text()
     table.caption.extract()
 
-    h3 = soup.new_tag('h3')
+    h3 = soup.new_tag('h2')
     h3.append(title)
     soup.body.insert(1, h3)
 
@@ -76,7 +76,7 @@ for i, table in enumerate(tables):
                 # Get figure caption
                 with open(fig.caption, 'r') as f:
                     fig_caption = f.read().replace('\n', '')
-                img_title = soup.new_tag('h3')
+                img_title = soup.new_tag('h2')
                 img_title.append(fig_caption)
 
                 # Get dimensions and rescale them for HTML tag
@@ -94,7 +94,7 @@ for i, table in enumerate(tables):
     all_tables.append(html_final)
 
 with open('{0}.html'.format(final_name), 'w') as f:
-    f.write(document_template.format('Statistical appendix',
+    f.write(document_template.format('Appendix 2: Statistical results',
                                      '\n'.join(all_tables)))
 
 scpt = """set base_folder to "{0}/"

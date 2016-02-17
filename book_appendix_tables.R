@@ -18,7 +18,7 @@ panderOptions('keep.line.breaks', TRUE)
 panderOptions('table.style', 'multiline')
 panderOptions('table.alignment.default', 'left')
 
-# TODO: Remove "non-robust" from logit notes, since there's no need to be robust anyway:
+# Remove "non-robust" from logit notes, since there's no need to be robust anyway:
 # http://davegiles.blogspot.com/2013/05/robust-standard-errors-for-nonlinear.html
 # https://stat.ethz.ch/pipermail/r-help/2006-July/108722.html
 
@@ -209,7 +209,7 @@ extra.lines <- list(c("Pseudo R-squared",
                              calc.pseudo.r.squared)))
 
 title <- "Table A2.2: Correlates of shaming in the annual <em>U.S. Trafficking in Persons Report</em>"
-notes <- "Logit model; odds ratios reported. Non-robust standard errors in parentheses. All explanatory variables are lagged one period."
+notes <- "Logit model; odds ratios reported. Standard errors in parentheses. All explanatory variables are lagged one period."
 
 out.file <- file.path(base.folder, "table_a2_2.html")
 
@@ -354,7 +354,7 @@ extra.lines <- list(c("Pseudo R-squared",
                              calc.pseudo.r.squared)))
 
 title <- "Table A4.1: Determinants of observing a reaction to the TIP report in Wikileaks cables"
-notes <- "Logit model; odds ratios reported. Non-robust standard errors in parentheses. All explanatory variables are lagged one period."
+notes <- "Logit model; odds ratios reported. Standard errors in parentheses. All explanatory variables are lagged one period."
 
 out.file <- file.path(base.folder, "table_a4_1.html")
 
@@ -531,7 +531,7 @@ extra.lines <- list(c("Year fixed effects",
                              calc.pseudo.r.squared)))
 
 title <- "Table A5.3: Determinants of TIP criminalization"
-notes <- "Logit model; odds ratios reported. Non-robust standard errors in parentheses. All explanatory variables are lagged one period."
+notes <- "Logit model; odds ratios reported. Robust standard errors in parentheses. All explanatory variables are lagged one period."
 
 out.file <- file.path(base.folder, "table_a5_3.html")
 
@@ -668,7 +668,7 @@ extra.lines <- list(c("Year fixed effects",
                              calc.pseudo.r.squared)))
 
 title <- "Table A6.2: Determinants of criminalization—effects of democracy interacted with scorecard diplomacy treatments"
-notes <- "Logit models; odds ratios reported. Non-robust standard errors in parentheses. All explanatory variables are lagged one period."
+notes <- "Logit models; odds ratios reported. Standard errors in parentheses. All explanatory variables are lagged one period."
 
 out.file <- file.path(base.folder, "table_a6_2.html")
 
