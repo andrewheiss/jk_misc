@@ -733,9 +733,9 @@ ggsave(fig.cho.changes, filename=file.path(base.folder, paste0(filename, ".png")
 # Figure 7.1: Summary of claims
 
 
-# --------------------
-# Unassigned figures
-# --------------------
+# -------------------------------
+# Unassigned figures and tables
+# -------------------------------
 # Average Cho scores for all countries vs. case countries
 filename <- "figurex_2_avg_all_vs_cases"
 width <- 4.5
@@ -744,6 +744,20 @@ ggsave(fig.cho.all.vs.cases, filename=file.path(base.folder, paste0(filename, ".
        width=width, height=height, device=cairo_pdf)
 ggsave(fig.cho.all.vs.cases, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+# Total TIP funding to case study countries
+cases <- c("ARM", "IDN", "ECU", "MOZ", "KAZ", "ARG", "ISR", 
+           "ARE", "NGA", "OMN", "HND", "JPN", "TCD", "ZWE", "MYS")
+
+funding.cases <- funding.all.countries %>%
+  filter(id %in% cases) %>%
+  mutate(total = dollar(total),
+         id = countrycode(id, "iso3c", "country.name")) %>%
+  set_colnames(c("Country", "Total awarded"))
+
+cat(pandoc.table.return(funding.cases, justify="lr", style="simple",
+             caption="Total TIP funding awarded to case study countries between 2002-2014"), 
+    file=file.path(base.folder, "tablex_x_funding_cases.md"))
 
 
 # ------------------
