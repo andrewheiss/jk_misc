@@ -85,9 +85,11 @@ fig.cho.changes <- ggplot(plot.data, aes(x=year)) +
   theme(panel.grid.minor=element_blank(), strip.text=element_text(size=rel(0.8)))
 # fig.cho.changes
 
-# Plot average changes for 15 case study countries vs. all countries
+# Plot average changes for 15 case study countries vs. all countries (without 
+# 15 case study countries)
 all.countries <- p.index %>% 
   filter(year != 2014, year != 1999) %>%
+  filter(!(iso %in% countries.to.plot)) %>%
   group_by(year) %>% summarise(avg.all = mean(p, na.rm=TRUE))
 
 just.cases <- plot.data %>%
