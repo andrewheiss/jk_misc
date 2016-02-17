@@ -118,6 +118,7 @@ cables.panel <- cables.tip %>%
 # 
 # # write_dta(cables.panel, "data/cables_panel.dta")
 # write.dta(cables.panel, "data/cables_panel.dta")
+saveRDS(cables.panel, file="final_figures/data_figureA_cables.rds")
 
 
 # ------------------------
