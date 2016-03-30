@@ -2,6 +2,7 @@
 # Load libraries
 # ----------------
 library(dplyr)
+library(tidyr)
 library(haven)
 library(readr)
 library(ggplot2)
@@ -75,7 +76,7 @@ plot.baselines <- plot.data %>%
 fig.cho.changes <- ggplot(plot.data, aes(x=year)) + 
   geom_hline(data=plot.baselines, aes(yintercept=p.while.in.tip),
              size=0.25, color="grey50", linetype="dashed") + 
-  geom_line(aes(y=p), size=0.25) +
+  geom_line(aes(y=p), size=0.75) +
   geom_line(aes(y=p.while.in.tip), size=0.75) + 
   labs(x=NULL, y="Anti-TIP policy index") + 
   scale_y_continuous(limits=c(0, 15)) + 
@@ -98,15 +99,15 @@ just.cases <- plot.data %>%
 
 plot.data <- all.countries %>% left_join(just.cases, by="year") %>%
   gather(Variable, Value, -year) %>%
-  mutate(Variable = factor(Variable, levels=c("avg.all", "avg.cases"),
-                           labels=c("All countries    ", "Selected case countries"),
+  mutate(Variable = factor(Variable, levels=c("avg.cases", "avg.all"),
+                           labels=c("Selected case countries    ", "All other countries"),
                            ordered=TRUE))
 
 fig.cho.all.vs.cases <- ggplot(plot.data, 
                                aes(x=year, y=Value, colour=Variable)) + 
   geom_line(size=0.75) + 
   labs(x=NULL, y="Anti-TIP policy index") + 
-  scale_colour_manual(values=c("grey80", "grey30"), name=NULL) +
+  scale_colour_manual(values=c("grey30", "grey80"), name=NULL) +
   theme_clean(10) + theme(panel.grid.minor=element_blank(),
                           legend.key.size=unit(0.65, "lines"),
                           legend.key = element_blank(),
