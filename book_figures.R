@@ -716,8 +716,7 @@ ggsave(fig5.5, filename=file.path(base.folder, paste0(filename, ".png")),
 # Figure 6.1: Variation in the Human Trafficking Index, 2000–2013
 # Cho changes for case studies
 #
-# Dashed horizontal line indicates policy score when country entered the TIP 
-# report; thicker line indicates years when included in TIP report
+# Dashed horizontal line indicates score when country entered the TIP report
 filename <- "figure6_1_cho_changes_case_studies"
 width <- 4.5
 height <- 6
@@ -754,7 +753,7 @@ hq.map <- ggplot(hq.countries, aes(fill=num.ceiling, map_id=id)) +
   theme(legend.position="bottom", legend.key.size=unit(0.5, "lines"),
         strip.background=element_rect(colour="#FFFFFF", fill="#FFFFFF"))
 
-filename <- "figureA1_hq_map"
+filename <- "figureA1a_hq_map"
 width <- 4.5
 height <- 3.5
 ggsave(hq.map, filename=file.path(base.folder, paste0(filename, ".pdf")), 
@@ -775,7 +774,7 @@ work.map <- ggplot(work.countries, aes(fill=num.ceiling, map_id=id)) +
   theme(legend.position="bottom", legend.key.size=unit(0.5, "lines"),
         strip.background=element_rect(colour="#FFFFFF", fill="#FFFFFF"))
 
-filename <- "figureA1_work_map"
+filename <- "figureA1b_work_map"
 width <- 4.5
 height <- 3.5
 ggsave(work.map, filename=file.path(base.folder, paste0(filename, ".pdf")), 
@@ -990,3 +989,68 @@ ggsave(fig.dem.down.predict,
        filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
+
+# -----------------------
+# Miscellaneous figures
+# -----------------------
+df.importance.positivity <- read_csv(file.path(base.folder, "data_q3_19_25.csv")) %>%
+  mutate(Q3.19 = factor(Q3.19, levels=c("Most important actor", 
+                                        "Somewhat important actor", 
+                                        "Not an important actor", "Don't know"), 
+                        labels=c("Most important", "Somewhat important", 
+                                 "Not important", "Don't know"), 
+                        ordered=TRUE),
+         Q3.25 = factor(Q3.25, levels=c("Positive", "Mixed", 
+                                        "Negative", "Don't know"),
+                        ordered=TRUE))
+
+plot.data.importance <- df.importance.positivity %>%
+  group_by(Q3.19) %>%
+  summarize(num = n()) %>%
+  na.omit() %>%
+  mutate(prop = num / sum(num),
+         prop.nice = sprintf("%.1f%%", prop * 100),
+         Q3.19 = factor(Q3.19, levels=rev(levels(Q3.19)), ordered=TRUE))
+
+fig.us_importance <- ggplot(plot.data.importance, aes(x=Q3.19, y=prop)) + 
+  geom_bar(stat="identity") + 
+  geom_rect(ymin=-0.01, ymax=0.36, xmin=2.5, xmax=4.5, fill=NA, colour="grey10") +
+  geom_segment(x=3.5, xend=3.5, y=0.36, yend=0.40,
+               arrow = arrow(length = unit(0.03, "npc"))) +
+  labs(x=NULL, y=NULL) + 
+  scale_y_continuous(labels = percent) + 
+  coord_flip(ylim=c(0, 0.40)) + theme_clean(10)
+fig.us_importance
+
+plot.data.positivity <- df.importance.positivity %>%
+  group_by(Q3.25) %>%
+  summarize(num = n()) %>%
+  na.omit() %>%
+  mutate(prop = num / sum(num),
+         prop.nice = sprintf("%.1f%%", prop * 100),
+         Q3.25 = factor(Q3.25, levels=rev(levels(Q3.25)), ordered=TRUE))
+
+fig.us_positivity <- ggplot(plot.data.positivity, aes(x=Q3.25, y=prop)) + 
+  geom_bar(stat="identity") + 
+  labs(x=NULL, y=NULL) + 
+  scale_y_continuous(labels = percent) + 
+  coord_flip() + theme_clean(10)
+fig.us_positivity
+
+blank <- rectGrob(gp=gpar(col="white"))
+
+combined <- arrangeGrob(fig.us_importance, 
+                        arrangeGrob(fig.us_positivity, blank),
+                        ncol=2, widths=c(0.65, 0.35))
+
+filename <- "figure_importance_positivity"
+width <- 4.5
+height <- 2.5
+
+ggsave(combined, 
+       filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(combined, 
+       filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
