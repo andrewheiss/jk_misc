@@ -1015,8 +1015,9 @@ plot.data.importance <- df.importance.positivity %>%
 
 fig.us_importance <- ggplot(plot.data.importance, aes(x=Q3.19, y=prop)) + 
   geom_bar(stat="identity") + 
-  geom_rect(ymin=-0.01, ymax=0.36, xmin=2.5, xmax=4.5, fill=NA, colour="grey10") +
-  geom_segment(x=3.5, xend=3.5, y=0.36, yend=0.40,
+  geom_rect(ymin=-0.01, ymax=0.36, xmin=2.5, xmax=4.5, 
+            fill=NA, colour="grey10", size=0.25) +
+  geom_segment(x=3.5, xend=3.5, y=0.36, yend=0.40, size=0.25,
                arrow = arrow(length = unit(0.03, "npc"))) +
   labs(x=NULL, y=NULL) + 
   scale_y_continuous(labels = percent) + 
