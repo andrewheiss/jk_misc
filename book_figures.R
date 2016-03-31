@@ -1054,3 +1054,19 @@ ggsave(combined,
 ggsave(combined, 
        filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+# library(ggstance)
+# fig.us_importance <- ggplot(plot.data.importance, aes(y=Q3.19, x=prop)) + 
+#   geom_barh(stat="identity") + 
+#   geom_rect(xmin=-0.01, xmax=0.36, ymin=2.5, ymax=4.5, 
+#             fill=NA, colour="grey10", size=0.25) +
+#   geom_segment(y=3.5, yend=3.5, x=0.36, xend=0.40, size=0.25,
+#                arrow = arrow(length = unit(0.03, "npc"))) +
+#   labs(x=NULL, y=NULL) + 
+#   scale_x_continuous(labels = percent) + 
+#   coord_cartesian(xlim=c(0, 0.6)) +
+#   theme_clean(10)
+# fig.us_importance
+# 
+# ggsub_grob <- ggplotGrob(fig.us_positivity)
+# fig.us_importance + annotation_custom(ggsub_grob, ymin=0.5, ymax=2.5, xmin=0.26, xmax=0.6)
