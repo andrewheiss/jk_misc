@@ -48,6 +48,7 @@ source("year_joined.R")
 source("funding.R")
 source("reactions.R")
 source("policy_index.R")
+source("ratifications.R")
 
 
 # -----------
@@ -68,16 +69,25 @@ ggsave(crim.map, filename=file.path(base.folder, paste0(filename, ".png")),
 # -----------
 # Chapter 2
 # -----------
-# Figure 2.1: Trafficking patterns 2010-2012
+# Figure 2.1: Palermo Protocol ratifications
+filename <- "figure2_1_palermo_protocol_ratifications"
+width <- 4.5
+height <- 2
+ggsave(fig.ratified, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(fig.ratified, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+# Figure 2.2: Trafficking patterns 2010-2012
 # UNODC map
 
-# Figure 2.2: Trafficking statistics over time 
-df.fig2.2 <- read_csv("final_figures/data_figure2_2.csv") %>%
+# Figure 2.3: Trafficking statistics over time 
+df.fig2.3 <- read_csv("final_figures/data_figure2_3.csv") %>%
   select(Year, Prosecutions, Convictions) %>%
   gather(Variable, Num, -Year) %>%
   mutate(Year = ymd(paste0(Year, "-01-01")))
 
-fig2.2 <- ggplot(df.fig2.2, aes(x=Year, y=Num, colour=Variable)) + 
+fig2.3 <- ggplot(df.fig2.3, aes(x=Year, y=Num, colour=Variable)) + 
   geom_line(size=0.75) + 
   labs(x=NULL, y="Cases") + 
   scale_y_continuous(labels=comma) + 
@@ -88,18 +98,18 @@ fig2.2 <- ggplot(df.fig2.2, aes(x=Year, y=Num, colour=Variable)) +
                           legend.margin = unit(0.25, "lines"),
                           plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
 
-filename <- "figure2_2_tip_convictions"
+filename <- "figure2_3_tip_convictions"
 width <- 4.5
 height <- 2.5
-ggsave(fig2.2, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+ggsave(fig2.3, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(fig2.2, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(fig2.3, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-# Figure 2.3: Cycle of scorecard diplomacy, step 1
+# Figure 2.4: Cycle of scorecard diplomacy, step 1
 
-# Figure 2.4: Tier ratings over time
-filename <- "figure2_4_tier_ratings_time"
+# Figure 2.5: Tier ratings over time
+filename <- "figure2_5_tier_ratings_time"
 width <- 4.5
 height <- 2.5
 ggsave(tier.plot, filename=file.path(base.folder, paste0(filename, ".pdf")), 
@@ -107,7 +117,7 @@ ggsave(tier.plot, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(tier.plot, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-filename <- "figure2_4_tier_ratings_time_2001"
+filename <- "figure2_5_tier_ratings_time_2001"
 width <- 4.5
 height <- 2.5
 ggsave(tier.plot.2001, filename=file.path(base.folder, paste0(filename, ".pdf")), 
@@ -115,7 +125,7 @@ ggsave(tier.plot.2001, filename=file.path(base.folder, paste0(filename, ".pdf"))
 ggsave(tier.plot.2001, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-filename <- "figure2_4_tier_ratings_time_2005"
+filename <- "figure2_5_tier_ratings_time_2005"
 width <- 4.5
 height <- 2.5
 ggsave(tier.plot.2005, filename=file.path(base.folder, paste0(filename, ".pdf")), 
@@ -123,8 +133,8 @@ ggsave(tier.plot.2005, filename=file.path(base.folder, paste0(filename, ".pdf"))
 ggsave(tier.plot.2005, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-# Figure 2.5: The timing of inclusion of countries in the report
-filename <- "figure2_5_map_year_joined"
+# Figure 2.6: The timing of inclusion of countries in the report
+filename <- "figure2_6_map_year_joined"
 width <- 4.5
 height <- 3.5
 ggsave(report.map, filename=file.path(base.folder, paste0(filename, ".pdf")), 
@@ -132,43 +142,43 @@ ggsave(report.map, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(report.map, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-# Figure 2.6: Cycle of scorecard diplomacy, step 2
+# Figure 2.7: Cycle of scorecard diplomacy, step 2
 
-# Figure 2.7: Number of meetings documented between 2001-2009
-df.fig2.7 <- read_csv("final_figures/data_figure2_7.csv") %>%
+# Figure 2.8: Number of meetings documented between 2001-2009
+df.fig2.8 <- read_csv("final_figures/data_figure2_8.csv") %>%
   mutate(Meeting = factor(Meeting, levels=rev(Meeting), ordered=TRUE))
 
-fig2.7 <- ggplot(df.fig2.7, aes(x=Meeting, y=Count)) + 
+fig2.8 <- ggplot(df.fig2.8, aes(x=Meeting, y=Count)) + 
   geom_bar(stat="identity") + 
   labs(x=NULL, y="Meetings") + 
   coord_flip() + 
   theme_clean(10)
 
-filename <- "figure2_7_meetings"
+filename <- "figure2_8_meetings"
 width <- 4.5
 height <- 2
-ggsave(fig2.7, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+ggsave(fig2.8, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(fig2.7, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(fig2.8, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-# Figure 2.8: Embassies or foreign governments NGOs reported as active partners in the fight against human trafficking
-df.fig2.8.active <- read_csv(file.path(base.folder, 
-                                       "data_figure2_8_active_embassies_plot.csv")) %>%
+# Figure 2.9: Embassies or foreign governments NGOs reported as active partners in the fight against human trafficking
+df.fig2.9.active <- read_csv(file.path(base.folder, 
+                                       "data_figure2_9_active_embassies_plot.csv")) %>%
   mutate(country = factor(country, levels=country, ordered=TRUE),
          prop.nice = ifelse(num > 0, percent(prop.nice / 100), prop.nice))
 
-df.fig2.8.most.active <- read_csv(file.path(base.folder, 
-                                            "data_figure2_8_most_active_embassies_plot.csv")) %>%
-  mutate(country = factor(country, levels=levels(df.fig2.8.active$country), ordered=TRUE),
+df.fig2.9.most.active <- read_csv(file.path(base.folder, 
+                                            "data_figure2_9_most_active_embassies_plot.csv")) %>%
+  mutate(country = factor(country, levels=levels(df.fig2.9.active$country), ordered=TRUE),
          prop.nice = percent(prop.nice / 100))
 
-fig.active <- ggplot(df.fig2.8.active, aes(x=country, y=num)) + 
+fig.active <- ggplot(df.fig2.9.active, aes(x=country, y=num)) + 
   geom_bar(stat="identity") + 
   geom_text(aes(label = prop.nice), size=1.5, hjust=1.3, 
             family="Source Sans Pro Light") + 
   labs(x=NULL, y="Number of times country was mentioned\nas a partner in anti-TIP work") + 
-  scale_y_continuous(breaks=seq(0, max(df.fig2.8.active$num), by=50), 
+  scale_y_continuous(breaks=seq(0, max(df.fig2.9.active$num), by=50), 
                      trans="reverse", expand = c(.15, .15)) + 
   coord_flip() + 
   theme_clean(6) + 
@@ -176,7 +186,7 @@ fig.active <- ggplot(df.fig2.8.active, aes(x=country, y=num)) +
         axis.line.y = element_blank(),
         plot.margin = unit(c(0.5, 0.5, 0.25, 0.75), "lines"))
 
-fig.most.active <- ggplot(df.fig2.8.most.active, aes(x=country, y=total)) + 
+fig.most.active <- ggplot(df.fig2.9.most.active, aes(x=country, y=total)) + 
   geom_bar(stat="identity") + 
   geom_text(aes(label = prop.nice), size=1.5, hjust=-0.3, 
             family="Source Sans Pro Light") + 
@@ -188,18 +198,18 @@ fig.most.active <- ggplot(df.fig2.8.most.active, aes(x=country, y=total)) +
         axis.line.y = element_blank(),
         plot.margin = unit(c(0.5, 1.25, 0.25, 0), "lines"))
 
-fig2.8 <- arrangeGrob(fig.active, fig.most.active, nrow=1)
+fig2.9 <- arrangeGrob(fig.active, fig.most.active, nrow=1)
 
-filename <- "figure2_8_tip_partner_embassies"
+filename <- "figure2_9_tip_partner_embassies"
 width <- 4.5
 height <- 2
-ggsave(fig2.8, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+ggsave(fig2.9, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(fig2.8, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(fig2.9, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-# Figure 2.9: Distribution of US grants across purposes
-filename <- "figure2_9_grants_purpose"
+# Figure 2.10: Distribution of US grants across purposes
+filename <- "figure2_10_grants_purpose"
 width <- 4.5
 height <- 1.5
 ggsave(grants.purpose, filename=file.path(base.folder, paste0(filename, ".pdf")), 
@@ -207,8 +217,8 @@ ggsave(grants.purpose, filename=file.path(base.folder, paste0(filename, ".pdf"))
 ggsave(grants.purpose, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-# Figure 2.10: Distribution of US TIP funding across countries, 2001-2014
-filename <- "figure2_10_map_tip_funding"
+# Figure 2.11: Distribution of US TIP funding across countries, 2001-2014
+filename <- "figure2_11_map_tip_funding"
 width <- 4.5
 height <- 3.5
 ggsave(map.funding, filename=file.path(base.folder, paste0(filename, ".pdf")), 
@@ -216,8 +226,8 @@ ggsave(map.funding, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(map.funding, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-# Figure 2.11: Distribution of waivers for sanctions in eligible countries, 2003-2013
-df.fig2.11 <- read_csv("final_figures/data_figure2_11.csv") %>%
+# Figure 2.12: Distribution of waivers for sanctions in eligible countries, 2003-2013
+df.fig2.12 <- read_csv("final_figures/data_figure2_11.csv") %>%
   mutate(Waiver = ifelse(Waiver != "Full waiver*", paste0(Waiver, "    "), Waiver),
          Waiver = factor(Waiver, levels=rev(Waiver), ordered=TRUE)) %>%
   gather(year, num, -Waiver) %>%
@@ -227,7 +237,7 @@ df.fig2.11 <- read_csv("final_figures/data_figure2_11.csv") %>%
   summarise(prop = num / year.total,
             label = paste0(year, "\n", "(N = ", year.total, ")"))
 
-fig2.11 <- ggplot(df.fig2.11, aes(x=label, y=prop, fill=Waiver)) + 
+fig2.12 <- ggplot(df.fig2.12, aes(x=label, y=prop, fill=Waiver)) + 
   geom_bar(stat="identity", position="stack") + 
   labs(x=NULL, y="Waivers and sanctions") + 
   scale_fill_manual(values=c("black", "grey80", "grey30"), name=NULL) + 
@@ -237,12 +247,12 @@ fig2.11 <- ggplot(df.fig2.11, aes(x=label, y=prop, fill=Waiver)) +
                           legend.margin = unit(0.25, "lines"),
                           plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
 
-filename <- "figure2_11_waivers"
+filename <- "figure2_12_waivers"
 width <- 4.5
 height <- 3
-ggsave(fig2.11, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+ggsave(fig2.12, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(fig2.11, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(fig2.12, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
 
@@ -609,6 +619,7 @@ blank.row2 <- data_frame(label="  ", num=NA, total=NA, prob.yes=0)
 full.table <- bind_rows(report.presence, blank.row1,
                         tier.assignments, blank.row2, 
                         tier.changes) %>%
+  ungroup() %>%
   mutate(label.n = ifelse(!is.na(num), paste0(label, " (N = ", total, ")"), label),
          label.n = factor(label.n, levels=rev(label.n), ordered=TRUE),
          label = factor(label, levels=rev(label), ordered=TRUE))

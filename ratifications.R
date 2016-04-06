@@ -39,12 +39,3 @@ fig.ratified <- ggplot(df.rat, aes(x=ratification_date_year, y=num.ratified.cum)
   labs(x=NULL, y="Number of ratifying countries") +
   coord_cartesian(ylim=c(0, 175)) +
   theme_clean(10)
-
-# Save plot
-filename <- "figure_ratifications"
-width <- 4.5
-height <- 2
-ggsave(fig.ratified, filename=file.path(base.folder, paste0(filename, ".pdf")), 
-       width=width, height=height, device=cairo_pdf)
-ggsave(fig.ratified, filename=file.path(base.folder, paste0(filename, ".png")),
-       width=width, height=height, type="cairo", dpi=300)
