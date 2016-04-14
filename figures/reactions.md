@@ -30,7 +30,7 @@ Concern about rating Cooperative                    115                  23.4%  
 
                      Appreciation/Bragging          43                    8.8%                        18.1%                                          
 
-                     How improve                    36                    7.3%                        15.2%                                          
+                     How to improve                 36                    7.3%                        15.2%                                          
 
                      Total                          491                   100%                Not mutually exclusive        Not mutually exclusive   
 -----------------------------------------------------------------------------------------------------------------------------------------------------

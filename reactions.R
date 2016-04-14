@@ -26,7 +26,7 @@ reaction.names <- c("Funding", "Comparisons", "Public face saving",
                     "Anger or Frustration", "Other negative reaction", 
                     "US arrogance", "Moving goal", "Harming relations", 
                     "Cooperative", "Disappointment",
-                    "Appreciation/Bragging", "How improve")
+                    "Appreciation/Bragging", "How to improve")
 
 reaction.groups <- c("Funding", rep("Image", 3), 
                      rep("Negative", 6), rep("Concern about rating", 4))

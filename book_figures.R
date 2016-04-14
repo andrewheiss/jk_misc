@@ -650,7 +650,7 @@ reaction.vars <- c("appreciation", "funding", "anger", "cooperative",
 reaction.names <- c("Appreciation", "Funding", "Anger", 
                     "Cooperative", "Objection", 
                     "Comparisons", "Public face", 
-                    "Embarassment", "Disappointment", "How improve")
+                    "Embarassment", "Disappointment", "How to improve")
 
 reaction.types <- data_frame(var.name = reaction.vars, 
                              nice.name = reaction.names)
