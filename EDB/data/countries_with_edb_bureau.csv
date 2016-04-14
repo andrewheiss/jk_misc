@@ -1,0 +1,52 @@
+country,ISO3,cowcode
+Indonesia,IDN,850
+"Korea, Republic of",KOR,732
+Malaysia,MYS,820
+Philippines,PHL,840
+Sri Lanka,LKA,780
+Algeria,DZA,615
+Kuwait,KWT,690
+Morocco,MAR,600
+Saudi Arabia,SAU,670
+United Arab Emirates,ARE,696
+Azerbaijan,AZE,373
+Croatia,HRV,344
+Czech Republic,CZE,316
+Georgia,GEO,372
+Kazakhstan,KAZ,705
+Kosovo,XKX,347
+Kyrgyzstan,KGZ,703
+"Macedonia, the former Yugoslav Republic of",MKD,343
+"Moldova, Republic of",MDA,359
+Montenegro,MNE,341
+Poland,POL,290
+Russian Federation,RUS,365
+Tajikistan,TJK,702
+Ukraine,UKR,369
+United Kingdom,GBR,200
+Uzbekistan,UZB,704
+Botswana,BWA,571
+Burundi,BDI,516
+Central African Republic,CAF,482
+Comoros,COM,581
+"Congo, the Democratic Republic of the",COD,490
+Congo,COG,484
+Cote d'Ivoire,CIV,437
+Guinea,GIN,438
+Kenya,KEN,501
+Liberia,LBR,450
+Malawi,MWI,553
+Mali,MLI,432
+Nigeria,NGA,475
+Rwanda,RWA,517
+Sierra Leone,SLE,451
+Togo,TGO,461
+Zambia,ZMB,551
+Chile,CHL,155
+Colombia,COL,100
+Costa Rica,CRI,94
+Dominican Republic,DOM,42
+Guatemala,GTM,90
+Mexico,MEX,70
+Panama,PAN,95
+Peru,PER,135
