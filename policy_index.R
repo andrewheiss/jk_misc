@@ -7,6 +7,7 @@ library(haven)
 library(readr)
 library(ggplot2)
 library(lubridate)
+library(countrycode)
 
 source("shared_functions.R")
 
@@ -72,15 +73,31 @@ plot.data <- p.index %>%
 plot.baselines <- plot.data %>%
   filter(year == min(year[in.report]))
 
+year.criminalized <- read_stata("original_files/Criminalization Data UpdatedJK.dta") %>%
+  mutate(iso = countrycode(ccode, "cown", "iso3c"),
+         countryname = countrycode(iso, "iso3c", "country.name")) %>%
+  filter(iso %in% countries.to.plot,
+         adjcrimlevel > 0) %>%
+  group_by(iso, crimlevel) %>% 
+  arrange(desc(crimlevel)) %>%
+  group_by(iso) %>%
+  slice(1) %>%
+  mutate(criminalization.type = factor(crimlevel, levels=c(1, 2),
+                                       labels=c("Partial", "Full")))
+
 # Cho Chang!  (⌐○Ϟ○)
 fig.cho.changes <- ggplot(plot.data, aes(x=year)) + 
   geom_hline(data=plot.baselines, aes(yintercept=p.while.in.tip),
              size=0.25, color="grey50", linetype="dashed") + 
+  geom_vline(data=year.criminalized, 
+             aes(xintercept=year, linetype=criminalization.type),
+             size=0.5, color="grey50") +
   geom_line(aes(y=p), size=0.75) +
   geom_line(aes(y=p.while.in.tip), size=0.75) + 
   labs(x=NULL, y="Anti-TIP policy index") + 
   scale_y_continuous(limits=c(0, 15)) + 
   scale_x_continuous(limits=c(2000, 2015)) + 
+  scale_linetype_manual(values=c("dotted", "solid"), guide=FALSE) +
   facet_wrap(~ countryname, scales="free", ncol=3) + 
   theme_clean(10) + 
   theme(panel.grid.minor=element_blank(), strip.text=element_text(size=rel(0.8)))
