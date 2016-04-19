@@ -8,6 +8,7 @@ library(countrycode)
 library(ggplot2)
 library(ggrepel)
 library(ggstance)
+library(scales)
 library(gridExtra)
 library(Cairo)
 
@@ -76,7 +77,7 @@ edb.reforms <- edb.raw %>%
          reform.type.clean = factor(reform.type, levels=reform.types$var.name,
                                     labels=reform.types$clean.name, ordered=TRUE))
 
-edb.reforms %>% group_by(year) %>% summarise(total = sum(reform.num.no.na))
+# edb.reforms %>% group_by(year) %>% summarise(total = sum(reform.num.no.na))
 
 # Summarize reform counts by year and presence of a reform committee
 edb.reforms.year.bureau <- edb.reforms %>%
@@ -423,3 +424,90 @@ ggsave(plot.model.committee, filename="EDB/figures/bureau_model_presence.pdf",
 ggsave(plot.model.committee, filename="EDB/figures/bureau_model_presence.png",
        width=5, height=3.5, units="in", type="cairo", dpi=300)
 
+
+# ----------
+# Bunching
+# ----------
+gap.sb <- edb.raw %>%
+  select(ccode, year, sb_reform, p_sb_rank, sb_days, has.bureau) %>%
+  filter(year == 2008, !is.na(p_sb_rank)) %>%
+  # TODO: Why not p_sb_rank? Because it includes other variables?
+  arrange(sb_days) %>%
+  mutate(distance.15 = sb_days - lag(sb_days, 15),
+         distance.10 = sb_days - lag(sb_days, 10),
+         distance.5 = sb_days - lag(sb_days, 5),
+         distance.1 = sb_days - lag(sb_days, 1),
+         fake.index = 1:n())
+
+gap.plots <- gap.sb %>%
+  gather(distance, gap, starts_with("distance")) %>%
+  mutate(distance = factor(as.numeric(gsub("distance\\.", "", distance))))
+
+plot.gaps.lots <- ggplot(gap.plots, aes(x=sb_days, y=gap, colour=distance)) + 
+  geom_point(size=0.5) + 
+  # geom_smooth(se=FALSE) + 
+  scale_color_manual(values=c("#BD144F", "#E88000", "#F7C900", "#8A9C0F"),
+                     name="Positions ahead") +
+  coord_cartesian(xlim=c(0, 175), ylim=c(0, 100)) + 
+  labs(x="Days to start a business",
+       y="Distance to country X positions ahead",
+       title="Effect of different gaps",
+       subtitle="Data from 2008; values greater than 200 removed") +
+  theme_edb()
+plot.gaps.lots
+# The size of the gap doesn't matter much until there are 50+ days; no easy
+# gains in the 0-50 range.
+
+ggsave(plot.gaps.lots, filename="EDB/figures/bureau_gap_range.pdf",
+       width=5, height=3.5, units="in", device=cairo_pdf)
+ggsave(plot.gaps.lots, filename="EDB/figures/bureau_gap_range.png",
+       width=5, height=3.5, units="in", type="cairo", dpi=300)
+
+
+gap.dists <- gap.sb %>%
+  gather(distance, gap, c(sb_days, starts_with("distance"))) %>%
+  filter(distance %in% c("sb_days", "distance.10")) %>%
+  mutate(distance = factor(distance, levels=c("sb_days", "distance.10"),
+                           labels=c("Days to start a business    ",
+                                    "Distance to country 10 positions ahead"),
+                           ordered=TRUE))
+
+plot.gaps.dist <- ggplot(gap.dists, aes(x=gap, fill=distance)) + 
+  geom_density(aes(y=..count..), colour="white", size=0.25) +
+  geom_rug(data=gap.sb, mapping=aes(x=sb_days), sides="b", 
+           colour="#BD144F", size=0.5, inherit.aes=FALSE) +
+  geom_rug(data=gap.sb, mapping=aes(x=distance.10), sides="t", 
+           colour="#F7C900", size=0.5, inherit.aes=FALSE) +
+  scale_fill_manual(values=c("#BD144F", "#F7C900"), name=NULL) +
+  coord_cartesian(xlim=c(0, 200)) + 
+  labs(x="Days to start a business", y="Count", 
+       title="Distribution of days to start a business",
+       subtitle="Data from 2008; marginal rug plots indicate frequency of data;\nvalues greater than 200 removed\n") +
+  theme_edb() + theme(legend.key.size=unit(0.75, "lines"))
+plot.gaps.dist
+# Because the number of days to start a business are relatively distributed (at
+# least under 50), the gap is tiny and constant.
+
+ggsave(plot.gaps.dist, filename="EDB/figures/bureau_gap_dists.pdf",
+       width=5, height=3.5, units="in", device=cairo_pdf)
+ggsave(plot.gaps.dist, filename="EDB/figures/bureau_gap_dists.png",
+       width=5, height=3.5, units="in", type="cairo", dpi=300)
+
+
+plot.gaps.bureau <- ggplot(gap.sb, aes(x=sb_days, y=distance.10, colour=has.bureau)) + 
+  geom_point(size=0.5) + 
+  scale_colour_manual(values=c("#004259", "#FC7300"), name=NULL) + 
+  coord_cartesian(xlim=c(0, 175), ylim=c(0, 100)) + 
+  labs(x="Days to start a business",
+       y="Distance to country 10 positions ahead",
+       title="Distance to country 10 positions ahead",
+       subtitle="Separated by presence of reform committee; data from 2008;\nvalues greater than 200 removed") +
+  theme_edb()
+plot.gaps.bureau
+
+ggsave(plot.gaps.bureau, filename="EDB/figures/bureau_gap_bureau.pdf",
+       width=5, height=3.5, units="in", device=cairo_pdf)
+ggsave(plot.gaps.bureau, filename="EDB/figures/bureau_gap_bureau.png",
+       width=5, height=3.5, units="in", type="cairo", dpi=300)
+
+# TODO: Difference in bunching between reform and no reform (Today)
