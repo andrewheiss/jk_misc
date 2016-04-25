@@ -71,6 +71,27 @@ calc.pseudo.r.squared <- function(x.model) {
   return(round(1 - (x.model$deviance / x.model$null.deviance), 4))
 }
 
+# Calculating odds ratios for logit coefficients is trivial: 
+#  exp(coef(model))
+#
+# But calcuating the standard errors for those coefficients is tricker; just
+# running exp() on the standard errors doesn't work. Stata automatically
+# applies the delta method to odds ratio standard errors, but R doesn't.
+# See also: https://www.stata.com/support/faqs/statistics/delta-rule/
+#
+# It's easy to use the delta method manually in R, though. Multiply the odds
+# ratio (or gradient, technically) by the diagonal of the variance-covariance
+# matrix by the gradient (again), or `or^2 * se.diag`
+# See also: http://www.ats.ucla.edu/stat/r/faq/deltamethod.htm
+#
+get.or.se <- function(model) {
+  tidy(model) %>% 
+    mutate(or = exp(estimate),
+           se.diag = diag(vcov(model)),
+           or.se = sqrt(or^2 * se.diag)) %>%
+    select(or.se) %>% unlist %>% unname
+}
+
 
 # -----------------------
 # Load and reshape data
@@ -164,7 +185,7 @@ var.labs <- c("Total population (logged)", "Missing information",
               "Trafficking intensity in destination countries")
 col.labs <- c("Model 2.1.1")
 
-ses <- list(sqrt(diag(model.2.1.1$var)))
+ses <- list(get.or.se(model.2.1.1))
 
 extra.lines <- list(c("Number of countries", c(model.2.1.1.fit["n.max"])),
                     c("Number of inclusions", c(model.2.1.1.fit["events"])))
@@ -204,6 +225,8 @@ var.labs <- c("Worse civil liberties", "US aid (logged)", "GDP (logged)",
               "NGO density", "Corruption", "Rule of law", "Constant")
 col.labs <- c("Model 2.2.1", "Model 2.2.2")
 
+ses <- list(get.or.se(model2.2.1), get.or.se(model2.2.2))
+
 extra.lines <- list(c("Pseudo R-squared",
                       sapply(list(model2.2.1, model2.2.2), 
                              calc.pseudo.r.squared)))
@@ -217,7 +240,7 @@ stargazer(model2.2.1, model2.2.2,
           type="html", out=out.file, out.header=TRUE,
           apply.coef=exp, p.auto=FALSE, no.space=TRUE,
           covariate.labels=var.labs, column.labels=col.labs, 
-          dep.var.caption="US pressure", 
+          dep.var.caption="US pressure", se=ses,
           model.numbers=FALSE, dep.var.labels.include=FALSE,
           notes.align="l", add.lines=extra.lines, keep.stat=c("n"),
           notes.label="Notes:", notes=notes, title=title)
@@ -254,6 +277,8 @@ var.labs <- c("In report", "First year in report", "Coverage (lagged)",
 
 col.labs <- c("Model 3.1.1", "Model 3.1.2")
 
+ses <- list(get.or.se(model3.1.1), get.or.se(model3.1.2))
+
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Country fixed effects", rep("Yes", 2)))
 
@@ -266,7 +291,7 @@ stargazer(model3.1.1, model3.1.2,
           type="html", out=out.file, out.header=TRUE,
           p.auto=FALSE, no.space=TRUE, omit="\\.factor",
           covariate.labels=var.labs, column.labels=col.labs, 
-          dep.var.caption="Logged coverage", 
+          dep.var.caption="Logged coverage", se=ses,
           model.numbers=FALSE, dep.var.labels.include=FALSE,
           notes.align="l", add.lines=extra.lines, keep.stat=c("n"),
           notes.label="Notes:", notes=notes, title=title)
@@ -349,6 +374,8 @@ var.labs <- c("Tier 2", "US pressure (Watchlist or Tier 3)", "Watchlist", "Tier 
               "Human trafficking news (logged)")
 col.labs <- c("Model 4.1.1", "Model 4.1.2")
 
+ses <- list(get.or.se(model4.1.1), get.or.se(model4.1.2))
+
 extra.lines <- list(c("Pseudo R-squared",
                       sapply(list(model4.1.1, model4.1.2), 
                              calc.pseudo.r.squared)))
@@ -362,7 +389,7 @@ stargazer(model4.1.1, model4.1.2,
           type="html", out=out.file, out.header=TRUE,
           apply.coef=exp, p.auto=FALSE, no.space=TRUE,
           covariate.labels=var.labs, column.labels=col.labs, 
-          dep.var.caption="Reaction in cables", 
+          dep.var.caption="Reaction in cables", se=ses,
           model.numbers=FALSE, dep.var.labels.include=FALSE,
           notes.align="l", add.lines=extra.lines, keep.stat=c("n"),
           notes.label="Notes:", notes=notes, title=title)
@@ -409,8 +436,8 @@ var.labs <- c("In report", "Share of women in parliament", "Worse civil libertie
               "US aid (logged)")
 col.labs <- c("Model 5.1.1", "Model 5.1.2", "Model 5.1.3")
 
-ses <- list(sqrt(diag(model5.1.1$var)), sqrt(diag(model5.1.2$var)), 
-            sqrt(diag(model5.1.3$var)))
+ses <- list(get.or.se(model5.1.1), get.or.se(model5.1.2),
+            get.or.se(model5.1.3))
 
 extra.lines <- list(c("Number of countries", 
                       c(model5.1.1.fit["n.max"], model5.1.2.fit["n.max"],
@@ -475,8 +502,8 @@ var.labs <- c("Tier 1", "Tier 2", "Watch list", "Tier 3", "In report",
               "GDP per capita (logged)", "Corruption")
 col.labs <- c("Model 5.2.1", "Model 5.2.2", "Model 5.2.3")
 
-ses <- list(sqrt(diag(model5.2.1$var)), sqrt(diag(model5.2.2$var)), 
-            sqrt(diag(model5.2.3$var)))
+ses <- list(get.or.se(model5.2.1), get.or.se(model5.2.2),
+            get.or.se(model5.2.3))
 
 extra.lines <- list(c("Number of countries", 
                       c(model5.2.1.fit["n.max"], model5.2.2.fit["n.max"],
@@ -524,6 +551,8 @@ var.labs <- c("Reactions (no media)", "Total reactions (no media)",
               "Regional density of criminalization")
 col.labs <- c("Model 5.3.1", "Model 5.3.2")
 
+ses <- list(get.or.se(model5.3.1), get.or.se(model5.3.2))
+
 extra.lines <- list(c("Year fixed effects",
                       rep("Yes", 2)),
                     c("Pseudo R-squared",
@@ -539,7 +568,7 @@ stargazer(model5.3.1, model5.3.2,
           type="html", out=out.file, out.header=TRUE,
           apply.coef=exp, p.auto=FALSE, no.space=TRUE, omit="factor\\(year",
           covariate.labels=var.labs, column.labels=col.labs, 
-          dep.var.caption="Criminalization", 
+          dep.var.caption="Criminalization", se=ses,
           model.numbers=FALSE, dep.var.labels.include=FALSE,
           notes.align="l", add.lines=extra.lines, keep.stat=c("n"),
           notes.label="Notes:", notes=notes, title=title)
@@ -588,8 +617,8 @@ var.labs <- c("In report", "Share of women in parliament", "Worse civil libertie
               "US trade as share of GDP (logged) × In report")
 col.labs <- c("Model 6.1.1", "Model 6.1.2", "Model 6.1.3")
 
-ses <- list(sqrt(diag(model6.1.1$var)), sqrt(diag(model6.1.2$var)),
-            sqrt(diag(model6.1.3$var)))
+ses <- list(get.or.se(model6.1.1), get.or.se(model6.1.2),
+            get.or.se(model6.1.3))
 
 extra.lines <- list(c("Number of countries", 
                       c(model6.1.1.fit["n.max"], model6.1.2.fit["n.max"], 
@@ -661,6 +690,9 @@ col.labs <- c("Model 6.2.1<br>Presence in TIP report",
               "Model 6.2.2<br>Lower tier ratings", 
               "Model 6.2.3<br>Downgrading")
 
+ses <- list(get.or.se(model6.2.1), get.or.se(model6.2.2),
+            get.or.se(model6.2.3))
+
 extra.lines <- list(c("Year fixed effects",
                       rep("Yes", 3)),
                     c("Pseudo R-squared",
@@ -676,7 +708,7 @@ stargazer(model6.2.1, model6.2.2, model6.2.3,
           type="html", out=out.file, out.header=TRUE,
           apply.coef=exp, p.auto=FALSE, no.space=TRUE, omit="year\\.factor",
           covariate.labels=var.labs, column.labels=col.labs, 
-          dep.var.caption="Criminalization", 
+          dep.var.caption="Criminalization", se=ses,
           model.numbers=FALSE, dep.var.labels.include=FALSE,
           notes.align="l", add.lines=extra.lines, keep.stat=c("n"),
           notes.label="Notes:", notes=notes, title=title)
