@@ -349,14 +349,21 @@ write_csv(plot.predict, path="final_figures/data_figureA_3_media_predict.csv")
 # Chapter 4
 # -----------
 # Table A4.1: Determinants of documented reactions in cables
-# ("Reaction 4" at http://stats.andrewheiss.com/judith/chapter_5/report.html)
+# ("Reaction 4" at http://stats.andrewheiss.com/judith/chapter_5/report.html),
+# without interaction term
 model4.1.1 <- glm(reactionnomedia ~ tier_2 + pressure +
+                    logeconasstP_1, 
+                  data=df.reactions,
+                  family=binomial(link="logit"))
+
+# ("Reaction 4" at http://stats.andrewheiss.com/judith/chapter_5/report.html)
+model4.1.2 <- glm(reactionnomedia ~ tier_2 + pressure +
                     logeconasstP_1 + pressure * logeconasstP_1, 
                   data=df.reactions,
                   family=binomial(link="logit"))
 
 # ("Reaction 5" at http://stats.andrewheiss.com/judith/chapter_5/report.html)
-model4.1.2 <- glm(reactionnomedia ~ tier_2 + tier_25 + tier_3 +
+model4.1.3 <- glm(reactionnomedia ~ tier_2 + tier_25 + tier_3 +
                     logeconasstP_1 + loggdppercap_1 + logpop_1 + 
                     newus_share_tot_trade1 + totalfreedom1 + 
                     ratproto2000_1 + loght_news_country, 
@@ -372,12 +379,13 @@ var.labs <- c("Tier 2", "US pressure (Watchlist or Tier 3)", "Watchlist", "Tier 
               "Worse total freedom",
               "2000 TIP protocol ratification",
               "Human trafficking news (logged)")
-col.labs <- c("Model 4.1.1", "Model 4.1.2")
+col.labs <- c("Model 4.1.1", "Model 4.1.2", "Model 4.1.3")
 
-ses <- list(get.or.se(model4.1.1), get.or.se(model4.1.2))
+ses <- list(get.or.se(model4.1.1), get.or.se(model4.1.2),
+            get.or.se(model4.1.3))
 
 extra.lines <- list(c("Pseudo R-squared",
-                      sapply(list(model4.1.1, model4.1.2), 
+                      sapply(list(model4.1.1, model4.1.2, model4.1.3), 
                              calc.pseudo.r.squared)))
 
 title <- "Table A4.1: Determinants of observing a reaction to the TIP report in Wikileaks cables"
@@ -385,7 +393,7 @@ notes <- "Logit model; odds ratios reported. Standard errors in parentheses. All
 
 out.file <- file.path(base.folder, "table_a4_1.html")
 
-stargazer(model4.1.1, model4.1.2,
+stargazer(model4.1.1, model4.1.2, model4.1.3,
           type="html", out=out.file, out.header=TRUE,
           apply.coef=exp, p.auto=FALSE, no.space=TRUE,
           covariate.labels=var.labs, column.labels=col.labs, 
