@@ -5,6 +5,27 @@ library(survival)
 
 source("clean_data.R")
 
+# Calculating odds ratios for logit coefficients is trivial: 
+#  exp(coef(model))
+#
+# But calcuating the standard errors for those coefficients is tricker; just
+# running exp() on the standard errors doesn't work. Stata automatically
+# applies the delta method to odds ratio standard errors, but R doesn't.
+# See also: https://www.stata.com/support/faqs/statistics/delta-rule/
+#
+# It's easy to use the delta method manually in R, though. Multiply the odds
+# ratio (or gradient, technically) by the diagonal of the variance-covariance
+# matrix by the gradient (again), or `or^2 * se.diag`
+# See also: http://www.ats.ucla.edu/stat/r/faq/deltamethod.htm
+#
+get.or.se <- function(model) {
+  tidy(model) %>% 
+    mutate(or = exp(estimate),
+           se.diag = diag(vcov(model)),
+           or.se = sqrt(or^2 * se.diag)) %>%
+    select(or.se) %>% unlist %>% unname
+}
+
 # Calculate a pseudo R-squared measure using
 # 1-\frac{\text{Residual Deviance}}{\text{Null Deviance}}
 calc.pseudo.r.squared <- function(x.model) {

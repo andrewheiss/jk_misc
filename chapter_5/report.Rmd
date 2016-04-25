@@ -1,7 +1,7 @@
 ---
 title: "Replication and extension report"
 author: "Andrew Heiss"
-date: "November 24, 2015"
+date: "April 25, 2016"
 output: 
   html_document: 
     css: fixes.css
@@ -39,8 +39,7 @@ var.labs <- c("Total population (logged)", "Missing information",
               "Trafficking intensity in destination countries")
 col.labs <- c("Model 1.1", "Model 1.2", "Model 1.3")
 
-ses <- list(sqrt(diag(model1.1$var)), sqrt(diag(model1.2$var)),
-            sqrt(diag(model1.3$var)))
+ses <- list(get.or.se(model1.1), get.or.se(model1.2), get.or.se(model1.3))
 
 extra.lines <- list(c("Number of countries", 
                       c(model1.1.fit["n.max"], model1.2.fit["n.max"],
@@ -66,14 +65,17 @@ var.labs <- c("Worse civil liberties", "US aid (logged)", "GDP (logged)",
               "NGO density", "Corruption", "Rule of law", "Constant")
 col.labs <- c("Model 2.1", "Model 2.2")
 
+ses <- list(get.or.se(model2.1), get.or.se(model2.2))
+
 extra.lines <- list(c("Pseudo R-squared",
                       sapply(list(model2.1, model2.2), 
                              calc.pseudo.r.squared)))
+
 stargazer(model2.1, model2.2, 
           apply.coef=exp, covariate.labels=var.labs, column.labels=col.labs, 
           model.numbers=FALSE, dep.var.labels.include=FALSE,
           dep.var.caption="US Pressure", type="html",
-          keep.stat=c("n", "ll"), p.auto=FALSE,
+          keep.stat=c("n", "ll"), p.auto=FALSE, se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Logit model; odds ratios reported. Non-robust standard errors in parentheses. All explanatory variables are lagged one period."))
 ```
@@ -93,9 +95,9 @@ var.labs <- c("In report", "Share of women in parliament", "Worse civil libertie
               "US aid as share of GDP", "US aid as share of GDP × In report")
 col.labs <- c("Model 3.1", "Model 3.2", "Model 3.3", "Model 3.4", "Model 3.5")
 
-ses <- list(sqrt(diag(model3.1$var)), sqrt(diag(model3.2$var)), 
-            sqrt(diag(model3.3$var)), sqrt(diag(model3.4$var)),
-            sqrt(diag(model3.5$var)))
+ses <- list(get.or.se(model3.1), get.or.se(model3.2),
+            get.or.se(model3.3), get.or.se(model3.4),
+            get.or.se(model3.5))
 
 extra.lines <- list(c("Number of countries", 
                       c(model3.1.fit["n.max"], model3.2.fit["n.max"],
@@ -130,8 +132,8 @@ var.labs <- c("Tier 1", "Tier 2", "Watch list", "Tier 3", "In report",
               "GDP per capita (logged)", "Corruption")
 col.labs <- c("Model 4.1", "Model 4.2", "Model 4.3", "Model 4.4")
 
-ses <- list(sqrt(diag(model4.1$var)), sqrt(diag(model4.2$var)),
-            sqrt(diag(model4.3$var)), sqrt(diag(model4.2$var)))
+ses <- list(get.or.se(model4.1), get.or.se(model4.2),
+            get.or.se(model4.3), get.or.se(model4.4))
 
 extra.lines <- list(c("Number of countries", 
                       c(model4.1.fit["n.max"], model4.2.fit["n.max"]),
@@ -163,6 +165,9 @@ var.labs <- c("Reactions (no media)", "Total reactions (no media)",
               "Regional density of criminalization")
 col.labs <- c("Model 5.1", "Model 5.2", "Model 5.3", "Model 5.4")
 
+ses <- list(get.or.se(model5.1), get.or.se(model5.2),
+            get.or.se(model5.3), get.or.se(model5.4))
+
 extra.lines <- list(c("Year fixed effects",
                       rep("Yes", 4)),
                     c("Pseudo R-squared",
@@ -175,7 +180,7 @@ stargazer(model5.1, model5.2, model5.3, model5.4,
           model.numbers=FALSE, dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -204,11 +209,15 @@ var.labs <- c("Worse civil liberties", "US aid (logged)", "GDP (logged)",
               "NGO density", "Corruption", "Rule of law", "Constant")
 col.labs <- c("Model 2.1<br>(original; bleeding lags)", "Model 2.1<br>(corrected lags)", 
               "Model 2.2<br>(original; bleeding lags)", "Model 2.2<br>(corrected lags)")
+
+ses <- list(get.or.se(model2.1), get.or.se(model2.1.good),
+            get.or.se(model2.2), get.or.se(model2.2.good))
+
 stargazer(model2.1, model2.1.good, model2.2, model2.2.good, 
           apply.coef=exp, covariate.labels=var.labs, column.labels=col.labs, 
           keep.stat=c("n"), model.numbers=FALSE, dep.var.labels.include=FALSE,
           dep.var.caption="US Pressure", type="html",
-          notes.align="l", p.auto=FALSE,
+          notes.align="l", p.auto=FALSE, se=ses,
           notes=c("Logit model; odds ratios reported. Non-robust standard errors in parentheses. All explanatory variables are lagged one period."))
 ```
 
@@ -223,8 +232,8 @@ var.labs <- c("In report", "Share of women in parliament", "Worse civil libertie
 col.labs <- c("Model 3.2<br>(original; bleeding lags)", "Model 3.2<br>(corrected lags)", 
               "Model 3.5<br>(original; bleeding lags)", "Model 3.5<br>(corrected lags)")
 
-ses <- list(sqrt(diag(model3.2$var)), sqrt(diag(model3.2.good$var)), 
-            sqrt(diag(model3.5$var)), sqrt(diag(model3.5.good$var)))
+ses <- list(get.or.se(model3.2), get.or.se(model3.2.good),
+            get.or.se(model3.5), get.or.se(model3.5.good))
 
 extra.lines <- list(c("Number of countries", 
                       c(model3.2.fit["n.max"], model3.2.good.fit["n.max"]),
@@ -255,8 +264,8 @@ var.labs <- c("Tier 1", "Tier 2", "Watch list", "Tier 3", "In report",
 col.labs <- c("Model 4.2<br>(original; bleeding lags)", "Model 4.2<br>(corrected lags)",
               "Model 4.4<br>(original; bleeding lags)", "Model 4.4<br>(corrected lags)")
 
-ses <- list(sqrt(diag(model4.2$var)), sqrt(diag(model4.2.good$var)),
-            sqrt(diag(model4.4$var)), sqrt(diag(model4.4.good$var)))
+ses <- list(get.or.se(model4.2), get.or.se(model4.2.good),
+            get.or.se(model4.4), get.or.se(model4.4.good))
 
 extra.lines <- list(c("Number of countries", 
                       c(model4.2.fit["n.max"], model4.2.good.fit["n.max"]),
@@ -287,7 +296,7 @@ var.labs <- c("Total population (logged)", "Missing information",
               "2000 TIP protocol ratification")
 col.labs <- c("Model 1.2<br>(original; Breslow ties)", "Model 1.2<br>(Efron ties)")
 
-ses <- list(sqrt(diag(model1.2$var)), sqrt(diag(model1.2.good$var)))
+ses <- list(get.or.se(model1.2), get.or.se(model1.2.good))
 
 extra.lines <- list(c("Number of countries", 
                       c(model1.2.fit["n.max"], model1.2.good.fit["n.max"])),
@@ -386,9 +395,9 @@ var.labs <- c("Total population (logged)", "Missing information",
 col.labs <- c("Model 1.3<br>(from AJPS)", "Model 1.4", 
               "Model 1.5", "Model 1.6", "Model 1.7")
 
-ses <- list(sqrt(diag(model1.3$var)), 
-            sqrt(diag(model1.4$var)), sqrt(diag(model1.5$var)),
-            sqrt(diag(model1.6$var)), sqrt(diag(model1.7$var)))
+ses <- list(get.or.se(model1.3), get.or.se(model1.4),
+            get.or.se(model1.5), get.or.se(model1.6),
+            get.or.se(model1.7))
 
 extra.lines <- list(c("Number of countries", 
                       c(model1.3.fit["n.max"], 
@@ -426,8 +435,8 @@ var.labs <- c("Total US funding for TIP (logged)", "Share of women in parliament
 
 col.labs <- c("Extension 1.0", "Extension 1.1", "Extension 1.2", "Extension 1.3")
 
-ses <- list(sqrt(diag(ext1.1$var)), sqrt(diag(ext1.1$var)), 
-            sqrt(diag(ext1.2$var)), sqrt(diag(ext1.3$var)))
+ses <- list(get.or.se(ext1.0), get.or.se(ext1.1),
+            get.or.se(ext1.2), get.or.se(ext1.3))
 
 extra.lines <- list(c("Number of countries", 
                       c(ext1.0.fit["n.max"], ext1.1.fit["n.max"], 
@@ -456,8 +465,8 @@ var.labs <- c("Total US funding for TIP (logged)", "In report",
               "Missing information")
 col.labs <- c("Extension 1.4", "Extension 1.5", "Extension 1.6")
 
-ses <- list(sqrt(diag(ext1.4$var)), sqrt(diag(ext1.5$var)), 
-            sqrt(diag(ext1.6$var)))
+ses <- list(get.or.se(ext1.4), get.or.se(ext1.5),
+            get.or.se(ext1.6))
 
 extra.lines <- list(c("Number of countries", 
                       c(ext1.4.fit["n.max"], ext1.5.fit["n.max"], 
@@ -496,10 +505,10 @@ col.labs <- c("Ext. 2.0", "Ext. 2.00",
               "Ext. 2.1", "Ext. 2.2", "Ext. 2.3",
               "Ext. 2.4", "Ext. 2.5", "Ext. 2.6")
 
-ses <- list(sqrt(diag(ext2.0$var)), sqrt(diag(ext2.00$var)),
-            sqrt(diag(ext2.1$var)), sqrt(diag(ext2.2$var)), 
-            sqrt(diag(ext2.3$var)), sqrt(diag(ext2.4$var)), 
-            sqrt(diag(ext2.5$var)), sqrt(diag(ext2.6$var)))
+ses <- list(get.or.se(ext2.0), get.or.se(ext2.00),
+            get.or.se(ext2.1), get.or.se(ext2.2),
+            get.or.se(ext2.3), get.or.se(ext2.4),
+            get.or.se(ext2.5), get.or.se(ext2.6))
 
 extra.lines <- list(c("Number of countries", 
                       c(ext2.0.fit["n.max"], ext2.00.fit["n.max"],
@@ -534,9 +543,9 @@ var.labs <- c("Proportion of TIP-related cables (observed in Wikileaks)",
 col.labs <- c("Extension 2.7", "Extension 2.8", "Extension 2.9",
               "Extension 2.10", "Extension 2.11", "Extension 2.12")
 
-ses <- list(sqrt(diag(ext2.7$var)), sqrt(diag(ext2.8$var)), 
-            sqrt(diag(ext2.9$var)), sqrt(diag(ext2.10$var)), 
-            sqrt(diag(ext2.11$var)), sqrt(diag(ext2.12$var)))
+ses <- list(get.or.se(ext2.7), get.or.se(ext2.8),
+            get.or.se(ext2.9), get.or.se(ext2.10),
+            get.or.se(ext2.11), get.or.se(ext2.12))
 
 extra.lines <- list(c("Number of countries", 
                       c(ext2.7.fit["n.max"], ext2.8.fit["n.max"], 
@@ -574,6 +583,9 @@ var.labs <- c("Total reactions (no media)",
               "Number of NGOs (survey database)")
 col.labs <- c("Model 5.5", "Model 5.6", "Model 5.7", "Model 5.8")
 
+ses <- list(get.or.se(model5.5), get.or.se(model5.6),
+            get.or.se(model5.7), get.or.se(model5.8))
+
 extra.lines <- list(c("Year fixed effects",
                       rep("Yes", 4)),
                     c("Pseudo R-squared",
@@ -586,7 +598,7 @@ stargazer(model5.5, model5.6, model5.7, model5.8,
           model.numbers=FALSE, dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="factor\\(year",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -615,9 +627,9 @@ var.labs <- c("In report", "Share of women in parliament", "Worse civil libertie
 col.labs <- c("Model 3.2<br>(from AJPS)", "Model 3.6", "Model 3.7", 
               "Model 3.8", "Model 3.9")
 
-ses <- list(sqrt(diag(model3.2$var)),
-            sqrt(diag(model3.6$var)), sqrt(diag(model3.7$var)), 
-            sqrt(diag(model3.8$var)), sqrt(diag(model3.9$var)))
+ses <- list(get.or.se(model3.2), get.or.se(model3.6),
+            get.or.se(model3.7), get.or.se(model3.8),
+            get.or.se(model3.9))
 
 extra.lines <- list(c("Number of countries", 
                       c(model3.2.fit["n.max"],
@@ -655,8 +667,8 @@ var.labs <- c("Share of women in parliament",
               "Trafficking intensity in destination countries")
 col.labs <- c("Extension 4.0", "Extension 4.1", "Extension 4.2", "Extension 4.3")
 
-ses <- list(sqrt(diag(ext4.1$var)), sqrt(diag(ext4.1$var)), 
-            sqrt(diag(ext4.2$var)), sqrt(diag(ext4.3$var)))
+ses <- list(get.or.se(ext4.0), get.or.se(ext4.1),
+            get.or.se(ext4.2), get.or.se(ext4.3))
 
 extra.lines <- list(c("Number of countries", 
                       c(ext4.0.fit["n.max"], ext4.4.fit["n.max"], 
@@ -684,8 +696,8 @@ var.labs <- c("In report",
               "Missing information")
 col.labs <- c("Extension 4.4", "Extension 4.5", "Extension 4.6")
 
-ses <- list(sqrt(diag(ext4.4$var)), sqrt(diag(ext4.5$var)), 
-            sqrt(diag(ext4.6$var)))
+ses <- list(get.or.se(ext4.4), get.or.se(ext4.5),
+            get.or.se(ext4.6))
 
 extra.lines <- list(c("Number of countries", 
                       c(ext4.4.fit["n.max"], ext4.5.fit["n.max"], 
@@ -794,6 +806,10 @@ var.labs <- c("Tier 2", "Watchlist", "Tier 3",
 col.labs <- c("Reaction 1", "Reaction 2", 
               "Reaction 1", "Reaction 4", "Reaction 5")
 
+ses <- list(get.or.se(model.reaction1), get.or.se(model.reaction2),
+            get.or.se(model.reaction3), get.or.se(model.reaction4),
+            get.or.se(model.reaction5))
+
 extra.lines <- list(c("Pseudo R-squared",
                       sapply(list(model.reaction1, model.reaction2, 
                                   model.reaction3, model.reaction4, 
@@ -808,7 +824,7 @@ stargazer(model.reaction1, model.reaction2, model.reaction3,
           dep.var.labels.include=FALSE,
           dep.var.caption="Reaction in cables (original models)", model.numbers=FALSE,
           type="html", omit="\\.factor", keep.stat=c("n", "ll"), 
-          notes.align="l", add.lines=extra.lines,
+          notes.align="l", add.lines=extra.lines, se=ses,
           notes=c("Logit models; odds ratios reported. Non-robust standard errors in parentheses."))
 ```
 
@@ -835,6 +851,11 @@ col.labs <- c("New reaction 1", "New reaction 2", "New reaction 3",
               "New reaction 4", "New reaction 5", "New reaction 6",
               "New reaction 7")
 
+ses <- list(get.or.se(model.react.new1), get.or.se(model.react.new2),
+            get.or.se(model.react.new3), get.or.se(model.react.new3),
+            get.or.se(model.react.new5), get.or.se(model.react.new6),
+            get.or.se(model.react.new7))
+
 extra.lines <- list(c("Pseudo R-squared",
                       sapply(list(model.react.new1, model.react.new2, 
                                   model.react.new3, model.react.new4, 
@@ -851,7 +872,7 @@ stargazer(model.react.new1, model.react.new2, model.react.new3,
           model.numbers=FALSE, dep.var.labels.include=FALSE,
           dep.var.caption="Reaction in cables (expanded models)", type="html",
           keep.stat=c("n", "ll"), omit="\\.factor",
-          notes.align="l", add.lines=extra.lines,
+          notes.align="l", add.lines=extra.lines, se=ses,
           notes=c("Logit model; odds ratios reported. Non-robust standard errors in parentheses. With the exception of tier ratings, all explanatory variables are lagged one period."))
 ```
 

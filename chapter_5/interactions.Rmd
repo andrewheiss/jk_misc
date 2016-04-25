@@ -1,7 +1,7 @@
 ---
 title: "Interactions by treatment"
 author: "Andrew Heiss"
-date: "November 24, 2015"
+date: "April 25, 2016"
 output: 
   html_document: 
     css: fixes.css
@@ -23,6 +23,14 @@ library(scales)
 library(stringr)
 library(stargazer)
 library(pander)
+
+get.or.se <- function(model) {
+  tidy(model) %>% 
+    mutate(or = exp(estimate),
+           se.diag = diag(vcov(model)),
+           or.se = sqrt(or^2 * se.diag)) %>%
+    select(or.se) %>% unlist %>% unname
+}
 
 parens <- function(model, variable, statistic) {
   df <- model %>% tidy() %>%
@@ -129,6 +137,9 @@ model.dem.int.report <- glm(crim1 ~ fh_cl1 + inreport1 + fh_cl1 * inreport1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.dem.simple.report),
+            get.or.se(model.dem.int.report))
+
 var.labs <- c("Worse democracy (Freedom House civil liberties)", "In TIP report", 
               "Share of women in parliament", 
               "2000 TIP protocol ratification", 
@@ -146,7 +157,7 @@ stargazer(model.dem.simple.report, model.dem.int.report,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -251,6 +262,9 @@ model.ngo.int.report <- glm(crim1 ~ ngos_ave + fh_cl1 + inreport1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.ngo.simple.report),
+            get.or.se(model.ngo.int.report))
+
 var.labs <- c("NGO engagement",
               "Worse democracy (Freedom House civil liberties)", "In TIP report", 
               "Share of women in parliament", 
@@ -269,7 +283,7 @@ stargazer(model.ngo.simple.report, model.ngo.int.report,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -377,6 +391,12 @@ model.media.int.report <- glm(crim1 ~ ht_news_country1 + fh_cl1 + inreport1 +
 # bloop <- df.logit.models %>% select(name, year, cowcode, crim1, ht_news_country1, inreport1) %>% mutate(ht_news_country1 * inreport1)
 # write_csv(bloop, path="~/Desktop/sample_data.csv", na="")
 
+ses <- list(get.or.se(model.media.simple.report),
+            get.or.se(model.media.super.basic),
+            get.or.se(model.media.basic),
+            get.or.se(model.media.int.report))
+
+
 var.labs <- c("Media coverage",
               "Worse democracy (Freedom House civil liberties)", "In TIP report", 
               "Share of women in parliament", 
@@ -396,7 +416,7 @@ stargazer(model.media.simple.report, model.media.super.basic, model.media.basic,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -496,6 +516,9 @@ model.aid.int.report <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + inreport1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.aid.simple.report),
+            get.or.se(model.aid.int.report))
+
 var.labs <- c("US aid (logged)",
               "Worse democracy (Freedom House civil liberties)", "In TIP report", 
               "Share of women in parliament", 
@@ -514,7 +537,7 @@ stargazer(model.aid.simple.report, model.aid.int.report,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -614,6 +637,9 @@ model.trade.int.report <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + inreport1 
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.trade.simple.report),
+            get.or.se(model.trade.int.report))
+
 var.labs <- c("Share of US trade (% of GDP)",
               "Worse democracy (Freedom House civil liberties)", "In TIP report", 
               "Share of women in parliament", 
@@ -632,7 +658,7 @@ stargazer(model.trade.simple.report, model.trade.int.report,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -725,6 +751,9 @@ model.rat.int.report <- glm(crim1 ~ fh_cl1 + inreport1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.rat.simple.report),
+            get.or.se(model.rat.int.report))
+
 var.labs <- c("Worse democracy (Freedom House civil liberties)", "In TIP report", 
               "Share of women in parliament", 
               "2000 TIP protocol ratification", 
@@ -742,7 +771,7 @@ stargazer(model.rat.simple.report, model.rat.int.report,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -842,6 +871,9 @@ model.wl.int.report <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + inreport1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.wl.simple.report),
+            get.or.se(model.wl.int.report))
+
 var.labs <- c("Proportion of TIP-related cables (observed in Wikileaks)",
               "Worse democracy (Freedom House civil liberties)", "In TIP report", 
               "Share of women in parliament", 
@@ -860,7 +892,7 @@ stargazer(model.wl.simple.report, model.wl.int.report,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -960,6 +992,9 @@ model.ngo.new.int.report <- glm(crim1 ~ ht_ngos + fh_cl1 + inreport1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.ngo.new.simple.report),
+            get.or.se(model.ngo.new.int.report))
+
 var.labs <- c("Number of anti-TIP NGOs",
               "Worse democracy (Freedom House civil liberties)", "In TIP report", 
               "Share of women in parliament", 
@@ -978,7 +1013,7 @@ stargazer(model.ngo.new.simple.report, model.ngo.new.int.report,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -1079,6 +1114,9 @@ model.funding.int.report <- glm(crim1 ~ log.total.funding1 + fh_cl1 + inreport1 
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.funding.simple.report),
+            get.or.se(model.funding.int.report))
+
 var.labs <- c("Total anti-TIP funding from US (log)",
               "Worse democracy (Freedom House civil liberties)", "In TIP report", 
               "Share of women in parliament", 
@@ -1097,7 +1135,7 @@ stargazer(model.funding.simple.report, model.funding.int.report,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -1190,6 +1228,9 @@ model.dem.int.rating <- glm(crim1 ~ fh_cl1 + low_tier1 + fh_cl1 * low_tier1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.dem.simple.rating),
+            get.or.se(model.dem.int.rating))
+
 var.labs <- c("Worse democracy (Freedom House civil liberties)", "Lowest tier", 
               "Share of women in parliament", 
               "2000 TIP protocol ratification", 
@@ -1207,7 +1248,7 @@ stargazer(model.dem.simple.rating, model.dem.int.rating,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -1312,6 +1353,9 @@ model.ngo.int.rating <- glm(crim1 ~ ngos_ave + fh_cl1 + low_tier1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.ngo.simple.rating),
+            get.or.se(model.ngo.int.rating))
+
 var.labs <- c("NGO engagement",
               "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
               "Share of women in parliament", 
@@ -1330,7 +1374,7 @@ stargazer(model.ngo.simple.rating, model.ngo.int.rating,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -1429,6 +1473,9 @@ model.media.int.rating <- glm(crim1 ~ ht_news_country1 + fh_cl1 + low_tier1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.media.simple.rating),
+            get.or.se(model.media.int.rating))
+
 var.labs <- c("Media coverage",
               "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
               "Share of women in parliament", 
@@ -1447,7 +1494,7 @@ stargazer(model.media.simple.rating,  model.media.int.rating,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -1547,6 +1594,9 @@ model.aid.int.rating <- glm(crim1 ~ logeconasstP_1 + fh_cl1 + low_tier1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.aid.simple.rating),
+            get.or.se(model.aid.int.rating))
+
 var.labs <- c("US aid (logged)",
               "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
               "Share of women in parliament", 
@@ -1565,7 +1615,7 @@ stargazer(model.aid.simple.rating, model.aid.int.rating,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -1665,6 +1715,9 @@ model.trade.int.rating <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 + low_tier1 
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.trade.simple.rating),
+            get.or.se(model.trade.int.rating))
+
 var.labs <- c("Share of US trade (part of GDP)",
               "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
               "Share of women in parliament", 
@@ -1683,7 +1736,7 @@ stargazer(model.trade.simple.rating, model.trade.int.rating,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -1776,6 +1829,9 @@ model.rat.int.rating <- glm(crim1 ~ fh_cl1 + low_tier1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.rat.simple.rating),
+            get.or.se(model.rat.int.rating))
+
 var.labs <- c("Worse democracy (Freedom House civil liberties)", "Lowest tier", 
               "Share of women in parliament", 
               "2000 TIP protocol ratification", 
@@ -1793,7 +1849,7 @@ stargazer(model.rat.simple.rating, model.rat.int.rating,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -1893,6 +1949,9 @@ model.wl.int.rating <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 + low_tier1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.wl.simple.rating),
+            get.or.se(model.wl.int.rating))
+
 var.labs <- c("Proportion of TIP-related cables (observed in Wikileaks)",
               "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
               "Share of women in parliament", 
@@ -1911,7 +1970,7 @@ stargazer(model.wl.simple.rating, model.wl.int.rating,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -2011,6 +2070,9 @@ model.ngo.new.int.rating <- glm(crim1 ~ ht_ngos + fh_cl1 + low_tier1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.ngo.new.simple.rating),
+            get.or.se(model.ngo.new.int.rating))
+
 var.labs <- c("Number of anti-TIP NGOs",
               "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
               "Share of women in parliament", 
@@ -2029,7 +2091,7 @@ stargazer(model.ngo.new.simple.rating, model.ngo.new.int.rating,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -2130,6 +2192,9 @@ model.funding.int.rating <- glm(crim1 ~ log.total.funding1 + fh_cl1 + low_tier1 
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.funding.simple.rating),
+            get.or.se(model.funding.int.rating))
+
 var.labs <- c("Total anti-TIP funding from US (log)",
               "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
               "Share of women in parliament", 
@@ -2148,7 +2213,7 @@ stargazer(model.funding.simple.rating, model.funding.int.rating,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -2254,6 +2319,9 @@ model.dem.int.demote <- glm(crim1 ~ fh_cl1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.dem.simple.demote),
+            get.or.se(model.dem.int.demote))
+
 var.labs <- c("Worse democracy (Freedom House civil liberties)", 
               "First demotion (t−3)", "First demotion (t−2)", 
               "First demotion (t−1)",
@@ -2275,7 +2343,7 @@ stargazer(model.dem.simple.demote, model.dem.int.demote,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -2398,6 +2466,9 @@ model.ngo.int.demote <- glm(crim1 ~ ngos_ave + fh_cl1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.ngo.simple.demote),
+            get.or.se(model.ngo.int.demote))
+
 var.labs <- c("NGO engagement",
               "Worse democracy (Freedom House civil liberties)", 
               "First demotion (t−3)", "First demotion (t−2)", 
@@ -2420,7 +2491,7 @@ stargazer(model.ngo.simple.demote, model.ngo.int.demote,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -2541,6 +2612,9 @@ model.media.int.demote <- glm(crim1 ~ ht_news_country1 + fh_cl1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.media.simple.demote),
+            get.or.se(model.media.int.demote))
+
 var.labs <- c("Media coverage",
               "Worse democracy (Freedom House civil liberties)", 
               "First demotion (t−3)", "First demotion (t−2)", 
@@ -2563,7 +2637,7 @@ stargazer(model.media.simple.demote,  model.media.int.demote,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -2685,6 +2759,9 @@ model.aid.int.demote <- glm(crim1 ~ logeconasstP_1 + fh_cl1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.aid.simple.demote),
+            get.or.se(model.aid.int.demote))
+
 var.labs <- c("US aid (logged)",
               "Worse democracy (Freedom House civil liberties)", 
               "First demotion (t−3)", "First demotion (t−2)", 
@@ -2707,7 +2784,7 @@ stargazer(model.aid.simple.demote, model.aid.int.demote,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -2829,6 +2906,9 @@ model.trade.int.demote <- glm(crim1 ~ newus_tradeshare_gdp + fh_cl1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.trade.simple.demote),
+            get.or.se(model.trade.int.demote))
+
 var.labs <- c("Share of US trade (part of GDP)",
               "Worse democracy (Freedom House civil liberties)", 
               "First demotion (t−3)", "First demotion (t−2)", 
@@ -2851,7 +2931,7 @@ stargazer(model.trade.simple.demote, model.trade.int.demote,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -2966,6 +3046,9 @@ model.rat.int.demote <- glm(crim1 ~ fh_cl1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.rat.simple.demote),
+            get.or.se(model.rat.int.demote))
+
 var.labs <- c("Worse democracy (Freedom House civil liberties)", 
               "First demotion (t−3)", "First demotion (t−2)", 
               "First demotion (t−1)",
@@ -2987,7 +3070,7 @@ stargazer(model.rat.simple.demote, model.rat.int.demote,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -3110,6 +3193,9 @@ model.wl.int.demote <- glm(crim1 ~ prop_tip_wl1 + fh_cl1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.wl.simple.demote),
+            get.or.se(model.wl.int.demote))
+
 var.labs <- c("Proportion of TIP-related cables (observed in Wikileaks)",
               "Worse democracy (Freedom House civil liberties)", 
               "First demotion (t−3)", "First demotion (t−2)", 
@@ -3132,7 +3218,7 @@ stargazer(model.wl.simple.demote, model.wl.int.demote,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -3254,6 +3340,9 @@ model.ngo.new.int.demote <- glm(crim1 ~ ht_ngos + fh_cl1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.ngo.new.simple.demote),
+            get.or.se(model.ngo.new.int.demote))
+
 var.labs <- c("Number of anti-TIP NGOs",
               "Worse democracy (Freedom House civil liberties)", 
               "First demotion (t−3)", "First demotion (t−2)", 
@@ -3276,7 +3365,7 @@ stargazer(model.ngo.new.simple.demote, model.ngo.new.int.demote,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
@@ -3399,6 +3488,9 @@ model.funding.int.demote <- glm(crim1 ~ log.total.funding1 + fh_cl1 +
                          data=df.logit.models,
                          family=binomial(link="logit"))
 
+ses <- list(get.or.se(model.funding.simple.demote),
+            get.or.se(model.funding.int.demote))
+
 var.labs <- c("Total anti-TIP funding from US (log)",
               "Worse democracy (Freedom House civil liberties)", 
               "First demotion (t−3)", "First demotion (t−2)", 
@@ -3421,7 +3513,7 @@ stargazer(model.funding.simple.demote, model.funding.int.demote,
           dep.var.labels.include=FALSE,
           dep.var.caption="Criminalization",
           apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
-          keep.stat=c("n", "ll"), 
+          keep.stat=c("n", "ll"), se=ses,
           notes.align="l", add.lines=extra.lines,
           notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
 ```
