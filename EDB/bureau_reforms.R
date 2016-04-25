@@ -213,6 +213,16 @@ set.seed(1234)
 ggsave(plot.rankings.cor, filename="EDB/figures/bureau_rankings.png",
        width=5, height=4, units="in", type="cairo", dpi=300)
 
+set.seed(1234)
+plot.rankings.cor.notitle <- plot.rankings.cor + 
+  labs(title=NULL, subtitle=NULL, caption=NULL)
+
+set.seed(1234)
+ggsave(plot.rankings.cor.notitle, filename="EDB/figures/bureau_rankings_notitle.pdf",
+       width=5, height=3.5, units="in", device=cairo_pdf)
+set.seed(1234)
+ggsave(plot.rankings.cor.notitle, filename="EDB/figures/bureau_rankings_notitle.png",
+       width=5, height=3.5, units="in", type="cairo", dpi=300)
 
 # Do the number of reforms predict absolute gains in EDB rankings?
 # If bureaucracies are more strategic, correlation between number of reforms
@@ -337,6 +347,12 @@ ggsave(plot.ranking.cor, filename="EDB/figures/bureau_ranking_cor.pdf",
        width=5, height=3.5, units="in", device=cairo_pdf)
 ggsave(plot.ranking.cor, filename="EDB/figures/bureau_ranking_cor.png",
        width=5, height=3.5, units="in", type="cairo", dpi=300)
+
+plot.ranking.cor.notitle <- plot.ranking.cor + labs(title=NULL)
+ggsave(plot.ranking.cor.notitle, filename="EDB/figures/bureau_ranking_cor_notitle.pdf",
+       width=5, height=3, units="in", device=cairo_pdf)
+ggsave(plot.ranking.cor.notitle, filename="EDB/figures/bureau_ranking_cor_notitle.png",
+       width=5, height=3, units="in", type="cairo", dpi=300)
 
 
 reform.rankings.type.wide <- reform.rankings.type %>%
