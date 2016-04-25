@@ -505,7 +505,8 @@ fig5.2 <- ggplot(df.fig5.2, aes(x=Year, y=num, colour=Variable)) +
   theme_clean(10) + theme(legend.key.size=unit(0.65, "lines"),
                           legend.key = element_blank(),
                           legend.margin = unit(0.25, "lines"),
-                          plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
+                          plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"),
+                          panel.grid.minor=element_blank())
 
 filename <- "figure5_2_crim_report"
 width <- 4.5
