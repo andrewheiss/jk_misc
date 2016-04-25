@@ -8,9 +8,11 @@ library(readr)
 library(ggplot2)
 library(lubridate)
 library(countrycode)
+library(zoo)
 
 source("shared_functions.R")
 
+base.folder <- "~/Desktop/misc_graphs"
 
 # -------------------------------------
 # Manipulate and create new variables
@@ -41,12 +43,20 @@ cho.orig <- read_dta("original_files/mergedChoTierCrimfix.dta") %>%
 
 year.joined <- read_csv("data/year_joined.csv")
 
+year.criminalized.all <- read_stata("original_files/Criminalization Data UpdatedJK.dta") %>%
+  mutate(iso = countrycode(ccode, "cown", "iso3c"),
+         countryname = countrycode(iso, "iso3c", "country.name")) %>%
+  filter(adjcrimlevel > 0) %>%
+  select(iso, year, crimlevel)
+
+
 # Variables to make:
 #   time.in.report = years present in report
 #   change.since.entering = p_t - p_{entered report}
 #   change/time
 # TODO: Take missing values into account (like Afghanistan)
 p.index <- cho.orig %>% left_join(year.joined, by="cow") %>%
+  left_join(year.criminalized.all, by=c("iso", "year")) %>%
   group_by(cow) %>%
   # Make boolean for if the country is in the report and cumulatively sum it
   mutate(in.report = ifelse(year >= start_year, TRUE, FALSE),
@@ -57,7 +67,14 @@ p.index <- cho.orig %>% left_join(year.joined, by="cow") %>%
          #   https://github.com/hadley/dplyr/issues/1036#issuecomment-87162231
          change.since.entering = as.numeric(ifelse(in.report, 
                                                    change.since.entering, NA)),
-         change.time.report = change.since.entering / time.in.report)
+         change.time.report = change.since.entering / time.in.report) %>%
+  # Carry last known criminalization value forward
+  mutate(criminalized = na.locf(crimlevel, na.rm=FALSE),
+         criminalized = ifelse(is.na(criminalized), as.integer(0), criminalized),
+         criminalization.type = factor(criminalized, levels=c(0, 1, 2),
+                                       labels=c("None    ", "Partial    ", "Full"),
+                                       ordered=TRUE)) %>%
+  ungroup()
 # write_csv(p.index, "data/policy_index.csv")
 
 # -------------------
@@ -133,3 +150,59 @@ fig.cho.all.vs.cases <- ggplot(plot.data,
 
 # TODO: Verify measure of changes / time in report
 # TODO: Save new variable to CSV/Stata
+
+
+# ------------------------------------------------------
+# What is the effect of criminalization on Cho scores?
+# ------------------------------------------------------
+# Not possible to subtract out criminalization element from Cho subcomponents, 
+# since criminalizaiton policy falls under each of the 3 Ps (prosecution, 
+# prevention, protection)
+
+# Effect of criminalization on overall Cho score
+cho.crim <- p.index %>% 
+  group_by(criminalization.type) %>%
+  summarise(avg.score = mean(p, na.rm=TRUE))
+
+plot.cho.crim <- ggplot(cho.crim, aes(x=criminalization.type, y=avg.score)) +
+  geom_bar(stat="identity", position="dodge") +
+  labs(x="Level of criminalization", y="Anti-TIP policy index") + 
+  theme_clean(10) + theme(panel.grid.minor=element_blank())
+plot.cho.crim
+
+filename <- "cho_crim_full_score"
+width <- 4.5
+height <- 3
+ggsave(plot.cho.crim, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(plot.cho.crim, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+# Effect of criminalization on each of the Cho subcomponents
+cho.crim.sub <- p.index %>%
+  gather(subcomponent.type, subcomponent.value,
+         c(prosecution, prevention, protection)) %>%
+  group_by(criminalization.type, subcomponent.type) %>%
+  summarise(avg.score = mean(subcomponent.value, na.rm=TRUE))
+
+plot.cho.crim.sub <- ggplot(cho.crim.sub, aes(x=subcomponent.type, y=avg.score, 
+                                              fill=criminalization.type)) +
+  geom_bar(stat="identity", position="dodge") +
+  labs(x="3P index subcomponent", y="Anti-TIP policy index") + 
+  scale_fill_manual(values=c("black", "grey30", "grey80"),
+                    name="Level of criminalization") +
+  theme_clean(10) + theme(panel.grid.minor=element_blank(),
+                          legend.key.size=unit(0.65, "lines"),
+                          legend.key = element_blank(),
+                          legend.margin = unit(0.25, "lines"),
+                          plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
+plot.cho.crim.sub
+
+filename <- "cho_crim_subcomponents"
+width <- 4.5
+height <- 3
+ggsave(plot.cho.crim.sub, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(plot.cho.crim.sub, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
