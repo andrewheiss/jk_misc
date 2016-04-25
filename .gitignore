@@ -22,5 +22,6 @@ final_figures/*
 final_tables/*
 !final_tables/stargazer2docx.py
 figures/*receipt*
+figures/*.docx
 EDB/figures/*.pdf
 EDB/figures/*.png
