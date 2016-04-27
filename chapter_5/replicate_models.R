@@ -21,8 +21,8 @@ source("clean_data.R")
 get.or.se <- function(model) {
   tidy(model) %>% 
     mutate(or = exp(estimate),
-           se.diag = diag(vcov(model)),
-           or.se = sqrt(or^2 * se.diag)) %>%
+           var.diag = diag(vcov(model)),
+           or.se = sqrt(or^2 * var.diag)) %>%
     select(or.se) %>% unlist %>% unname
 }
 
