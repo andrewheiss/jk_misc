@@ -250,12 +250,14 @@ stargazer(model2.2.1, model2.2.2,
 # Chapter 3
 # -----------
 # Table A3.1: Determinants of media coverage
-df.media <- df.complete %>% filter(year > 1998)
+df.media <- df.complete %>% filter(year > 1998) %>%
+  mutate(cowcode_factor = factor(cowcode),
+         cowcode_relevel = relevel(cowcode_factor, ref="92"))
 
 # ("Media coverage 3" at http://stats.andrewheiss.com/judith/chapter_5/report.html)
 model3.1.1 <- lm(logstory ~ inreport + inreport_diff + logstory1 + 
                    fh_cl1 + loggdppercap_1 + ratproto2000_1 + logpop_1 + 
-                   year.factor + as.factor(cowcode), 
+                   year.factor + cowcode_factor, 
                  data=df.media)
 
 # ("Media coverage and incidence" at http://stats.andrewheiss.com/judith/chapter_5/report.html)
@@ -263,7 +265,7 @@ model3.1.2 <- lm(logstory ~ inreport + inreport_diff + logstory1 +
                    fh_cl1 + loggdppercap_1 + ratproto2000_1 + logpop_1 + 
                    ht_incidence_origin + ht_incidence_transit +
                    ht_incidence_destination +
-                   year.factor + as.factor(cowcode), 
+                   year.factor + cowcode_factor, 
                  data=df.media)
 
 
@@ -289,7 +291,7 @@ out.file <- file.path(base.folder, "table_a3_1.html")
 
 stargazer(model3.1.1, model3.1.2,
           type="html", out=out.file, out.header=TRUE,
-          p.auto=FALSE, no.space=TRUE, omit="\\.factor",
+          p.auto=FALSE, no.space=TRUE, omit="cowcode|year\\.",
           covariate.labels=var.labs, column.labels=col.labs, 
           dep.var.caption="Logged coverage", se=ses,
           model.numbers=FALSE, dep.var.labels.include=FALSE,
@@ -325,15 +327,62 @@ coefs.cow %>%
 
 # Predict number of TIP-related stories
 new.data.covars <- model3.1.1$model %>%
-  summarise_each(funs(mean), -c(year.factor, `as.factor(cowcode)`)) %>%
+  summarise_each(funs(mean), -c(year.factor, cowcode_factor)) %>%
   mutate(year.factor = factor(2005),
-         cowcode = factor(92),
+         cowcode_factor = factor(92),
          index = 1) %>%
   select(-inreport)
 
 new.data <- data_frame(inreport = c(0, 1), index = 1) %>% 
   left_join(new.data.covars, by="index") %>%
   select(-index)
+
+filter(tidy(model3.1.1), term == "inreport") %>%
+  mutate(adjusted = exp(estimate))
+
+coverage.predicted <- augment(model3.1.1) %>%
+  group_by(inreport) %>%
+  summarise(avg.logstory = mean(.fitted),
+            se.logstory = mean(.se.fit),
+            upper = avg.logstory + (qnorm(0.975) * se.logstory),
+            lower = avg.logstory + (qnorm(0.025) * se.logstory)) %>%
+  mutate_each(funs(exp = exp)) %>%
+  mutate(inreport = factor(inreport, levels=0:1, labels=c("Not in report", "In report")))
+
+coverage.predicted1 <- augment(model3.1.1) %>%
+  group_by(inreport) %>%
+  summarise(avg.logstory = mean(.fitted),
+            se.logstory = mean(.se.fit),
+            upper = avg.logstory + (qnorm(0.975) * se.logstory),
+            lower = avg.logstory + (qnorm(0.025) * se.logstory)) %>%
+  mutate_each(funs(exp = exp)) %>%
+  mutate(inreport = factor(inreport, levels=0:1, labels=c("Not in report", "In report")))
+
+plot.coverage.pred <- ggplot(coverage.predicted, aes(x=inreport, y=avg.logstory_exp)) + 
+  geom_pointrange(aes(ymin=lower_exp, ymax=upper_exp)) + 
+  coord_cartesian(ylim=c(0, 70)) +
+  labs(x=NULL, y="Average number of media mentions",
+       title="Average number of predicted mentions",
+       subtitle="Mean predicted values of every observation in model") +
+  theme_clean(10)
+
+coverage.actual <- model3.1.1$model %>%
+  group_by(inreport) %>%
+  summarise(avg.logstory = mean(logstory),
+            sd.logstory = sd(logstory),
+            se.logstory = sd.logstory / sqrt(n()),
+            upper = avg.logstory + (qnorm(0.975) * se.logstory),
+            lower = avg.logstory + (qnorm(0.025) * se.logstory)) %>%
+  mutate_each(funs(exp = exp)) %>%
+  mutate(inreport = factor(inreport, levels=0:1, labels=c("Not in report", "In report")))
+
+plot.coverage.actual <- ggplot(coverage.actual, aes(x=inreport, y=avg.logstory_exp)) + 
+  geom_pointrange(aes(ymin=lower_exp, ymax=upper_exp)) + 
+  coord_cartesian(ylim=c(0, 70)) +
+  labs(x=NULL, y="Average number of media mentions",
+       title="Average number of actual mentions",
+       subtitle="Mean actual values of every observation in model") +
+  theme_clean(10)
 
 plot.predict <- augment(model3.1.1, newdata=new.data) %>%
   mutate(pred = exp(.fitted),
@@ -342,7 +391,41 @@ plot.predict <- augment(model3.1.1, newdata=new.data) %>%
          inreport = factor(inreport, labels=c("Not in report", "In report"),
                            ordered=TRUE))
 
+plot.both <- gridExtra::arrangeGrob(plot.coverage.actual, plot.coverage.pred, nrow=1)
+grid::grid.draw(plot.both)
+ggsave(plot.both, filename="~/Desktop/coverage_both.png",
+       width=7, height=3, units="in", type="cairo", dpi=300)
+
 write_csv(plot.predict, path="final_figures/data_figureA_3_media_predict.csv")
+
+
+new.data.covars1 <- model3.1.1$model %>%
+  summarise_each(funs(mean), -c(year.factor, cowcode_relevel, logstory1)) %>%
+  mutate(year.factor = factor(2005),
+         cowcode_relevel = factor(92),
+         index = 1) %>%
+  select(-inreport)
+
+new.data1 <- expand.grid(inreport = c(0, 1), index = 1,
+                         logstory1=seq(min(model3.1.1$model$logstory1),
+                                       max(model3.1.1$model$logstory1),
+                                       by=0.1)) %>% 
+  left_join(new.data.covars1, by="index") %>%
+  select(-index)
+
+plot.predict1 <- augment(model3.1.1, newdata=new.data1) %>%
+  mutate(pred = exp(.fitted),
+         pred.lower = exp(.fitted - (qnorm(0.95 / 2 + 0.5) * .se.fit)),
+         pred.upper = exp(.fitted + (qnorm(0.95 / 2 + 0.5) * .se.fit)),
+         inreport = factor(inreport, labels=c("Not in report", "In report"),
+                           ordered=TRUE),
+         logstory1_exp = exp(logstory1))
+
+ggplot(plot.predict1, aes(x=logstory1_exp, y=pred, fill=inreport, colour=inreport)) + 
+  geom_ribbon(aes(ymax=pred.upper, ymin=pred.lower), alpha=0.3, colour=NA) + 
+  geom_line(size=2) + 
+  labs(x=NULL, y="Predicted number of TIP-related stories") + 
+  theme_clean(10)
 
 
 # -----------
