@@ -511,6 +511,8 @@ plot.all.countries <- arrangeGrob(plot.years.since.full, blank,
                                   ncol=1, heights=c(0.425, 0.05, 0.425))
 grid::grid.draw(plot.all.countries)
 
+cho.crim.all.countries <- plot.all.countries
+
 filename <- "cho_all_countries_crim_type"
 width <- 5.5
 height <- 4.5

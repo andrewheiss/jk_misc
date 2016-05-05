@@ -516,8 +516,18 @@ ggsave(fig5.2, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(fig5.2, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-# Figure 5.3: Number of anti-TIP laws passing, by month, 2001-2014
-df.fig5.3 <- read_stata("original_files/Criminalization Data UpdatedJK.dta") %>%
+# Figure 5.3: Relationship between Cho subcomponents and criminalization
+filename <- "figure5_3_cho_crim"
+width <- 5.5
+height <- 4.5
+ggsave(cho.crim.all.countries, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(cho.crim.all.countries, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+
+# Figure 5.4: Number of anti-TIP laws passing, by month, 2001-2014
+df.fig5.4 <- read_stata("original_files/Criminalization Data UpdatedJK.dta") %>%
   filter(crimlevel == 2) %>%
   group_by(month) %>%
   summarise(num = n()) %>%
@@ -525,21 +535,21 @@ df.fig5.3 <- read_stata("original_files/Criminalization Data UpdatedJK.dta") %>%
   mutate(month = month.name[month],
          month = factor(month, levels=month, ordered=TRUE))
   
-fig5.3 <- ggplot(df.fig5.3, aes(x=month, y=num)) + 
+fig5.4 <- ggplot(df.fig5.4, aes(x=month, y=num)) + 
   geom_bar(stat="identity") +
   labs(x=NULL, y="Anti-TIP laws passed") + 
   theme_clean(10) + theme(axis.text.x = element_text(angle=45, hjust=0.5, vjust=0.5))
 
-filename <- "figure5_3_laws_passed"
+filename <- "figure5_4_laws_passed"
 width <- 4.5
 height <- 2
-ggsave(fig5.3, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+ggsave(fig5.4, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(fig5.3, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(fig5.4, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
 
-# Figure 5.4: Probability of criminalizing fully in a given year if a country had not already done so, 2001-2010
+# Figure 5.5: Probability of criminalizing fully in a given year if a country had not already done so, 2001-2010
 ajps.raw <- read_dta("original_files/kelley_simmons_ajps_2014_replication.dta") %>%
   group_by(cowcode) %>%
   mutate(adjbicrimlevel.lag = lag(adjbicrimlevel),
@@ -626,23 +636,23 @@ full.table <- bind_rows(report.presence, blank.row1,
          label = factor(label, levels=rev(label), ordered=TRUE))
 
 # Finally plot it all
-fig5.4 <- ggplot(full.table, aes(x=label.n, y=prob.yes)) + 
+fig5.5 <- ggplot(full.table, aes(x=label.n, y=prob.yes)) + 
   geom_bar(stat="identity") + 
   labs(x=NULL, y="Probability of criminalizing") + 
   scale_y_continuous(labels=percent) + 
   coord_flip() + 
   theme_clean(10)
 
-filename <- "figure5_4_prob_criminalize"
+filename <- "figure5_5_prob_criminalize"
 width <- 4.5
 height <- 3
-ggsave(fig5.4, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+ggsave(fig5.5, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(fig5.4, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(fig5.5, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
 
-# Figure 5.5: Incidence of criminalization in the following year, 2001-2010 for all countries included in the TIP report that had not yet criminalized in the year of the report
+# Figure 5.6: Incidence of criminalization in the following year, 2001-2010 for all countries included in the TIP report that had not yet criminalized in the year of the report
 # Load reaction data from Stata file
 reaction.vars <- c("appreciation", "funding", "anger", "cooperative", 
                    "objection", "comparisonsratingnotfair", "publicfacesaving",
@@ -696,7 +706,7 @@ df.reaction.types <- reactions.crim.long %>%
   select(reaction = nice.name, num = crim.yes, total, prob.yes)
 
 # Combine the two dataframes, separated by a blank row
-df.fig5.5 <- bind_rows(df.reaction.types, 
+df.fig5.6 <- bind_rows(df.reaction.types, 
                        data_frame(reaction=" ", num=NA, total=NA, prob.yes=0), 
                        df.reactions) %>%
   mutate(label.n = ifelse(reaction != " ", 
@@ -706,19 +716,19 @@ df.fig5.5 <- bind_rows(df.reaction.types,
          label.n = factor(label.n, levels=label.n, ordered=TRUE))
 
 # Plot, finally
-fig5.5 <- ggplot(df.fig5.5, aes(x=label.n, y=prob.yes)) + 
+fig5.6 <- ggplot(df.fig5.6, aes(x=label.n, y=prob.yes)) + 
   geom_bar(stat="identity") + 
   labs(x=NULL, y="Probability of criminalization") + 
   scale_y_continuous(labels=percent) + 
   coord_flip() + 
   theme_clean(10)
 
-filename <- "figure5_5_react_criminalization"
+filename <- "figure5_6_react_criminalization"
 width <- 4.5
 height <- 3
-ggsave(fig5.5, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+ggsave(fig5.6, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(fig5.5, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(fig5.6, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
 
