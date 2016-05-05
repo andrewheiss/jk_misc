@@ -6,13 +6,14 @@ library(tidyr)
 library(haven)
 library(readr)
 library(ggplot2)
+library(gridExtra)
 library(lubridate)
 library(countrycode)
 library(zoo)
 
 source("shared_functions.R")
 
-base.folder <- "~/Desktop/misc_graphs"
+base.folder <- "final_figures/additional_figures"
 
 # -------------------------------------
 # Manipulate and create new variables
@@ -118,6 +119,8 @@ p.index <- cho.orig %>% left_join(year.joined, by="cow") %>%
          criminalization.type = factor(criminalized, levels=c(0, 1, 2),
                                        labels=c("None    ", "Partial    ", "Full"),
                                        ordered=TRUE)) %>%
+  mutate(years.since.full.alt = year - year.full,
+         years.since.partial.alt = year - year.partial) %>%
   ungroup()
 # write_csv(p.index, "data/policy_index.csv")
 
@@ -316,4 +319,202 @@ height <- 3
 ggsave(plot.years.since, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
 ggsave(plot.years.since, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+
+# Remove criminalization part from Cho index
+#
+# According to the Cho codebook 
+# (http://www.economics-human-trafficking.net/mediapool/99/998280/data/Coding_Guideline.pdf),
+# legislation only influences the proseuction elemnt of the index; protection 
+# reflects how well countries implement legislation for assisting victims, 
+# while prevention reflects how well countries implement legislation for 
+# preventing trafficking. Prosecution also includes non-legislative elements,
+# but it's impossible to parse those out without recoding all the TIP reports
+# for all countries in all years.
+#
+# So as a rough attempt to remove criminalization from the Cho index, we just
+# remove the prosecution element and use a 0-10 scale instead of 0-15.
+
+p.index.adjusted <- p.index %>%
+  mutate(p.adj = prevention + protection)
+
+# See the average change in the modified Cho index X years after criminalization
+# Calculate the change in index since full criminalization
+change.full <- p.index.adjusted %>%
+  filter(year > 1999, year.full > 1999) %>%
+  mutate(change.since.full = p.adj - p.adj[crim.full & year == year.full],
+         change.since.full = as.numeric(ifelse(crim.full, change.since.full, NA))) %>%
+  select(year, cow, change.since.full)
+
+# Calculate the change in index since partial criminalization
+change.partial <- p.index.adjusted %>%
+  filter(year > 1999, year.partial > 1999) %>%
+  mutate(change.since.partial = p.adj - p.adj[crim.partial & year == year.partial],
+         change.since.partial = as.numeric(ifelse(crim.partial, change.since.partial, NA))) %>%
+  select(year, cow, change.since.partial)
+
+# Add changes to full dataframe
+p.index.changes.adj <- p.index.adjusted %>%
+  left_join(change.full, by=c("year", "cow")) %>%
+  left_join(change.partial, by=c("year", "cow"))
+
+# Summarize for plotting
+df.years.since.adj <- p.index.changes.adj %>%
+  group_by(years.since.full) %>%
+  summarise(avg.change = mean(change.since.full, na.rm=TRUE),
+            std.dev = sd(change.since.full, na.rm=TRUE),
+            num = n(),
+            se = std.dev / sqrt(num),
+            upper = avg.change + (qnorm(0.975) * se),
+            lower = avg.change + (qnorm(0.025) * se),
+            lower.censored = ifelse(lower < 0, 0, lower)) %>%
+  filter(years.since.full < 11, years.since.full > 0) %>%
+  mutate(years.since.full = factor(years.since.full))
+
+# Plot
+dodge <- position_dodge(width=0.9)
+plot.years.since.adj <- ggplot(df.years.since.adj, aes(x=years.since.full, y=avg.change)) +
+  geom_bar(stat="identity", position=dodge) +
+  geom_errorbar(aes(ymax=upper, ymin=lower.censored), position=dodge, 
+                width=0.25, colour="grey60", size=0.5) +
+  labs(x="Years since full TIP criminalization",
+       y="Change in policy index since criminalization") + 
+  theme_clean(10) + theme(panel.grid.minor=element_blank())
+plot.years.since.adj
+
+filename <- "cho_years_since_full_crim_adj"
+width <- 4.5
+height <- 3
+ggsave(plot.years.since.adj, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(plot.years.since.adj, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+
+# Avearge Cho scores for Full, partial, and no criminalization
+countries.crim.categorized <- p.index.adjusted %>%
+  group_by(cow) %>%
+  mutate(crim.category = case_when(
+    max(criminalized, na.rm=TRUE) == 2 ~ "Full",
+    max(criminalized, na.rm=TRUE) == 1 ~ "Partial",
+    max(criminalized, na.rm=TRUE) == 0 ~ "No"
+  ))
+
+countries.full.partial <- countries.crim.categorized %>%
+  filter(crim.category == "Full") %>%
+  # gather(since.type, years, c(years.since.full.alt, years.since.partial.alt)) %>%
+  # filter(!(crim.category == "Full" & since.type == "years.since.partial.alt")) %>%
+  # filter(!(crim.category == "Partial" & since.type == "years.since.full.alt")) %>%
+  group_by(crim.category, years.since.full.alt) %>%
+  summarise(avg.score = mean(p.adj, na.rm=TRUE),
+            std.dev = sd(p.adj, na.rm=TRUE),
+            num = n(),
+            se = std.dev / sqrt(num),
+            upper = avg.score + (qnorm(0.975) * se),
+            lower = avg.score + (qnorm(0.025) * se),
+            lower.censored = ifelse(lower < 0, 0, lower)) %>%
+  filter(years.since.full.alt < 11, years.since.full.alt > -11) %>%
+  ungroup() %>%
+  mutate(years = years.since.full.alt,
+         crim.category = "Countries with full criminalization")
+
+# Get the average Cho score in the year of criminalization
+# countries.crim.year0 <- countries.crim.categorized %>%
+#   filter(crim.category != "No") %>%
+#   filter(year == year.full | year == year.partial) %>%
+#   gather(since.type, years, c(years.since.full, years.since.partial)) %>%
+#   filter(!(crim.category == "Full" & since.type == "years.since.partial")) %>%
+#   filter(!(crim.category == "Partial" & since.type == "years.since.full")) %>%
+#   group_by(crim.category, since.type, years) %>%
+#   summarise(avg.score = mean(p.adj, na.rm=TRUE),
+#             std.dev = sd(p.adj, na.rm=TRUE),
+#             num = n(),
+#             se = std.dev / sqrt(num),
+#             upper = avg.score + (qnorm(0.975) * se),
+#             lower = avg.score + (qnorm(0.025) * se),
+#             lower.censored = ifelse(lower < 0, 0, lower))
+
+plot.years.since.full <- ggplot(countries.full.partial, 
+                                aes(x=years, y=avg.score, 
+                                    ymax=upper, ymin=lower)) +
+  geom_rect(data=filter(countries.full.partial, years==0),
+            aes(xmin=0, xmax=10, ymin=lower, ymax=upper),
+            fill="grey50", alpha=0.3) +
+  geom_segment(data=filter(countries.full.partial, years==0),
+               aes(x=0, xend=10, y=avg.score, yend=avg.score),
+               size=0.25) +
+  geom_pointrange(size=0.25) +
+  labs(x="Years since full TIP criminalization",
+       y="Prevention and protection indexes") + 
+  coord_cartesian(ylim=c(3, 8)) +
+  theme_clean(8) + theme(panel.grid.minor=element_blank()) +
+  facet_wrap(~ crim.category)
+plot.years.since.full
+
+plot.years.since.partial <- ggplot(filter(countries.full.partial, 
+                                          crim.category=="Partial"), 
+                                   aes(x=years, y=avg.score, 
+                                       ymax=upper, ymin=lower)) +
+  geom_rect(data=filter(countries.full.partial, 
+                        crim.category=="Partial", years==0),
+            aes(xmin=0, xmax=10, ymin=lower, ymax=upper),
+            fill="grey50", alpha=0.3) +
+  geom_segment(data=filter(countries.full.partial, 
+                           crim.category=="Partial", years==0),
+               aes(x=0, xend=10, y=avg.score, yend=avg.score),
+               size=0.25) +
+  geom_pointrange(size=0.25) +
+  labs(x="Years since partial TIP criminalization",
+       y="Prevention and protection indexes") + 
+  coord_cartesian(ylim=c(3, 8)) +
+  theme_clean(8) + theme(panel.grid.minor=element_blank()) +
+  facet_wrap(~ crim.category)
+plot.years.since.partial
+
+countries.no.crim <- countries.crim.categorized %>%
+  filter(crim.category != "Full") %>%
+  group_by(year) %>%
+  summarise(avg.score = mean(p.adj, na.rm=TRUE),
+            std.dev = sd(p.adj, na.rm=TRUE),
+            num = n(),
+            se = std.dev / sqrt(num),
+            upper = avg.score + (qnorm(0.975) * se),
+            lower = avg.score + (qnorm(0.025) * se),
+            lower.censored = ifelse(lower < 0, 0, lower)) %>%
+  filter(year > 1999, year < 2014) %>%
+  mutate(year = ymd(paste0(year, "-01-01")),
+         crim.category = "Countries without full criminalization")
+
+plot.countries.no.crim <- ggplot(countries.no.crim,
+                                 aes(x=year, y=avg.score)) +
+  geom_rect(data=slice(countries.no.crim, 1),
+            aes(xmin=ymd("2000-01-01"), xmax=ymd("2013-01-01"),
+                ymin=lower, ymax=upper),
+            fill="grey50", alpha=0.3) +
+  geom_segment(data=slice(countries.no.crim, 1),
+               aes(x=ymd("2000-01-01"), xend=ymd("2013-01-01"),
+                   y=avg.score, yend=avg.score),
+               size=0.25) +
+  geom_pointrange(aes(ymax=upper, ymin=lower.censored), size=0.25) +
+  labs(x="Year", y="Prevention and protection indexes") + 
+  coord_cartesian(ylim=c(3, 8)) +
+  theme_clean(8) + theme(panel.grid.minor=element_blank()) + 
+  facet_wrap(~ crim.category)
+plot.countries.no.crim
+
+# Blank plot for spacing things in arrangeGrob()
+blank <- rectGrob(gp=gpar(col="white"))
+
+plot.all.countries <- arrangeGrob(plot.years.since.full, blank,
+                                  plot.countries.no.crim,
+                                  ncol=1, heights=c(0.425, 0.05, 0.425))
+grid::grid.draw(plot.all.countries)
+
+filename <- "cho_all_countries_crim_type"
+width <- 5.5
+height <- 4.5
+ggsave(plot.all.countries, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(plot.all.countries, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
