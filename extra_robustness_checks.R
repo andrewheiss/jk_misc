@@ -44,7 +44,8 @@ military.aid <- read_csv("original_files/Military and Police Aid by Country.csv"
   mutate(iso3 = countrycode(country, "country.name", "iso3c"),
          cowcode = countrycode(country, "country.name", "cown"),
          cowcode = ifelse(country == "Serbia", 555, cowcode),
-         year = as.numeric(year))
+         year = as.numeric(year),
+         amount.log = log1p(amount))
 
 
 # Add FDI and ODA
@@ -98,7 +99,11 @@ us.bits.panel <- expand.grid(bit.partner = us.bits$bit.partner,
                              stringsAsFactors=FALSE) %>%
   right_join(us.bits, by="bit.partner") %>%
   mutate(has.bit.sig.with.us = year >= sig.year,
-         has.bit.start.with.us = year >= start.year)
+         has.bit.start.with.us = year >= start.year) %>%
+  group_by(bit.partner.cow, year) %>%
+  summarise_each(funs(max), c(has.bit.sig.with.us, has.bit.start.with.us)) %>%
+  mutate(has.bit.sig.with.us = has.bit.sig.with.us == 1,
+         has.bit.start.with.us = has.bit.start.with.us == 1)
 
 
 # Imports to the US
@@ -107,7 +112,7 @@ us.bits.panel <- expand.grid(bit.partner = us.bits$bit.partner,
 imports.us <- read_excel("original_files/External_Trade_by_Counterpart.xls", 
                          sheet=2, skip=6) %>%
   select(country = 1, everything()) %>%
-  mutate_each(funs(asdf = ifelse(. == "-" | . == "...", NA, .))) %>%
+  mutate_each(funs(ifelse(. == "-" | . == "...", NA, .)), -country) %>%
   gather(year, amount, -country) %>%
   mutate(year = as.numeric(year),
          amount = as.numeric(amount) * 1000000,
@@ -120,8 +125,28 @@ imports.us <- read_excel("original_files/External_Trade_by_Counterpart.xls",
   mutate(iso3 = countrycode(country, "country.name", "iso3c"),
          cowcode = countrycode(country, "country.name", "cown"),
          cowcode = ifelse(country == "Serbia", 555, cowcode)) %>%
-  arrange(country, year)
-  
+  group_by(cowcode, year) %>%
+  filter(!is.na(cowcode)) %>%
+  summarise_each(funs(max(., na.rm=TRUE)), starts_with("amount")) %>% ungroup()
+
+
+# US FDI only
+# Bilateral FDI statistics from UNCTAD:
+# http://unctad.org/en/Pages/DIAE/FDI%20Statistics/FDI-Statistics-Bilateral.aspx
+# NOTE: I had to manually clean up their Excel file so that R could work with it
+us.fdi <- read_csv("original_files/unctad_us_fdi.csv", na="-") %>%
+  mutate_each(funs(ifelse(. == "..", NA, .)), -Country) %>%
+  gather(year, amount, -Country) %>%
+  mutate(year = as.numeric(year),
+         amount = as.numeric(str_replace(amount, " +", "")) * 1000000,
+         amount = ifelse(is.na(amount) | amount < 0, 0, amount),
+         amount.log = log1p(amount),
+         country = countrycode(Country, "country.name", "country.name")) %>%
+  filter(!is.na(country)) %>%
+  mutate(cowcode = countrycode(Country, "country.name", "cown"),
+         cowcode = ifelse(country == "Serbia", 555, cowcode)) %>%
+  filter(!is.na(cowcode)) 
+
 
 # Green book vs. OECD ODA?
 # Green book counts more than OECD does
@@ -162,20 +187,36 @@ robustness.df <- df.full %>% ungroup() %>%
   expand(cowcode, year) %>%
   left_join(select(oecd.dac, year, cowcode = ccode, dac_status, dac_abbr, dac_eligible), 
             by=c("cowcode", "year")) %>%
-  left_join(select(military.aid, year, cowcode, us.military.aid = amount),
+  left_join(select(military.aid, year, cowcode, us.military.aid = amount, 
+                   us.military.aid.log = amount.log),
             by=c("cowcode", "year")) %>%
-  left_join(select(wdi.clean, year, cowcode, fdi, oda, fdi.log, oda.log),
+  left_join(select(wdi.clean, year, cowcode, fdi, oda.wdi = oda, fdi.log, 
+                   oda.wdi.log = oda.log),
             by=c("cowcode", "year")) %>%
-  left_join(select(us.bits.panel, year, cowcode = bit.partner.cow, 
+  left_join(select(us.bits.panel, year, cowcode = bit.partner.cow,
                    has.bit.sig.with.us, has.bit.start.with.us),
             by=c("cowcode", "year")) %>%
+  mutate(has.bit.sig.with.us = ifelse(is.na(has.bit.sig.with.us), 
+                                      FALSE, has.bit.sig.with.us),
+         has.bit.start.with.us = ifelse(is.na(has.bit.start.with.us), 
+                                        FALSE, has.bit.start.with.us)) %>%
   left_join(select(imports.us, year, cowcode, trade.to.us = amount, 
                    trade.to.us.log = amount.log),
+            by=c("cowcode", "year")) %>%
+  left_join(select(us.fdi, year, cowcode, fdi.from.us = amount, 
+                   fdi.from.us.log = amount.log),
             by=c("cowcode", "year")) %>%
   left_join(select(aid.us.total, year, cowcode = recipient.cowcode, 
                    aid.total, aid.total.log, aid.us, aid.us.log, 
                    aid.us.total.perc),
             by=c("cowcode", "year")) %>%
+  mutate(fdi.from.us = ifelse(is.na(fdi.from.us), 0, fdi.from.us),
+         fdi.from.us.log = ifelse(is.na(fdi.from.us.log), 0, fdi.from.us.log),
+         us.military.aid = ifelse(is.na(us.military.aid), 0, us.military.aid),
+         us.military.aid.log = ifelse(is.na(us.military.aid.log), 0, us.military.aid.log),
+         trade.to.us = ifelse(is.na(trade.to.us), 0, trade.to.us),
+         trade.to.us.log = ifelse(is.na(trade.to.us.log), 0, trade.to.us.log),
+         aid.us.total.perc = ifelse(is.na(aid.us.total.perc), 0, aid.us.total.perc)) %>%
   group_by(cowcode) %>%
   mutate_each(funs(lag = lag))
   

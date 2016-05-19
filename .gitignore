@@ -3,6 +3,7 @@ original_files/*
 
 # Some data
 data/*.dta
+*.feather
 
 # R stuff
 .Rproj.user
