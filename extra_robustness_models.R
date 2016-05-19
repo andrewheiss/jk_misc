@@ -369,7 +369,8 @@ var.labs <- c("US pressure", "Share of women in parliament", "Worse civil libert
               "Imports to US (logged) × US pressure",
               "US aid as share of total aid (logged)",
               "US aid as share of total aid (logged) × US pressure")
-col.labs <- c("Model 6.1.1", "Model 6.1.2", "Model 6.1.3", "Model 6.1.4")
+col.labs <- c("Model 6.1.9", "Model 6.1.10", "Model 6.1.11", "Model 6.1.12",
+              "Model 6.1.13", "Model 6.1.14", "Model 6.1.15", "Model 6.1.16")
 
 ses <- list(get.or.se(model6.1.1.pres), get.or.se(model6.1.2.pres),
             get.or.se(model6.1.3.pres), get.or.se(model6.1.4.pres),
