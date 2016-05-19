@@ -10,6 +10,7 @@ library(survival)
 library(countrycode)
 library(feather)
 
+source("shared_functions.R")
 
 # Pandoc options
 panderOptions('pandoc.binary', '/Users/andrew/.cabal/bin/pandoc')
@@ -31,6 +32,7 @@ panderOptions('table.alignment.default', 'left')
 
 # Locations
 base.folder <- "final_tables"
+base.folder.figs <- "final_figures"
 
 
 # ------------------
@@ -173,7 +175,7 @@ model6.1.1 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 +
                       fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
                       missinfo8_2 + logeconasstP_1 +
                       inreport1 * logeconasstP_1 + cluster(name),
-                    data=df.survivalized.crim.dac, ties="efron")
+                    data=df.survivalized.crim.dac, ties="efron", model=TRUE)
 model6.1.1.fit <- summary(survfit(model6.1.1))$table
 
 # (Model 3.5 at http://stats.andrewheiss.com/judith/chapter_5/report.html)
@@ -288,7 +290,7 @@ model6.1.1.pres <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women
                            fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
                            missinfo8_2 + logeconasstP_1 +
                            pressure_lag * logeconasstP_1 + cluster(name),
-                         data=df.survivalized.crim, ties="efron")
+                         data=df.survivalized.crim, ties="efron", model=TRUE)
 model6.1.1.pres.fit <- summary(survfit(model6.1.1.pres))$table
 
 # (Model 3.5 at http://stats.andrewheiss.com/judith/chapter_5/report.html)
@@ -317,7 +319,7 @@ model6.1.5.pres <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women
                            fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
                            missinfo8_2 + us.military.aid.log_lag +
                            us.military.aid.log_lag * pressure_lag + cluster(name),
-                         data=df.survivalized.crim, ties="efron")
+                         data=df.survivalized.crim, ties="efron", model=TRUE)
 model6.1.5.pres.fit <- summary(survfit(model6.1.5.pres))$table
 
 model6.1.6.pres <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women1 +
@@ -334,13 +336,6 @@ model6.1.7.pres <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women
                          data=df.survivalized.crim, ties="efron")
 model6.1.7.pres.fit <- summary(survfit(model6.1.7.pres))$table
 
-asdf <- select(df.survivalized.crim, start_time, yrfromj2, fail, pressure_lag, women1, 
-            fh_cl1, corrected_regcrim1_1, ratproto2000_1, 
-            missinfo8_2, trade.to.us.log_lag)
-
-qwer <- complete.cases(asdf)
-
-sum(is.na(imports.us$amount))
 
 model6.1.8.pres <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women1 +
                            fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
@@ -404,3 +399,209 @@ stargazer(model6.1.1.pres, model6.1.2.pres, model6.1.3.pres, model6.1.4.pres,
           model.numbers=FALSE, dep.var.labels.include=FALSE,
           notes.align="l", add.lines=extra.lines, keep.stat=c("n"),
           notes.label="Notes:", notes=notes, title=title)
+
+
+# Visualize interactions in models 6.1.1, 6.1.1.pressure, 6.1.5.pressure
+surv.to.df <- function(x) {
+  df <- data.frame(time = x$time, surv = x$surv,
+                   lower = x$lower, upper = x$upper)
+  df
+}
+
+# Plot survival curve without hypothetical situations
+# Kind of adopted from ggfortify::autoplot
+#
+# fit <- survfit(Surv(time, status) ~ sex, data = lung)
+# 
+# sdata <- data.frame(time = fit$time, surv = fit$surv, 
+#                     lower = fit$lower, upper = fit$upper,
+#                     censor = fit$n.censor) %>%
+#   mutate(strata = rep(names(fit$strata), fit$strata))
+# 
+# ggplot(sdata, aes(x=time, y=surv, colour=strata)) + 
+#   geom_step() + 
+#   geom_point(data=filter(sdata, censor == 1), shape="+", colour="black", size=3)
+
+
+# Aid and in report
+new.data.vars <- expand.grid(inreport1 = 0:1, 
+                             logeconasstP_1 = c(min(model6.1.1$model$logeconasstP_1),
+                                                mean(model6.1.1$model$logeconasstP_1),
+                                                max(model6.1.1$model$logeconasstP_1)),
+                             index = 1)
+
+new.data.aid.report <- model6.1.1$model %>%
+  summarise_each(funs(mean), -`cluster(name)`) %>%
+  select(-c(inreport1, logeconasstP_1)) %>%
+  mutate(ratproto2000_1 = 0,
+         index = 1) %>%
+  right_join(new.data.vars, by="index") %>%
+  select(-index)
+
+situations.aid.report <- data_frame(situation = as.character(1:nrow(new.data.aid.report)),
+                                    report = new.data.aid.report$inreport1,
+                                    report.lab = ifelse(report == 0, "Not in report", "In report"),
+                                    aid = rep(c("No aid", "Mean aid  ", "High aid  "), each=2)) %>%
+  mutate(report.lab = factor(report.lab, 
+                             levels=c("Not in report", "In report"), 
+                             ordered=TRUE))
+
+plot.aid.report <- surv.to.df(survfit(model6.1.1, 
+                                      newdata=new.data.aid.report)) %>%
+  gather(key, value, -time) %>%
+  separate(key, into=c("variable", "situation")) %>%
+  spread(variable, value) %>%
+  left_join(situations.aid.report, by="situation") %>%
+  mutate(time = time - 9)
+
+fake.ribbon <- plot.aid.report %>%
+  group_by(aid, report.lab) %>%
+  mutate(time.max = lead(time)) %>%
+  filter(!is.na(time.max))
+
+fig.aid.report <- ggplot(plot.aid.report, aes(x=time, y=surv, colour=aid)) +
+  geom_rect(data = fake.ribbon,
+            aes(xmin=time, xmax=time.max, ymin=lower, 
+                ymax=upper, fill=aid),
+            alpha=0.2, colour=NA) + 
+  geom_step() +
+  labs(x="Years", y="Probability of not criminalizing") +
+  scale_y_continuous(labels=percent) +
+  guides(fill = guide_legend(title=NULL),
+         colour = guide_legend(title=NULL)) +
+  theme_clean(10) + theme(legend.key.size=unit(0.65, "lines"),
+                          legend.key = element_blank(),
+                          legend.margin = unit(0.25, "lines"),
+                          plot.margin = unit(c(0.25, 0.25, 0, 0.25), "lines")) +
+  facet_wrap(~ report.lab)
+fig.aid.report
+
+filename <- "figureA6_x_report_aid"
+width <- 4.5
+height <- 3
+ggsave(fig.aid.report, filename=file.path(base.folder.figs, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(fig.aid.report, filename=file.path(base.folder.figs, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+
+# Aid and pressure
+new.data.vars <- expand.grid(pressure_lag = 0:1, 
+                             logeconasstP_1 = c(min(model6.1.1.pres$model$logeconasstP_1),
+                                                mean(model6.1.1.pres$model$logeconasstP_1),
+                                                max(model6.1.1.pres$model$logeconasstP_1)),
+                             index = 1)
+
+new.data.aid.pressure <- model6.1.1.pres$model %>%
+  summarise_each(funs(mean), -`cluster(name)`) %>%
+  select(-c(pressure_lag, logeconasstP_1)) %>%
+  mutate(ratproto2000_1 = 0,
+         index = 1) %>%
+  right_join(new.data.vars, by="index") %>%
+  select(-index)
+
+situations.aid.pressure <- data_frame(situation = as.character(1:nrow(new.data.aid.pressure)),
+                                      pressure = new.data.aid.pressure$pressure_lag,
+                                      pressure.lab = ifelse(pressure == 0, 
+                                                            "No US pressure", "US pressure"),
+                                      aid = rep(c("No aid", "Mean aid  ", "High aid  "), each=2))
+
+plot.aid.pressure <- surv.to.df(survfit(model6.1.1.pres, 
+                                        newdata=new.data.aid.pressure)) %>%
+  gather(key, value, -time) %>%
+  separate(key, into=c("variable", "situation")) %>%
+  spread(variable, value) %>%
+  left_join(situations.aid.pressure, by="situation") %>%
+  mutate(time = time - 9)
+
+fake.ribbon <- plot.aid.pressure %>%
+  group_by(aid, pressure.lab) %>%
+  mutate(time.max = lead(time)) %>%
+  filter(!is.na(time.max))
+
+fig.aid.pressure <- ggplot(plot.aid.pressure, aes(x=time, y=surv, colour=aid)) +
+  geom_rect(data = fake.ribbon,
+            aes(xmin=time, xmax=time.max, ymin=lower, 
+                ymax=upper, fill=aid),
+            alpha=0.2, colour=NA) + 
+  geom_step() +
+  labs(x="Years", y="Probability of not criminalizing") +
+  scale_y_continuous(labels=percent) +
+  guides(fill = guide_legend(title=NULL),
+         colour = guide_legend(title=NULL)) +
+  theme_clean(10) + theme(legend.key.size=unit(0.65, "lines"),
+                          legend.key = element_blank(),
+                          legend.margin = unit(0.25, "lines"),
+                          plot.margin = unit(c(0.25, 0.25, 0, 0.25), "lines")) +
+  facet_wrap(~ pressure.lab)
+fig.aid.pressure
+
+filename <- "figureA6_x_pressure_aid"
+width <- 4.5
+height <- 3
+ggsave(fig.aid.pressure, filename=file.path(base.folder.figs, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(fig.aid.pressure, filename=file.path(base.folder.figs, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+
+# Military aid and pressure
+new.data.vars <- expand.grid(pressure_lag = 0:1, 
+                             us.military.aid.log_lag = 
+                               c(min(model6.1.5.pres$model$us.military.aid.log_lag),
+                                 mean(model6.1.5.pres$model$us.military.aid.log_lag),
+                                 max(model6.1.5.pres$model$us.military.aid.log_lag)),
+                             index = 1)
+
+new.data.mil.pressure <- model6.1.5.pres$model %>%
+  summarise_each(funs(mean), -`cluster(name)`) %>%
+  select(-c(pressure_lag, us.military.aid.log_lag)) %>%
+  mutate(ratproto2000_1 = 0,
+         index = 1) %>%
+  right_join(new.data.vars, by="index") %>%
+  select(-index)
+
+situations.mil.pressure <- data_frame(situation = as.character(1:nrow(new.data.mil.pressure)),
+                                      pressure = new.data.mil.pressure$pressure_lag,
+                                      pressure.lab = ifelse(pressure == 0, 
+                                                            "No US pressure", "US pressure"),
+                                      mil = rep(c("No military aid", "Mean military aid  ", 
+                                                  "High military aid  "), each=2))
+
+plot.mil.pressure <- surv.to.df(survfit(model6.1.5.pres, 
+                                        newdata=new.data.mil.pressure)) %>%
+  gather(key, value, -time) %>%
+  separate(key, into=c("variable", "situation")) %>%
+  spread(variable, value) %>%
+  left_join(situations.mil.pressure, by="situation") %>%
+  mutate(time = time - 9)
+
+fake.ribbon <- plot.mil.pressure %>%
+  group_by(mil, pressure.lab) %>%
+  mutate(time.max = lead(time)) %>%
+  filter(!is.na(time.max))
+
+fig.mil.pressure <- ggplot(plot.mil.pressure, aes(x=time, y=surv, colour=mil)) +
+  geom_rect(data = fake.ribbon,
+            aes(xmin=time, xmax=time.max, ymin=lower, 
+                ymax=upper, fill=mil),
+            alpha=0.2, colour=NA) + 
+  geom_step() +
+  labs(x="Years", y="Probability of not criminalizing") +
+  scale_y_continuous(labels=percent) +
+  guides(fill = guide_legend(title=NULL),
+         colour = guide_legend(title=NULL)) +
+  theme_clean(10) + theme(legend.key.size=unit(0.65, "lines"),
+                          legend.key = element_blank(),
+                          legend.margin = unit(0.25, "lines"),
+                          plot.margin = unit(c(0.25, 0.25, 0, 0.25), "lines")) +
+  facet_wrap(~ pressure.lab)
+fig.mil.pressure
+
+filename <- "figureA6_x_pressure_military_aid"
+width <- 4.5
+height <- 3
+ggsave(fig.mil.pressure, filename=file.path(base.folder.figs, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(fig.mil.pressure, filename=file.path(base.folder.figs, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
