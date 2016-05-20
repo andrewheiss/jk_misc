@@ -290,7 +290,7 @@ model6.1.1.pres <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women
                            fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
                            missinfo8_2 + logeconasstP_1 +
                            pressure_lag * logeconasstP_1 + cluster(name),
-                         data=df.survivalized.crim, ties="efron", model=TRUE)
+                         data=df.survivalized.crim.dac, ties="efron", model=TRUE)
 model6.1.1.pres.fit <- summary(survfit(model6.1.1.pres))$table
 
 # (Model 3.5 at http://stats.andrewheiss.com/judith/chapter_5/report.html)
@@ -298,7 +298,7 @@ model6.1.2.pres <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women
                            fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
                            missinfo8_2 + econasstPgdp_1_1000 +
                            econasstPgdp_1_1000 * pressure_lag + cluster(name),
-                         data=df.survivalized.crim, ties="efron")
+                         data=df.survivalized.crim.dac, ties="efron")
 model6.1.2.pres.fit <- summary(survfit(model6.1.2.pres))$table
 
 model6.1.3.pres <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women1 +
@@ -341,7 +341,7 @@ model6.1.8.pres <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women
                            fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
                            missinfo8_2 + aid.us.total.perc_lag +
                            aid.us.total.perc_lag * pressure_lag + cluster(name),
-                         data=df.survivalized.crim, ties="efron")
+                         data=df.survivalized.crim.dac, ties="efron")
 model6.1.8.pres.fit <- summary(survfit(model6.1.8.pres))$table
 
 
