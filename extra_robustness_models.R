@@ -170,6 +170,12 @@ df.survivalized.crim.dac <- df.hazardized.crim.dac %>%
 
 
 # Table A6.1: Time to TIP criminalization
+# Distriubtion of military aid
+ggplot(df.robustness, aes(x=us.military.aid)) +
+  geom_histogram(bins=50) + 
+  scale_x_log10(labels=dollar) + 
+  coord_trans(x="log10")
+
 # (Model 3.4 at http://stats.andrewheiss.com/judith/chapter_5/report.html)
 model6.1.1 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 +
                       fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
