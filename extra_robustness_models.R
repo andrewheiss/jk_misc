@@ -437,6 +437,7 @@ new.data.vars <- expand.grid(inreport1 = 0:1,
                              index = 1)
 
 new.data.aid.report <- model6.1.1$model %>%
+  select(-starts_with("Surv(")) %>%
   summarise_each(funs(mean), -`cluster(name)`) %>%
   select(-c(inreport1, logeconasstP_1)) %>%
   mutate(ratproto2000_1 = 0,
