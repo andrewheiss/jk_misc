@@ -72,19 +72,20 @@ write_csv(funding.clean, path="data/funding_clean.csv")
 # ----------------
 # Write to Stata
 # ----------------
+# TODO: Fix this. Some update in dplyr broke the rowwise() + truncate() pattern
 # Stata (or at least write.dta?) gets mad at long character columns
-funding.clean.stata <- funding.clean %>%
-  select(-year_actual) %>%
-  rowwise() %>%
-  mutate(recipient = truncate(recipient),
-         subgrantee = truncate(subgrantee)) %>%
-  ungroup()
-  
-labs <- c("Row ID", "Country name", "Year of grant", 
-          "COW code", "Grant", "Grant recipient", "Subgrantee", "Prevention", 
-          "Protection", "Prosecution", "Research", "Amount given", "Region", 
-          "Region (alternate)", "Type of recipient")
-attr(funding.clean.stata, "var.labels") <- labs
+# funding.clean.stata <- funding.clean %>%
+#   select(-year_actual) %>%
+#   rowwise() %>%
+#   mutate(recipient = truncate(recipient),
+#          subgrantee = truncate(subgrantee)) %>%
+#   ungroup()
+#   
+# labs <- c("Row ID", "Country name", "Year of grant", 
+#           "COW code", "Grant", "Grant recipient", "Subgrantee", "Prevention", 
+#           "Protection", "Prosecution", "Research", "Amount given", "Region", 
+#           "Region (alternate)", "Type of recipient")
+# attr(funding.clean.stata, "var.labels") <- labs
 
 # write.dta(funding.clean.stata, "data/funding_clean.dta")
 # system("stata-se -b do funding_clean_stata.do")
