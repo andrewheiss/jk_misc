@@ -638,7 +638,7 @@ model6.1.1 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 +
                       fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
                       missinfo8_2 + logeconasstP_1 +
                       inreport1 * logeconasstP_1 + cluster(name),
-                    data=df.survivalized.crim.dac, ties="efron", model=TRUE)
+                    data=df.survivalized.crim, ties="efron")
 model6.1.1.fit <- summary(survfit(model6.1.1))$table
 
 # (Model 3.5 at http://stats.andrewheiss.com/judith/chapter_5/report.html)
@@ -646,50 +646,64 @@ model6.1.2 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 +
                       fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
                       missinfo8_2 + econasstPgdp_1_1000 +
                       econasstPgdp_1_1000 * inreport1 + cluster(name),
-                    data=df.survivalized.crim.dac, ties="efron")
+                    data=df.survivalized.crim, ties="efron")
 model6.1.2.fit <- summary(survfit(model6.1.2))$table
 
 model6.1.3 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 +
                       fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
-                      missinfo8_2 + newus_tradeshare_gdp1 +
-                      newus_tradeshare_gdp1 * inreport1 + cluster(name),
-                    data=df.survivalized.crim, ties="efron")
+                      missinfo8_2 + logeconasstP_1 +
+                      inreport1 * logeconasstP_1 + cluster(name),
+                    data=df.survivalized.crim.dac, ties="efron", model=TRUE)
 model6.1.3.fit <- summary(survfit(model6.1.3))$table
 
 model6.1.4 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 +
                       fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
-                      missinfo8_2 + has.bit.sig.with.us_lag +
-                      has.bit.sig.with.us_lag * inreport1 + cluster(name),
-                    data=df.survivalized.crim, ties="efron")
+                      missinfo8_2 + econasstPgdp_1_1000 +
+                      econasstPgdp_1_1000 * inreport1 + cluster(name),
+                    data=df.survivalized.crim.dac, ties="efron")
 model6.1.4.fit <- summary(survfit(model6.1.4))$table
 
 model6.1.5 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 +
                       fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
-                      missinfo8_2 + us.military.aid.log_lag +
-                      us.military.aid.log_lag * inreport1 + cluster(name),
+                      missinfo8_2 + newus_tradeshare_gdp1 +
+                      newus_tradeshare_gdp1 * inreport1 + cluster(name),
                     data=df.survivalized.crim, ties="efron")
 model6.1.5.fit <- summary(survfit(model6.1.5))$table
 
 model6.1.6 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 +
                       fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
-                      missinfo8_2 + fdi.from.us.log_lag +
-                      fdi.from.us.log_lag * inreport1 + cluster(name),
+                      missinfo8_2 + has.bit.sig.with.us_lag +
+                      has.bit.sig.with.us_lag * inreport1 + cluster(name),
                     data=df.survivalized.crim, ties="efron")
 model6.1.6.fit <- summary(survfit(model6.1.6))$table
 
 model6.1.7 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 +
                       fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
-                      missinfo8_2 + trade.to.us.log_lag +
-                      trade.to.us.log_lag * inreport1 + cluster(name),
+                      missinfo8_2 + us.military.aid.log_lag +
+                      us.military.aid.log_lag * inreport1 + cluster(name),
                     data=df.survivalized.crim, ties="efron")
 model6.1.7.fit <- summary(survfit(model6.1.7))$table
 
 model6.1.8 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 +
                       fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
+                      missinfo8_2 + fdi.from.us.log_lag +
+                      fdi.from.us.log_lag * inreport1 + cluster(name),
+                    data=df.survivalized.crim, ties="efron")
+model6.1.8.fit <- summary(survfit(model6.1.8))$table
+
+model6.1.9 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 +
+                      fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
+                      missinfo8_2 + trade.to.us.log_lag +
+                      trade.to.us.log_lag * inreport1 + cluster(name),
+                    data=df.survivalized.crim, ties="efron")
+model6.1.9.fit <- summary(survfit(model6.1.9))$table
+
+model6.1.10 <- coxph(Surv(start_time, yrfromj2, fail) ~ inreport1 + women1 +
+                      fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
                       missinfo8_2 + aid.us.total.perc_lag +
                       aid.us.total.perc_lag * inreport1 + cluster(name),
                     data=df.survivalized.crim.dac, ties="efron")
-model6.1.8.fit <- summary(survfit(model6.1.8))$table
+model6.1.10.fit <- summary(survfit(model6.1.10))$table
 
 
 # Save table
@@ -712,25 +726,29 @@ var.labs <- c("In report", "Share of women in parliament", "Worse civil libertie
               "US aid as share of total aid (logged)",
               "US aid as share of total aid (logged) × In report")
 col.labs <- c("Model 6.1.1", "Model 6.1.2", "Model 6.1.3", "Model 6.1.4",
-              "Model 6.1.5", "Model 6.1.6", "Model 6.1.7", "Model 6.1.8")
+              "Model 6.1.5", "Model 6.1.6", "Model 6.1.7", "Model 6.1.8",
+              "Model 6.1.9", "Model 6.1.10")
 
 ses <- list(get.or.se(model6.1.1), get.or.se(model6.1.2),
             get.or.se(model6.1.3), get.or.se(model6.1.4),
             get.or.se(model6.1.5), get.or.se(model6.1.6),
-            get.or.se(model6.1.7), get.or.se(model6.1.8))
+            get.or.se(model6.1.7), get.or.se(model6.1.8),
+            get.or.se(model6.1.9), get.or.se(model6.1.10))
 
 extra.lines <- list(c("Number of countries",
                       c(model6.1.1.fit["n.max"], model6.1.2.fit["n.max"],
                         model6.1.3.fit["n.max"], model6.1.4.fit["n.max"],
                         model6.1.5.fit["n.max"], model6.1.6.fit["n.max"],
-                        model6.1.7.fit["n.max"], model6.1.8.fit["n.max"])),
+                        model6.1.7.fit["n.max"], model6.1.8.fit["n.max"],
+                        model6.1.9.fit["n.max"], model6.1.10.fit["n.max"])),
                     c("Number of criminalizations",
                       c(model6.1.1.fit["events"], model6.1.2.fit["events"],
                         model6.1.3.fit["events"], model6.1.4.fit["events"],
                         model6.1.5.fit["events"], model6.1.6.fit["events"],
-                        model6.1.7.fit["events"], model6.1.8.fit["events"])),
+                        model6.1.7.fit["events"], model6.1.8.fit["events"],
+                        model6.1.9.fit["events"], model6.1.10.fit["events"])),
                     c("OECD DAC eligible countries only",
-                      c(rep("Yes", 2), rep("No", 5), "Yes")))
+                      c(rep("No", 2), rep("Yes", 2), rep("No", 5), "Yes")))
 
 title <- "Table A6.1: Time to TIP criminalization: presence in report"
 notes <- "Robust standard errors in parentheses; values differ from published article because of differences in the robustness algorithms Stata and R use. All explanatory variables are lagged one period unless otherwise noted."
@@ -739,6 +757,7 @@ out.file <- file.path(base.folder, "table_a6_1.html")
 
 stargazer(model6.1.1, model6.1.2, model6.1.3, model6.1.4,
           model6.1.5, model6.1.6, model6.1.7, model6.1.8,
+          model6.1.9, model6.1.10,
           type="html", out=out.file, out.header=TRUE,
           apply.coef=exp, se=ses, p.auto=FALSE, no.space=TRUE,
           covariate.labels=var.labs, column.labels=col.labs,
@@ -753,57 +772,71 @@ model6.2.1 <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women1 +
                            fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
                            missinfo8_2 + logeconasstP_1 +
                            pressure_lag * logeconasstP_1 + cluster(name),
-                         data=df.survivalized.crim.dac, ties="efron", model=TRUE)
+                         data=df.survivalized.crim, ties="efron", model=TRUE)
 model6.2.1.fit <- summary(survfit(model6.2.1))$table
 
 model6.2.2 <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women1 +
                            fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
                            missinfo8_2 + econasstPgdp_1_1000 +
                            econasstPgdp_1_1000 * pressure_lag + cluster(name),
-                         data=df.survivalized.crim.dac, ties="efron")
+                         data=df.survivalized.crim, ties="efron")
 model6.2.2.fit <- summary(survfit(model6.2.2))$table
 
 model6.2.3 <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women1 +
                            fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
-                           missinfo8_2 + newus_tradeshare_gdp1 +
-                           newus_tradeshare_gdp1 * pressure_lag + cluster(name),
-                         data=df.survivalized.crim, ties="efron")
+                           missinfo8_2 + logeconasstP_1 +
+                           pressure_lag * logeconasstP_1 + cluster(name),
+                         data=df.survivalized.crim.dac, ties="efron", model=TRUE)
 model6.2.3.fit <- summary(survfit(model6.2.3))$table
 
 model6.2.4 <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women1 +
                            fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
-                           missinfo8_2 + has.bit.sig.with.us_lag +
-                           has.bit.sig.with.us_lag * pressure_lag + cluster(name),
-                         data=df.survivalized.crim, ties="efron")
+                           missinfo8_2 + econasstPgdp_1_1000 +
+                           econasstPgdp_1_1000 * pressure_lag + cluster(name),
+                         data=df.survivalized.crim.dac, ties="efron")
 model6.2.4.fit <- summary(survfit(model6.2.4))$table
 
 model6.2.5 <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women1 +
                            fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
-                           missinfo8_2 + us.military.aid.log_lag +
-                           us.military.aid.log_lag * pressure_lag + cluster(name),
-                         data=df.survivalized.crim, ties="efron", model=TRUE)
+                           missinfo8_2 + newus_tradeshare_gdp1 +
+                           newus_tradeshare_gdp1 * pressure_lag + cluster(name),
+                         data=df.survivalized.crim, ties="efron")
 model6.2.5.fit <- summary(survfit(model6.2.5))$table
 
 model6.2.6 <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women1 +
                            fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
-                           missinfo8_2 + fdi.from.us.log_lag +
-                           fdi.from.us.log_lag * pressure_lag + cluster(name),
+                           missinfo8_2 + has.bit.sig.with.us_lag +
+                           has.bit.sig.with.us_lag * pressure_lag + cluster(name),
                          data=df.survivalized.crim, ties="efron")
 model6.2.6.fit <- summary(survfit(model6.2.6))$table
 
 model6.2.7 <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women1 +
                            fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
-                           missinfo8_2 + trade.to.us.log_lag +
-                           trade.to.us.log_lag * pressure_lag + cluster(name),
-                         data=df.survivalized.crim, ties="efron")
+                           missinfo8_2 + us.military.aid.log_lag +
+                           us.military.aid.log_lag * pressure_lag + cluster(name),
+                         data=df.survivalized.crim, ties="efron", model=TRUE)
 model6.2.7.fit <- summary(survfit(model6.2.7))$table
 
 model6.2.8 <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women1 +
                            fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
+                           missinfo8_2 + fdi.from.us.log_lag +
+                           fdi.from.us.log_lag * pressure_lag + cluster(name),
+                         data=df.survivalized.crim, ties="efron")
+model6.2.8.fit <- summary(survfit(model6.2.8))$table
+
+model6.2.9 <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women1 +
+                           fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
+                           missinfo8_2 + trade.to.us.log_lag +
+                           trade.to.us.log_lag * pressure_lag + cluster(name),
+                         data=df.survivalized.crim, ties="efron")
+model6.2.9.fit <- summary(survfit(model6.2.9))$table
+
+model6.2.10 <- coxph(Surv(start_time, yrfromj2, fail) ~ pressure_lag + women1 +
+                           fh_cl1 + corrected_regcrim1_1 + ratproto2000_1 +
                            missinfo8_2 + aid.us.total.perc_lag +
                            aid.us.total.perc_lag * pressure_lag + cluster(name),
                          data=df.survivalized.crim.dac, ties="efron")
-model6.2.8.fit <- summary(survfit(model6.2.8))$table
+model6.2.10.fit <- summary(survfit(model6.2.10))$table
 
 
 # Save table
@@ -826,25 +859,29 @@ var.labs <- c("US pressure", "Share of women in parliament", "Worse civil libert
               "US aid as share of total aid (logged)",
               "US aid as share of total aid (logged) × US pressure")
 col.labs <- c("Model 6.2.1", "Model 6.2.2", "Model 6.2.3", "Model 6.2.4",
-              "Model 6.2.5", "Model 6.2.6", "Model 6.2.7", "Model 6.2.8")
+              "Model 6.2.5", "Model 6.2.6", "Model 6.2.7", "Model 6.2.8",
+              "Model 6.2.9", "Model 6.2.10")
 
 ses <- list(get.or.se(model6.2.1), get.or.se(model6.2.2),
             get.or.se(model6.2.3), get.or.se(model6.2.4),
             get.or.se(model6.2.5), get.or.se(model6.2.6),
-            get.or.se(model6.2.7), get.or.se(model6.2.8))
+            get.or.se(model6.2.7), get.or.se(model6.2.8),
+            get.or.se(model6.2.9), get.or.se(model6.2.10))
 
 extra.lines <- list(c("Number of countries",
                       c(model6.2.1.fit["n.max"], model6.2.2.fit["n.max"],
                         model6.2.3.fit["n.max"], model6.2.4.fit["n.max"],
                         model6.2.5.fit["n.max"], model6.2.6.fit["n.max"],
-                        model6.2.7.fit["n.max"], model6.2.8.fit["n.max"])),
+                        model6.2.7.fit["n.max"], model6.2.8.fit["n.max"],
+                        model6.2.9.fit["n.max"], model6.2.10.fit["n.max"])),
                     c("Number of criminalizations",
                       c(model6.2.1.fit["events"], model6.2.2.fit["events"],
                         model6.2.3.fit["events"], model6.2.4.fit["events"],
                         model6.2.5.fit["events"], model6.2.6.fit["events"],
-                        model6.2.7.fit["events"], model6.2.8.fit["events"])),
+                        model6.2.7.fit["events"], model6.2.8.fit["events"],
+                        model6.2.9.fit["events"], model6.2.10.fit["events"])),
                     c("OECD DAC eligible countries only",
-                      c(rep("Yes", 2), rep("No", 5), "Yes")))
+                      c(rep("No", 2), rep("Yes", 2), rep("No", 5), "Yes")))
 
 title <- "Table A6.2: Time to TIP criminalization: US pressure"
 notes <- "Robust standard errors in parentheses; values differ from published article because of differences in the robustness algorithms Stata and R use. All explanatory variables are lagged one period unless otherwise noted."
@@ -853,6 +890,7 @@ out.file <- file.path(base.folder, "table_a6_2.html")
 
 stargazer(model6.2.1, model6.2.2, model6.2.3, model6.2.4,
           model6.2.5, model6.2.6, model6.2.7, model6.2.8,
+          model6.2.9, model6.2.10,
           type="html", out=out.file, out.header=TRUE,
           apply.coef=exp, se=ses, p.auto=FALSE, no.space=TRUE,
           covariate.labels=var.labs, column.labels=col.labs,
