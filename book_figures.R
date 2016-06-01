@@ -898,16 +898,16 @@ plot.predict <- read_csv("final_figures/data_figureA_3_media_predict.csv") %>%
   mutate(inreport = factor(inreport, levels=c("Not in report", "In report"), 
                            ordered=TRUE))
 
-fig.media.report <- ggplot(plot.predict, aes(x=inreport, y=pred)) + 
-  geom_pointrange(aes(ymax=pred.upper, ymin=pred.lower), size=.75,
-                  position=position_dodge(width=0.25)) + 
-  labs(x=NULL, y="Predicted number of TIP-related stories") + 
+fig.media.report <- ggplot(plot.predict, aes(x=inreport, y=avg.logstory_exp)) + 
+  geom_pointrange(aes(ymin=lower_exp, ymax=upper_exp), size=0.75) + 
+  coord_cartesian(ylim=c(0, 70)) +
+  labs(x=NULL, y="Average predicted number of TIP-related stories") +
   theme_clean(10)
 
 filename <- "figureA_3_media_inreport_predict"
 width <- 4.5
 height <- 3
-caption <- "Predicted number of TIP-related stories given a country’s presence in the annual TIP report (Model 3.1.1)"
+caption <- "Predicted number of TIP-related stories given a country’s presence in the annual TIP report; mean predicted values of every observation in Model 3.1.1"
 ggsave(fig.media.report, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
 ggsave(fig.media.report, filename=file.path(base.folder, paste0(filename, ".png")),
