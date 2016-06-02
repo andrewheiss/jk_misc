@@ -122,7 +122,7 @@ p.index <- cho.orig %>% left_join(year.joined, by="cow") %>%
   mutate(years.since.full.alt = year - year.full,
          years.since.partial.alt = year - year.partial) %>%
   ungroup()
-# write_csv(p.index, "data/policy_index.csv")
+saveRDS(p.index, "data/policy_index.rds")
 
 
 # -------------------
