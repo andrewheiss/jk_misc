@@ -947,7 +947,7 @@ fig.dem.report.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +
 filename <- "figureA_6_1_interactions_democracy_report"
 width <- 4.5
 height <- 3
-caption <- "Predicted probability of criminalization across different levels of democracy, given presence in the annual TIP report (Model 6.3.1)"
+caption <- "Predicted probability of criminalization across different levels of democracy, given presence in the annual TIP report (Model 6.5.1)"
 ggsave(fig.dem.report.predict, 
        filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
@@ -979,7 +979,7 @@ fig.dem.lowest.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +
 filename <- "figureA_6_2_interactions_democracy_lowest"
 width <- 4.5
 height <- 3
-caption <- "Predicted probability of criminalization across different levels of democracy, given assignment to the lowest TIP tier (Model 6.3.2)"
+caption <- "Predicted probability of criminalization across different levels of democracy, given assignment to the lowest TIP tier (Model 6.5.2)"
 ggsave(fig.dem.lowest.predict, 
        filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
@@ -1013,7 +1013,7 @@ fig.dem.down.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +
 filename <- "figureA_6_3_interactions_democracy_demote"
 width <- 4.5
 height <- 3
-caption <- "Predicted probability of criminalization across different levels of democracy, given the time elapsed since receiving a demotion in TIP rating (Model 6.3.3)"
+caption <- "Predicted probability of criminalization across different levels of democracy, given the time elapsed since receiving a demotion in TIP rating (Model 6.5.3)"
 ggsave(fig.dem.down.predict, 
        filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)

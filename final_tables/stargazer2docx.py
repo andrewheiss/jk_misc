@@ -8,7 +8,7 @@ from PIL import Image  # Actually Pillow...
 
 final_name = "Appendix 2"
 
-tables = glob('table_*.html')
+tables = glob('table_a*.html')
 fig_images = glob('../final_figures/figureA_*.png')
 fig_captions = glob('../final_figures/figureA_*.txt')
 
