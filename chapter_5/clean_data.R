@@ -279,6 +279,7 @@ df.complete.with.lags.correct <- df.complete %>%
          new_watch3 = ifelse(new_watch3 != 1 | is.na(new_watch3), 0, new_watch3))
 
 saveRDS(df.complete.with.lags.correct, file="../final_tables/df_complete.rds")
+# write_csv(df.complete.with.lags.correct, path="~/Desktop/full_tip_data.csv", na=".")
 
 # library(testthat)
 # print(expect_equal(df.complete.with.lags.orig$logpop_1,
