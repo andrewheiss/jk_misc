@@ -10,6 +10,7 @@ library(stargazer)
 library(survival)
 library(countrycode)
 library(ggplot2)
+library(scales)
 
 source("shared_functions.R")
 
@@ -35,6 +36,8 @@ panderOptions('table.alignment.default', 'left')
 # Locations
 base.folder <- "final_tables"
 
+cases <- c("ARM", "IDN", "ECU", "MOZ", "KAZ", "ARG", "ISR", 
+           "ARE", "NGA", "OMN", "HND", "JPN", "TCD", "ZWE", "MYS")
 
 # ------------------
 # Useful functions
@@ -101,10 +104,10 @@ get.or.se <- function(model) {
 # Load and reshape data
 # -----------------------
 # Full, clean, properly lagged data
-df.complete <- readRDS("final_tables/df_complete.rds")
+df.complete.orig <- readRDS("final_tables/df_complete.rds")
 df.robustness <- read_feather("data/robustness_df.feather")
 
-df.complete <- df.complete %>% 
+df.complete <- df.complete.orig %>% 
   left_join(df.robustness, by=c("year", "cowcode")) %>%
   mutate(tier_1 = ifelse(tier == 1, 1, 0),
          tier_2 = ifelse(tier == 2, 1, 0),
@@ -200,6 +203,116 @@ df.survivalized.crim.dac <- df.hazardized.crim.dac %>%
   group_by(name) %>%
   mutate(start_time = lag(yrfromj2, default=0)) %>% 
   filter(year > 1999)
+
+
+# ------------------
+# Methods appendix
+# ------------------
+df.methods.summary <- df.complete %>%
+  filter(year >= 2000) %>%
+  mutate(tier = ifelse(tier == 0, NA, tier),
+         percapeconasst0 = econasst0 / data9,
+         case = cowcode %in% countrycode(cases, "iso3c", "cown")) %>%
+  filter(tier < 4 & !is.na(tier)) %>%
+  group_by(cowcode) %>% mutate(highest.tier = max(tier, na.rm=TRUE)) %>%
+  ungroup()
+
+
+run.t.test <- function(variable, title, single.year=NA, tier1.exclude=FALSE) {
+  if (!is.na(single.year)) {
+    df <- df.methods.summary %>% filter(year == single.year)
+  } else {
+    df <- df.methods.summary
+  }
+  
+  if (tier1.exclude) {
+    df <- df %>% filter(highest.tier != 1)
+  }
+  
+  result <- t.test(as.formula(paste0(variable, " ~ case")),
+                   data=df, var.equal=TRUE)
+  data_frame(Statistic = title,
+             `Case study countries` = comma(result$estimate[2], digits=3),
+             `Other countries` = comma(result$estimate[1], digits=3),
+             `Difference` = comma(result$estimate[2] - 
+                                        result$estimate[1], digits=3),
+             `Significant difference at p = 0.05` = 
+               ifelse(result$p.value < 0.05, "Yes", "No"))
+}
+
+
+final <- bind_rows(
+  run.t.test("tier", title="Tier"),
+  run.t.test("ngos_ave", title="Count of NGOs", 
+             single.year=2011),
+  run.t.test("igos_ave", title="Count of IGOs", 
+             single.year=2011),
+  run.t.test("ht_incidence_transit", title="Incidence (transit)", 
+             single.year=2011),
+  run.t.test("ht_incidence_origin", title="Incidence (origin)", 
+             single.year=2011),
+  run.t.test("ht_incidence_destination", title="Incidence (destination)", 
+             single.year=2011),
+  run.t.test("ht_news_country", title="TIP media coverage"),
+  run.t.test("data4", title="GDP per capita (constant 2000 dollars)"),
+  run.t.test("data9", title="Population"),
+  run.t.test("corrupt", title="Corruption"),
+  run.t.test("fh_pr", title="Political rights"),
+  run.t.test("data8", title="Aid"),
+  run.t.test("percapeconasst0", title="Aid per capita"),
+  run.t.test("ratproto2000", title="Ratification of 2000 TIP protocol", 
+             single.year=2011),
+  run.t.test("prop_tip_wl", title="US TIP effort (proportion of Wikileaks cables mentioning TIP", 
+             single.year=2007)
+)
+
+cat(pandoc.table.return(final),
+    file=file.path(base.folder, paste0("table_methods_a4.txt")))
+
+Pandoc.convert(file.path(getwd(), base.folder, paste0("table_methods_a4.txt")),
+               format="html", footer=FALSE, proc.time=FALSE, 
+               options = "-s", open=FALSE)
+
+
+final.tier1.out <- bind_rows(
+  run.t.test("tier", title="Tier", 
+             tier1.exclude=TRUE),
+  run.t.test("ngos_ave", title="Count of NGOs", 
+             single.year=2011, tier1.exclude=TRUE),
+  run.t.test("igos_ave", title="Count of IGOs", 
+             single.year=2011, tier1.exclude=TRUE),
+  run.t.test("ht_incidence_transit", title="Incidence (transit)", 
+             single.year=2011, tier1.exclude=TRUE),
+  run.t.test("ht_incidence_origin", title="Incidence (origin)", 
+             single.year=2011, tier1.exclude=TRUE),
+  run.t.test("ht_incidence_destination", title="Incidence (destination)", 
+             single.year=2011, tier1.exclude=TRUE),
+  run.t.test("ht_news_country", title="TIP media coverage", 
+             tier1.exclude=TRUE),
+  run.t.test("data4", title="GDP per capita (constant 2000 dollars)", 
+             tier1.exclude=TRUE),
+  run.t.test("data9", title="Population", 
+             tier1.exclude=TRUE),
+  run.t.test("corrupt", title="Corruption", 
+             tier1.exclude=TRUE),
+  run.t.test("fh_pr", title="Political rights", 
+             tier1.exclude=TRUE),
+  run.t.test("data8", title="Aid", 
+             tier1.exclude=TRUE),
+  run.t.test("percapeconasst0", title="Aid per capita", 
+             tier1.exclude=TRUE),
+  run.t.test("ratproto2000", title="Ratification of 2000 TIP protocol", 
+             single.year=2011, tier1.exclude=TRUE),
+  run.t.test("prop_tip_wl", title="US TIP effort (proportion of Wikileaks cables mentioning TIP", 
+             single.year=2007, tier1.exclude=TRUE)
+)
+
+cat(pandoc.table.return(final.tier1.out),
+    file=file.path(base.folder, paste0("table_methods_a4_no_tier1.txt")))
+
+Pandoc.convert(file.path(getwd(), base.folder, paste0("table_methods_a4_no_tier1.txt")),
+               format="html", footer=FALSE, proc.time=FALSE, 
+               options = "-s", open=FALSE)
 
 
 # -----------
