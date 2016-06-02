@@ -876,6 +876,16 @@ ggsave(fig.cho.all.vs.cases, filename=file.path(base.folder, paste0(filename, ".
 ggsave(fig.cho.all.vs.cases, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
+filename <- "figureA4_avg_all_vs_cases_excluding_always_tier1"
+width <- 4.5
+height <- 2.5
+ggsave(fig.cho.all.vs.cases.tier1.out, 
+       filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(fig.cho.all.vs.cases.tier1.out, 
+       filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
 # # Total TIP funding to case study countries
 # cases <- c("ARM", "IDN", "ECU", "MOZ", "KAZ", "ARG", "ISR", 
 #            "ARE", "NGA", "OMN", "HND", "JPN", "TCD", "ZWE", "MYS")

@@ -175,6 +175,13 @@ all.countries <- p.index %>%
   filter(!(iso %in% countries.to.plot)) %>%
   group_by(year) %>% summarise(avg.all = mean(p, na.rm=TRUE))
 
+all.countries.not.always.tier1 <- p.index %>% 
+  filter(year != 2014, year != 1999) %>%
+  filter(!(iso %in% countries.to.plot)) %>%
+  group_by(cow) %>% mutate(highest.tier = max(tier, na.rm=TRUE)) %>%
+  ungroup() %>% filter(highest.tier > 1) %>%
+  group_by(year) %>% summarise(avg.all = mean(p, na.rm=TRUE))
+
 just.cases <- plot.data %>%
   filter(year != 2014, year != 1999) %>%
   group_by(year) %>% summarise(avg.cases = mean(p, na.rm=TRUE))
@@ -187,6 +194,24 @@ plot.data <- all.countries %>% left_join(just.cases, by="year") %>%
 
 fig.cho.all.vs.cases <- ggplot(plot.data, 
                                aes(x=year, y=Value, colour=Variable)) + 
+  geom_line(size=0.75) + 
+  labs(x=NULL, y="Anti-TIP policy index") + 
+  scale_colour_manual(values=c("grey30", "grey80"), name=NULL) +
+  theme_clean(10) + theme(panel.grid.minor=element_blank(),
+                          legend.key.size=unit(0.65, "lines"),
+                          legend.key = element_blank(),
+                          legend.margin = unit(0.25, "lines"),
+                          plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
+
+plot.data.tier1.out <- all.countries.not.always.tier1 %>% 
+  left_join(just.cases, by="year") %>%
+  gather(Variable, Value, -year) %>%
+  mutate(Variable = factor(Variable, levels=c("avg.cases", "avg.all"),
+                           labels=c("Selected case countries    ", "All other countries"),
+                           ordered=TRUE))
+
+fig.cho.all.vs.cases.tier1.out <- ggplot(plot.data.tier1.out, 
+                                         aes(x=year, y=Value, colour=Variable)) + 
   geom_line(size=0.75) + 
   labs(x=NULL, y="Anti-TIP policy index") + 
   scale_colour_manual(values=c("grey30", "grey80"), name=NULL) +
