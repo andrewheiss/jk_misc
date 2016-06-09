@@ -428,6 +428,19 @@ surv.to.df <- function(x) {
 #   geom_step() + 
 #   geom_point(data=filter(sdata, censor == 1), shape="+", colour="black", size=3)
 
+# See distribution of aid with cumulative percents
+# df <- df.survivalized.crim.dac %>%
+#   mutate(aid = exp(logeconasstP_1),
+#          aid = ifelse(aid == 1, 0, aid)) %>%
+#   select(name, year, aid) %>%
+#   group_by(aid) %>%
+#   summarise(aid.freq = n()) %>%
+#   ungroup() %>%
+#   arrange(aid) %>%
+#   mutate(perc = aid.freq / sum(aid.freq),
+#          cum.perc = cumsum(perc))
+# 
+# write_csv(df, path="~/Desktop/blah.csv")
 
 # Aid and in report
 new.data.vars <- expand.grid(inreport1 = 0:1, 
@@ -438,7 +451,7 @@ new.data.vars <- expand.grid(inreport1 = 0:1,
 
 new.data.aid.report <- model6.1.1$model %>%
   select(-starts_with("Surv(")) %>%
-  summarise_each(funs(mean), -`cluster(name)`) %>%
+  summarise_each(funs(quantile(., probs=0.5)), -`cluster(name)`) %>%
   select(-c(inreport1, logeconasstP_1)) %>%
   mutate(ratproto2000_1 = 0,
          index = 1) %>%
@@ -448,7 +461,7 @@ new.data.aid.report <- model6.1.1$model %>%
 situations.aid.report <- data_frame(situation = as.character(1:nrow(new.data.aid.report)),
                                     report = new.data.aid.report$inreport1,
                                     report.lab = ifelse(report == 0, "Not in report", "In report"),
-                                    aid = rep(c("No aid", "Mean aid  ", "High aid  "), each=2)) %>%
+                                    aid = rep(c("No aid", "m 25% aid  ", "High aid  "), each=2)) %>%
   mutate(report.lab = factor(report.lab, 
                              levels=c("Not in report", "In report"), 
                              ordered=TRUE))
