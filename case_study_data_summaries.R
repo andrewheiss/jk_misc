@@ -18,7 +18,7 @@ panderOptions('table.alignment.default', 'left')
 
 source("shared_functions.R")
 
-base.folder <- "/Users/andrew/Desktop/cases"
+base.folder <- "/Users/andrew/Research/•Judith/jk_misc/final_figures/cases"
 
 cases <- c("ARM", "IDN", "ECU", "MOZ", "KAZ", "ARG", "ISR", 
            "ARE", "NGA", "OMN", "HND", "JPN", "TCD", "ZWE", "MYS")
@@ -27,6 +27,10 @@ cases <- c("ARM", "IDN", "ECU", "MOZ", "KAZ", "ARG", "ISR",
 # ------------------------
 # Load all sorts of data
 # ------------------------
+# Aid from AidData (processed in `extra_robustness_checks.R`)
+aid.us.total <- read_csv("data/aid_total.csv") %>%
+  filter(year >= 2000, year < 2015)
+
 # TIP funding
 funding <- read_csv("data/funding_clean.csv") %>%
   mutate(iso = countrycode(cowcode, "cown", "iso3c")) %>%
@@ -44,7 +48,7 @@ wdi.indicators <- c("NY.GDP.PCAP.KD",  # GDP per capita (constant 2005 US$)
                     "SP.POP.TOTL",     # Population, total
                     "DT.ODA.ALLD.KD")  # Net ODA and official aid received (constant 2013 US$)
 wdi.raw <- WDI(country=countrycode(cases, "iso3c", "iso2c"), wdi.indicators,
-               extra=TRUE, start=2000, end=2014)
+               extra=TRUE, start=2000, end=2015)
 
 wdi.clean <- wdi.raw %>%
   rename(gdpcap = NY.GDP.PCAP.KD, gdp = NY.GDP.MKTP.KD, 
@@ -58,7 +62,6 @@ wdi.clean <- wdi.raw %>%
          population.log = log(population)) %>%
   # Ignore negative values of oda
   mutate(oda.log = sapply(oda, FUN=function(x) ifelse(x < 0, NA, log1p(x))))
-
 
 # Policy index
 df.cho <- readRDS("data/policy_index.rds") %>%
@@ -101,17 +104,19 @@ leaders.cases <- read_csv("data/leaders.csv")
 # Export Markdown+HTML tables of summary statistics
 summarize_case <- function(iso3) {
   mean.gdp.cap <- mean(filter(wdi.clean, iso3c == iso3)$gdpcap, na.rm=TRUE)
-  total.aid <- sum(filter(wdi.clean, iso3c == iso3)$oda.million, na.rm=TRUE)
+  total.aid <- sum(filter(aid.us.total, recipient.iso == iso3)$aid.total, na.rm=TRUE) / 1000000
+  us.aid <- sum(filter(aid.us.total, recipient.iso == iso3)$aid.us, na.rm=TRUE) / 1000000
   mean.oda.gdp <-  mean(filter(wdi.clean, iso3c == iso3)$oda.gdp, na.rm=TRUE)
   mean.oda.gdp <- ifelse(is.nan(mean.oda.gdp), 0, mean.oda.gdp)  # Hi Japan
   total.tip.grants <- sum(filter(funding, iso == iso3)$total.funding, na.rm=TRUE)
   
-  rows <- c("Average GDP per capita", "Total aid",
-            "Average aid as percent of GDP", "Total TIP grants")
+  rows <- c("Average GDP per capita", "Total aid", "Aid from US",
+            "Average total aid as percent of GDP", "Total TIP grants")
   
   just.numbers <- data_frame(Statistic = rows,
                              Value = c(dollar(mean.gdp.cap),
                                        paste(dollar(total.aid), "million"),
+                                       paste(dollar(us.aid), "million"),
                                        percent(mean.oda.gdp),
                                        dollar(total.tip.grants)))
   cat(pandoc.table.return(just.numbers, justify="ll"),
