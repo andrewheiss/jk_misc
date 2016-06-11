@@ -181,7 +181,7 @@ aid.us.total <- aid.all %>%
          recipient.cowcode = ifelse(recipient.country == "Serbia",
                                     as.integer(555), recipient.cowcode)) %>%
   ungroup()
-
+write_csv(aid.us.total, path="data/aid_total.csv")
 
 robustness.df <- df.full %>% ungroup() %>%
   expand(cowcode, year) %>%
