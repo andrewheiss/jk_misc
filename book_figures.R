@@ -150,7 +150,7 @@ df.fig2.8 <- read_csv("final_figures/data_figure2_8.csv") %>%
 
 fig2.8 <- ggplot(df.fig2.8, aes(x=Meeting, y=Count)) + 
   geom_bar(stat="identity") + 
-  labs(x=NULL, y="Meetings") + 
+  labs(x=NULL, y="Types of officials") + 
   coord_flip() + 
   theme_clean(10)
 
@@ -160,6 +160,24 @@ height <- 2
 ggsave(fig2.8, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
 ggsave(fig2.8, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+# Figure 2.8a: Number of meetings with US officials documented between 2001-2009
+df.fig2.8a <- read_csv("final_figures/data_figure2_8a.csv") %>%
+  mutate(Official = factor(Official, levels=rev(Official), ordered=TRUE))
+
+fig2.8a <- ggplot(df.fig2.8a, aes(x=Official, y=Count)) + 
+  geom_bar(stat="identity") + 
+  labs(x=NULL, y="Types of officials") + 
+  coord_flip() + 
+  theme_clean(10)
+
+filename <- "figure2_8a_meetings_with_US"
+width <- 4.5
+height <- 2
+ggsave(fig2.8a, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(fig2.8a, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
 # Figure 2.9: Embassies or foreign governments NGOs reported as active partners in the fight against human trafficking
