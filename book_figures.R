@@ -92,7 +92,7 @@ fig2.3 <- ggplot(df.fig2.3, aes(x=Year, y=Num, colour=Variable)) +
   labs(x=NULL, y="Cases") + 
   scale_y_continuous(labels=comma) + 
   scale_colour_manual(values=c("grey30", "grey80"), name=NULL,
-                      labels=c("Prosecutions    ", "Convictions")) +
+                      labels=c("Convictions    ", "Prosecutions")) +
   theme_clean(10) + theme(legend.key.size=unit(0.65, "lines"),
                           legend.key = element_blank(),
                           legend.margin = unit(0.25, "lines"),
