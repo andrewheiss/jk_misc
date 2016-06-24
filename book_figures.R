@@ -150,7 +150,7 @@ df.fig2.8 <- read_csv("final_figures/data_figure2_8.csv") %>%
 
 fig2.8 <- ggplot(df.fig2.8, aes(x=Meeting, y=Count)) + 
   geom_bar(stat="identity") + 
-  labs(x=NULL, y="Type of officials") + 
+  labs(x=NULL, y="Types of official") + 
   coord_flip() + 
   theme_clean(10)
 
@@ -168,7 +168,7 @@ df.fig2.8a <- read_csv("final_figures/data_figure2_8a.csv") %>%
 
 fig2.8a <- ggplot(df.fig2.8a, aes(x=Official, y=Count)) + 
   geom_bar(stat="identity") + 
-  labs(x=NULL, y="Type of officials") + 
+  labs(x=NULL, y="Types of official") + 
   coord_flip() + 
   theme_clean(10)
 
