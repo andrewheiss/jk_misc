@@ -14,7 +14,7 @@ base.folder <- "final_figures"
 treaty.url <- "https://treaties.un.org/Pages/ViewDetails.aspx?src=TREATY&mtdsg_no=XVIII-12-a&chapter=18&lang=en"
 
 ratifications <- read_html(treaty.url) %>%
-  html_nodes(xpath='//*[@id="ctl00_ContentPlaceHolder1_tblgrid"]') %>%
+  html_nodes(xpath='//*[@id="ctl00_ctl00_ContentPlaceHolder1_ContentPlaceHolderInnerPage_tblgrid"]') %>%
   html_table(header=TRUE) %>% bind_rows() %>%
   set_colnames(c("participant", "signature", "ratification")) %>%
   mutate(participant = countrycode(participant, "country.name", "country.name")) %>%
