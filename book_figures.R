@@ -552,7 +552,13 @@ df.fig5.4 <- read_stata("original_files/Criminalization Data UpdatedJK.dta") %>%
   filter(!is.na(month)) %>%
   mutate(month = month.name[month],
          month = factor(month, levels=month, ordered=TRUE))
-  
+
+df.fig5.4.table <- read_stata("original_files/Criminalization Data UpdatedJK.dta") %>%
+  filter(crimlevel == 2) %>%
+  xtabs(~ month, .) %>% print
+
+fig5.4.chisq <- chisq.test(df.fig5.4.table)
+
 fig5.4 <- ggplot(df.fig5.4, aes(x=month, y=num)) + 
   geom_bar(stat="identity") +
   labs(x=NULL, y="Anti-TIP laws passed") + 
@@ -566,6 +572,13 @@ ggsave(fig5.4, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(fig5.4, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
+capture.output({
+  print("Laws passed each month")
+  print(df.fig5.4.table)
+  cat("\n\n")
+  print("Chi-squared test")
+  print(fig5.4.chisq)
+}, file=file.path(base.folder, paste0(filename, "_chisq.txt")))
 
 # Figure 5.5: Probability of criminalizing fully in a given year if a country had not already done so, 2001-2010
 ajps.raw <- read_dta("original_files/kelley_simmons_ajps_2014_replication.dta") %>%
