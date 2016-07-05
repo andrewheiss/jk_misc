@@ -718,7 +718,7 @@ model5.3.2 <- glm(crim1 ~ totalreactionnomedia1 + women1 + totalfreedom1 +
 var.labs <- c("Reactions (no media)", "Total reactions (no media)", 
               "Share of women in parliament", 
               "Worse total freedom (political rights + civil liberties)", 
-              "2000 TIP protocol ratification", "Big aid", 
+              "2000 TIP protocol ratification", "Aid greater than $100 million", 
               "Regional density of criminalization")
 col.labs <- c("Model 5.3.1", "Model 5.3.2")
 
@@ -1234,3 +1234,124 @@ plot.predict <- augment(model, newdata=new.data) %>%
                               "No demotion", demote_type))
 
 saveRDS(plot.predict, file="final_figures/data_figureA_6_downgrade_predict.rds")
+
+
+# --------------------------------------
+# Summary table of all model variables
+# --------------------------------------
+# Variables to summarize
+model.vars.raw <- read_csv("data/model_vars.csv", col_types="ccc")
+
+model.vars <- model.vars.raw %>%
+  mutate(chapter = as.numeric(substr(model, 1, 1)))
+
+# Group variables by chapter
+model.vars.by.chapter <- model.vars %>%
+  group_by(var_name) %>%
+  summarise(chapters = paste(unique(chapter), collapse=", "),
+            num.chapters = length(unique(chapter))) %>%
+  ungroup() %>%
+  mutate(first.chapter = substr(chapters, 1, 1))
+
+# Save grouped list to temporary CSV for hand editing
+model.vars.by.chapter %>%
+  select(var_name, chapters) %>% mutate(label = "") %>%
+  write_csv(path="data/model_vars_labels_WILL_BE_OVERWRITTEN.csv")
+
+# Load hand-edited list of variables
+model.vars.clean <- read_csv("data/model_vars_labels.csv") %>%
+  # Redo chapter calculations since some were hand-adjusted
+  mutate(num.chapters = nchar(chapters),
+         first.chapter = substr(chapters, 1, 1),
+         ignore = ifelse(is.na(ignore), FALSE, TRUE))
+
+vars.df.complete <- model.vars %>%
+  filter(dataset != "df.reactions", dataset != "df.model5.3")
+
+vars.df.reactions <- model.vars %>%
+  filter(dataset == "df.reactions" | dataset == "df.model5.3")
+
+# Create a list of unique variables to eventually select from df.complete
+vars.df.complete.select <- unique(vars.df.complete$var_name)
+
+# Create a list of unique variables to eventually select from df.reactions,
+# omitting any that are already in df.complete
+vars.df.reactions.select <- unique(vars.df.reactions$var_name)[!(unique(
+  vars.df.reactions$var_name) %in% vars.df.complete.select)]
+
+# Summarize variables from df.complete
+vars.df.complete.only <- df.complete %>%
+  filter(year > 2000) %>%
+  mutate(women1 = women1 / 100) %>%
+  select_(.dots = vars.df.complete.select) %>%
+  # Summarize each variable; use zzz because many variables use _ in their
+  # names, which makes tidyr::separate tricky later
+  summarise_each(funs(zzzMean = mean(., na.rm=TRUE),
+                      zzzMedian = median(., na.rm=TRUE),
+                      zzzStdev = sd(., na.rm=TRUE),
+                      zzzMin = min(., na.rm=TRUE),
+                      zzzMax = max(., na.rm=TRUE)))
+
+# Summarize variables from df.reactions
+vars.df.reactions.only <- df.reactions %>% ungroup() %>%
+  filter(year > 2000) %>%
+  mutate(women1 = women1 / 100) %>%
+  select_(.dots = vars.df.reactions.select) %>%
+  summarise_each(funs(zzzMean = mean(., na.rm=TRUE),
+                      zzzMedian = median(., na.rm=TRUE),
+                      zzzStdev = sd(., na.rm=TRUE),
+                      zzzMin = min(., na.rm=TRUE),
+                      zzzMax = max(., na.rm=TRUE)))
+
+# Combine two summaries and convert to nicer format
+vars.all.summary <- bind_cols(vars.df.complete.only, vars.df.reactions.only) %>%
+  gather(key, val) %>%
+  separate(key, c("Variable", "stat"), sep="_zzz") %>%
+  spread(stat, val)
+
+# Separate continuous and proportional variables
+other.prop <- c("aid.us.total.perc_lag", "econasstPgdp_1",
+                "newus_tradeshare_gdp1", "newus_share_tot_trade1", "women1")
+
+vars.all.cont <- vars.all.summary %>%
+  filter(Max != 1) %>%
+  filter(!(Variable %in% other.prop))
+
+vars.all.prop <- vars.all.summary %>%
+  filter(Variable %in% other.prop | Max == 1)
+
+# Join summary stats to table grouped by chapter
+vars.all.cont.clean <- vars.all.cont %>%
+  left_join(model.vars.clean, by=c("Variable" = "var_name")) %>%
+  filter(!ignore) %>%
+  arrange(first.chapter, desc(num.chapters)) %>%
+  # There are some tiny tiny minimum values; this rounds them for nicer display
+  mutate(Min = ifelse(Min < 0.00001, 0, Min)) %>%
+  mutate_each(funs(comma(., digits=2)), c(Mean, Median, Stdev, Min, Max)) %>%
+  select(Variable = label, Description, Source, Chapters = chapters,
+         Mean, Median, `Standard deviation` = Stdev, Min, Max)
+
+vars.all.prop.clean <- vars.all.prop %>%
+  left_join(model.vars.clean, by=c("Variable" = "var_name")) %>%
+  filter(!ignore) %>%
+  arrange(first.chapter, desc(num.chapters)) %>%
+  mutate_each(funs(comma(., digits=1)), c(Mean, Stdev)) %>%
+  select(Variable = label, Description, Source, Chapters = chapters,
+         `Mean proportion` = Mean, `Standard deviation` = Stdev)
+
+# Save final clean tables
+cat(pandoc.table.return(vars.all.cont.clean),
+    file=file.path(base.folder, paste0("table_var_summary_continuous.txt")))
+
+cat(pandoc.table.return(vars.all.prop.clean),
+    file=file.path(base.folder, paste0("table_var_summary_proportions.txt")))
+
+Pandoc.convert(file.path(getwd(), base.folder,
+                         paste0("table_var_summary_continuous.txt")),
+               format="html", footer=FALSE, proc.time=FALSE, 
+               options = "-s", open=FALSE)
+
+Pandoc.convert(file.path(getwd(), base.folder,
+                         paste0("table_var_summary_proportions.txt")),
+               format="html", footer=FALSE, proc.time=FALSE, 
+               options = "-s", open=FALSE)
