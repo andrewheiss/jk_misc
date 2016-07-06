@@ -10,6 +10,10 @@ library(foreign)
 library(countrycode)
 library(maptools)
 library(rgdal)
+library(gridExtra)
+library(WDI)
+library(readxl)
+library(stargazer)
 
 source("shared_functions.R")
 
@@ -62,6 +66,8 @@ cables.per.year <- cables.geocoded %>%
 #   * tip.cables.in.wl: the total number of TIP-related cables that year 
 #      from those in the Wikileaks dump
 #   * prop.tip.wl: cables.in.wl / tip.cables.in.wl
+#   * prop.present: cables.in.wl / estimated.cables.year (to guess how many 
+#       cables are missing)
 #   * prop.cables.year.wl: number of cables that year / total number of cables
 #      for all countries (to get a sense of how much coverage a country-year got 
 #      in the Wikileaks dump)
@@ -77,6 +83,7 @@ cables.tip <- cables.geocoded %>%
   left_join(per.day, by=c("country", "Year")) %>%
   left_join(cables.per.year, by="Year") %>%
   mutate(prop.tip.wl = tip.cables.in.wl / cables.in.wl,
+         prop.present = cables.in.wl / estimated.cables.year,
          prop.tip.estimated = tip.cables.in.wl / estimated.cables.year,
          prop.cables.year.wl = cables.in.wl / total.all.countries,
          prop.cables.year.estimated = 
@@ -86,6 +93,7 @@ cables.tip <- cables.geocoded %>%
 # Expand to full country-year panel format
 cables.panel <- cables.tip %>% 
   ungroup() %>%
+  filter(Year >= 2000) %>%
   expand(Year, country) %>%  # Magic dataframe expansion
   left_join(cables.tip, by=c("country", "Year")) %>%
   mutate(cow = countrycode(country, "country.name", "cown")) %>%
@@ -94,9 +102,129 @@ cables.panel <- cables.tip %>%
          estimated_per_day = estimated.per.day,
          estimated_cables_year = estimated.cables.year,
          prop_tip_wl = prop.tip.wl, 
+         prop_present = prop.present,
          prop_cables_year_wl = prop.cables.year.wl,
          prop_tip_estimated = prop.tip.estimated,
-         prop_cables_year_estimated = prop.cables.year.estimated)
+         prop_cables_year_estimated = prop.cables.year.estimated) %>%
+  # Add unofficial COW codes for these countries
+  mutate(cow = case_when(
+    .$country == "Hong Kong" ~ as.integer(715),
+    .$country == "Bermuda" ~ as.integer(1003),
+    .$country == "Serbia" ~ as.integer(340),
+    .$country == "Curacao" ~ as.integer(1006),
+    TRUE ~ .$cow)) %>%
+  mutate(iso2 = countrycode(cow, "cown", "iso2c")) %>%
+  mutate(iso2 = case_when(
+    .$country == "Hong Kong" ~ "HK",
+    .$country == "Bermuda" ~ "BM",
+    .$country == "Serbia" ~ "RS",
+    .$country == "Kosovo" ~ "XK",
+    .$country == "Curacao" ~ "CW",
+    TRUE ~ .$iso2))
+
+# World Bank World Development Indicators (WDI)
+# http://data.worldbank.org/data-catalog/world-development-indicators
+# Use WDI::WDI() to access the data
+wdi.indicators <- c("NY.GDP.PCAP.KD",  # GDP per capita (constant 2005 US$)
+                    "NY.GDP.MKTP.KD",  # GDP (constant 2005 US$)
+                    "SP.POP.TOTL",     # Population, total
+                    "DT.ODA.ALLD.CD")  # Net ODA and official aid received (current US$)
+wdi.countries <- unique(cables.panel$iso2)
+wdi.raw <- WDI(country="all", wdi.indicators, extra=TRUE, start=2000, end=2016)
+
+wdi.clean <- wdi.raw %>%
+  filter(iso2c %in% wdi.countries) %>%
+  rename(gdpcap = NY.GDP.PCAP.KD, gdp = NY.GDP.MKTP.KD, 
+         population = SP.POP.TOTL, oda = DT.ODA.ALLD.CD) %>%
+  mutate(gdpcap.log = log(gdpcap), gdp.log = log(gdp),
+         population.log = log(population)) %>%
+  mutate(gdpcap.log = log(gdpcap), gdp.log = log(gdp),
+         population.log = log(population)) %>%
+  # Ignore negative values of oda
+  mutate(oda.log = sapply(oda, FUN=function(x) ifelse(x < 0, NA, log1p(x)))) %>%
+  mutate(region = factor(region),  # Get rid of unused levels first
+         region = factor(region, labels = 
+                           gsub(" \\(all income levels\\)", "", levels(region)))) %>%
+  select(-c(country, capital, longitude, latitude, income, lending))
+
+# Democracy (Freedom House)
+if (!file.exists(file.path("original_files", "freedom_house.xlsx"))) {
+  fh.url <- paste0("https://freedomhouse.org/sites/default/files/", 
+                   "Country%20Ratings%20and%20Status%2C%20",
+                   "1973-2016%20%28FINAL%29_0.xlsx")
+  fh.tmp <- file.path("original_files", "freedom_house.xlsx")
+  download.file(fh.url, fh.tmp)
+}
+
+fh.raw <- read_excel(file.path("original_files", "freedom_house.xlsx"), 
+                     skip=6)
+
+# Calculate the number of years covered in the data (each year has three columns)
+num.years <- (ncol(fh.raw) - 1)/3
+
+# Create combinations of all the variables and years
+var.years <- expand.grid(var = c('PR', 'CL', 'Status'), 
+                         year = 1972:(1972 + num.years - 1))
+
+colnames(fh.raw) <- c('country', paste(var.years$var, var.years$year, sep="_"))
+
+# Split columns and convert to long
+fh <- fh.raw %>%
+  gather(var.year, value, -country) %>%
+  separate(var.year, into=c("indicator", "year"), sep="_") %>%
+  filter(!is.na(country)) %>%
+  spread(indicator, value) %>%
+  mutate(year = as.numeric(year),
+         CL = suppressWarnings(as.integer(CL)),
+         PR = suppressWarnings(as.integer(PR)),
+         Status = factor(Status, levels=c("NF", "PF", "F"), 
+                         labels=c("Not free", "Partially free", "Free"),
+                         ordered=TRUE),
+         total.freedom = CL + PR,
+         country.clean = countrycode(country, "country.name", "country.name")) %>%
+  filter(!is.na(CL) & !is.na(PR)) %>%
+  # All the cases we're interested in are after 2000, so we can remove these
+  # problematic double countries
+  filter(!(country %in% c("Germany, E.", "Germany, W.", "USSR", "Vietnam, N.", 
+                          "Vietnam, S.", "Yemen, N.", "Yemen, S."))) %>%
+  # Again, because we only care about post-2000 Serbia, merge with Yugoslavia
+  mutate(country.clean = ifelse(country.clean == "Yugoslavia", 
+                                "Serbia", country.clean)) %>%
+  select(-country, country=country.clean)
+
+fh.summary <- fh %>%
+  filter(year >= 2000) %>%
+  group_by(country, year) %>%
+  summarize(total.freedom = mean(total.freedom, na.rm=TRUE)) %>%
+  ungroup() %>%
+  mutate(iso2 = countrycode(country, "country.name", "iso2c")) %>%
+  mutate(iso2 = ifelse(country == "Kosovo", "XK", iso2)) %>%
+  select(-country)
+
+# Model cable presence
+cables.panel.all <- cables.panel %>%
+  left_join(wdi.clean, by=c("iso2" = "iso2c", "year")) %>%
+  left_join(fh.summary, by=c("year", "iso2")) %>%
+  mutate(prop_present100 = prop_present * 100) %>%
+  # Get rid of crazy outliers (Syria 2007 and Turkey 2009)
+  filter(prop_present100 < 100)
+
+model.simple <- lm(prop_present100 ~ gdpcap.log + oda.log + total.freedom,
+            data=cables.panel.all)
+
+model.fe <- lm(prop_present100 ~ gdpcap.log + oda.log + total.freedom +
+                 region + as.factor(year),
+               data=cables.panel.all)
+
+extra.lines <- list(c("Year fixed effects", c("No", "Yes")),
+                    c("Country fixed effects", c("No", "Yes")))
+
+stargazer(model.simple, model.fe,
+          type="text", no.space=TRUE,
+          dep.var.caption="Percent of estimated cables actually present",
+          omit="\\.factor|region",
+          model.numbers=FALSE, dep.var.labels.include=FALSE,
+          notes.align="l", add.lines=extra.lines)
 
 
 # ----------------
@@ -138,7 +266,10 @@ possible.countries <- data_frame(id = unique(as.character(countries.ggmap$id)))
 tip.effort <- cables.tip %>%
   group_by(country) %>%
   summarize(avg.effort = mean(prop.tip.estimated) * 1000,
-            med.effort = median(prop.tip.estimated) * 1000) %>%
+            med.effort = median(prop.tip.estimated) * 1000,
+            num.cables = sum(cables.in.wl, na.rm=TRUE),
+            estimated.per.year = sum(estimated.cables.year, na.rm=TRUE),
+            prop.present = num.cables / estimated.per.year) %>%
   mutate(id = countrycode(country, "country.name", "iso3c"),
          # Make intervals with about the same number of obs. in groups
          bins.raw = cut_number(avg.effort, 5, ordered_result=TRUE),
@@ -162,13 +293,14 @@ bins.df <- data_frame(bins = levels(tip.effort$bins),
 # Merge all the data together
 effort.full <- possible.countries %>%
   left_join(tip.effort, by="id") %>%
+  mutate(bins = as.character(bins)) %>%
   left_join(bins.df, by="bins")
 
 # Convert embassy coordinates to Robinson projection and add to df
 embassies.robinson <- project(as.matrix(embassies %>% select(long, lat)), 
-                              proj="+proj=robin")
+                              proj="+proj=robin") %>%
+  as.data.frame %>% rename(long.robinson = long, lat.robinson = lat)
 embassies.to.plot <- bind_cols(embassies, as.data.frame(embassies.robinson)) %>%
-  rename(long.robinson = V1, lat.robinson = V2) %>%
   filter(!(is.na(iso)))
 
 
@@ -198,6 +330,79 @@ ggsave(effort.map.binned,
        device=cairo_pdf)
 ggsave(effort.map.binned, 
        filename="figures/map_avg_tip_effort_adjusted.png")
+
+# Actual number of cables
+actual.cables.map <- ggplot(effort.full, aes(fill=num.cables, map_id=id)) +
+  geom_map(map=countries.ggmap) + 
+  # Second layer to add borders and slash-less legend
+  geom_map(map=countries.ggmap, size=0.15, colour="black", show.legend=FALSE) + 
+  geom_point(data=embassies.to.plot, 
+             aes(x=long.robinson, y=lat.robinson, fill=NULL, map_id=NULL), 
+             colour="black", size=0.15, show.legend=FALSE, alpha=0.35) + 
+  expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
+  coord_equal() +
+  scale_fill_gradient(high="black", low="white", na.value="white",
+                      labels=comma, name="",
+                      limits=c(0, max(effort.full$num.cables)),
+                      guide=guide_colorbar(draw.llim=TRUE, barwidth=15, 
+                                           barheight=0.5, ticks=FALSE)) +
+  labs(title="Actual number of cables") +
+  theme_blank_map(base_size=10) + 
+  theme(legend.position="bottom",
+        plot.title=element_text(hjust=0.5, size=rel(1)))
+actual.cables.map
+
+# Estimated number of cables
+estimated.cables.map <- ggplot(effort.full, aes(fill=estimated.per.year, map_id=id)) +
+  geom_map(map=countries.ggmap) + 
+  # Second layer to add borders and slash-less legend
+  geom_map(map=countries.ggmap, size=0.15, colour="black", show.legend=FALSE) + 
+  geom_point(data=embassies.to.plot, 
+             aes(x=long.robinson, y=lat.robinson, fill=NULL, map_id=NULL), 
+             colour="black", size=0.15, show.legend=FALSE, alpha=0.35) + 
+  expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
+  coord_equal() +
+  scale_fill_gradient(high="black", low="white", na.value="white",
+                      labels=comma, name="",
+                      limits=c(0, max(effort.full$estimated.per.year)),
+                      guide=guide_colorbar(draw.llim=TRUE, barwidth=15, 
+                                           barheight=0.5, ticks=FALSE)) +
+  labs(title="Estimated number of cables") +
+  theme_blank_map(base_size=10) + 
+  theme(legend.position="bottom",
+        plot.title=element_text(hjust=0.5, size=rel(1)))
+estimated.cables.map
+
+# Proporition of estimated cables that exist
+prop.present.map <- ggplot(effort.full, aes(fill=prop.present, map_id=id)) +
+  geom_map(map=countries.ggmap) + 
+  # Second layer to add borders and slash-less legend
+  geom_map(map=countries.ggmap, size=0.15, colour="black", show.legend=FALSE) + 
+  geom_point(data=embassies.to.plot, 
+             aes(x=long.robinson, y=lat.robinson, fill=NULL, map_id=NULL), 
+             colour="black", size=0.15, show.legend=FALSE, alpha=0.35) + 
+  expand_limits(x=countries.ggmap$long, y=countries.ggmap$lat) + 
+  coord_equal() +
+  scale_fill_gradient(high="black", low="white", na.value="white",
+                      labels=percent, name="",
+                      limits=c(0, max(effort.full$prop.present)),
+                      guide=guide_colorbar(draw.llim=TRUE, barwidth=15, 
+                                           barheight=0.5, ticks=FALSE)) +
+  labs(title="Proporition of estimated cables that exist") +
+  theme_blank_map(base_size=10) + 
+  theme(legend.position="bottom",
+        plot.title=element_text(hjust=0.5, size=rel(1)))
+prop.present.map
+
+cables.map <- arrangeGrob(estimated.cables.map, actual.cables.map,
+                          prop.present.map, ncol=1)
+grid.draw(cables.map)
+ggsave(cables.map, 
+       filename="figures/map_cables.pdf", 
+       device=cairo_pdf, width=4.5, height=7, units="in")
+ggsave(cables.map, 
+       filename="figures/map_cables.png",
+       width=4.5, height=5, units="in")
 
 
 # ------------------------------------
