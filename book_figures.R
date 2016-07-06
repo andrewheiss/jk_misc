@@ -117,6 +117,17 @@ ggsave(tier.plot, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(tier.plot, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
+df.tier.plot.n <- tiers.summary %>%
+  group_by(year) %>%
+  summarize(total = sum(n))
+
+tier.plot.n <- paste0(filter(df.tier.plot.n, year == 2001)$total, 
+                      " countries in 2001; ",
+                      filter(df.tier.plot.n, year == 2015)$total,
+                      " countries in 2015.")
+cat(tier.plot.n, file=file.path(base.folder, paste0(filename, ".txt")))
+
+
 filename <- "figure2_5_tier_ratings_time_2001"
 width <- 4.5
 height <- 2.5
@@ -321,7 +332,8 @@ df.Q3.18 <- df.book.plots %>%
   gather(question, response, -clean.id) %>%
   group_by(question) %>%
   summarize(num = sum(response, na.rm=TRUE),
-            prop = num / denom.Q3.18) %>%
+            prop = num / denom.Q3.18,
+            denom.Q3.18 = denom.Q3.18) %>%
   left_join(df.Q3.18.lookup, by=c("question" = "q.num")) %>%
   mutate(q.label = factor(q.label, levels=rev(q.label), ordered=TRUE))
 
@@ -339,6 +351,9 @@ ggsave(fig3.4, filename=file.path(base.folder, paste0(filename, ".pdf")),
        width=width, height=height, device=cairo_pdf)
 ggsave(fig3.4, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+fig3.4.n <- paste0(unique(df.Q3.18$denom.Q3.18), " responses.")
+cat(fig3.4.n, file=file.path(base.folder, paste0(filename, ".txt")))
 
 # Figure 3.5: Stakeholders with whom NGOs discuss the TIP report
 df.Q3.21.lookup <- data_frame(q.num = c("Q3.21_1", "Q3.21_2", 
@@ -358,7 +373,8 @@ df.Q3.21 <- df.book.plots %>%
   gather(question, response, -clean.id) %>%
   group_by(question) %>%
   summarize(num = sum(response, na.rm=TRUE),
-            prop = num / denom.Q3.21) %>%
+            prop = num / denom.Q3.21,
+            denom.Q3.21 = denom.Q3.21) %>%
   left_join(df.Q3.21.lookup, by=c("question" = "q.num")) %>%
   mutate(q.label = factor(q.label, levels=rev(q.label), ordered=TRUE))
 
@@ -376,6 +392,9 @@ ggsave(fig3.5, filename=file.path(base.folder, paste0(filename, ".pdf")),
        width=width, height=height, device=cairo_pdf)
 ggsave(fig3.5, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+fig3.5.n <- paste0(unique(df.Q3.21$denom.Q3.21), " responses.")
+cat(fig3.5.n, file=file.path(base.folder, paste0(filename, ".txt")))
 
 # Figure 3.6: Coverage in Oman
 df.fig3.6 <- read_csv("final_figures/data_figure3_6.csv") %>%
@@ -447,6 +466,9 @@ ggsave(p.reactions, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(p.reactions, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
+fig4.4.n <- paste0(sum(reactions$total), " reactions.")
+cat(fig4.4.n, file=file.path(base.folder, paste0(filename, ".txt")))
+
 # Figure 4.5: Co-occurrence of reactions
 df.fig4.5 <- read_csv("final_figures/data_figure4_5.csv") %>%
   mutate(Reaction = factor(Reaction, levels=rev(Reaction), ordered=TRUE)) %>%
@@ -475,6 +497,12 @@ ggsave(fig4.5, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(fig4.5, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
+df.fig4.5.n <- df.fig4.5 %>%
+  filter(Reaction == Reaction2)
+
+fig4.5.n <- paste0(sum(df.fig4.5.n$num), " reactions.")
+cat(fig4.5.n, file=file.path(base.folder, paste0(filename, ".txt")))
+
 # Figure 4.6: Distribution of public versus private reactions, as percent of reports with a reported reaction
 df.fig4.6 <- read_csv("final_figures/data_figure4_6.csv") %>%
   gather(scope, num, -Reaction) %>%
@@ -500,6 +528,9 @@ ggsave(fig4.6, filename=file.path(base.folder, paste0(filename, ".pdf")),
        width=width, height=height, device=cairo_pdf)
 ggsave(fig4.6, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+fig4.6.n <- "This came from QDA Miner, so I don't know the original N. The figure gets its data from `final_figures/data_figure4_6.csv`."
+cat(fig4.6.n, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # -----------
@@ -542,6 +573,34 @@ ggsave(cho.crim.all.countries, filename=file.path(base.folder, paste0(filename, 
        width=width, height=height, device=cairo_pdf)
 ggsave(cho.crim.all.countries, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+df.tier.plot.n <- tiers.summary %>%
+  group_by(year) %>%
+  summarize(total = sum(n))
+
+countries.no.crim
+countries.full.partial
+
+filter(countries.full.partial, years.since.full.alt == "-10")$num
+
+full.partial.n <- paste0("Countries with full criminalization: ", 
+                         "10 years before (N = ", 
+                         filter(countries.full.partial, 
+                                years.since.full.alt == "-10")$num, 
+                         "); year of criminalization (N = ", 
+                         filter(countries.full.partial, 
+                                years.since.full.alt == "0")$num, 
+                         "); 10 years after (N = ", 
+                         filter(countries.full.partial,
+                                years.since.full.alt == "10")$num,
+                         ").")
+
+no.crim.n <- paste0("Countries without full criminalization: ",
+                    filter(countries.no.crim, year == "2000-01-01")$num,
+                    ".")
+
+fig5.3.n <- paste(full.partial.n, no.crim.n)
+cat(fig5.3.n, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # Figure 5.4: Number of anti-TIP laws passing, by month, 2001-2014
@@ -814,6 +873,13 @@ ggsave(hq.map, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(hq.map, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
+hq.map.n <- paste0("Number of NGOs: ", 
+                   sum(hq.countries$num.ngos, na.rm=TRUE), 
+                   ". Number of countries: ", 
+                   nrow(filter(hq.countries, num.ngos > 0)),
+                   ".")
+cat(hq.map.n, file=file.path(base.folder, paste0(filename, ".txt")))
+
 
 work.map <- ggplot(work.countries, aes(fill=num.ceiling, map_id=id)) +
   geom_map(map=countries.ggmap, size=0.15, colour="black") + 
@@ -834,6 +900,11 @@ ggsave(work.map, filename=file.path(base.folder, paste0(filename, ".pdf")),
        width=width, height=height, device=cairo_pdf)
 ggsave(work.map, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+work.map.n <- paste0("Number of countries: ", 
+                     nrow(filter(work.countries, num.ngos > 0)),
+                     ".")
+cat(work.map.n, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # Figure A2: Percent of total estimated cables
@@ -1108,7 +1179,7 @@ combined <- arrangeGrob(fig.us_importance,
                         arrangeGrob(fig.us_positivity, blank),
                         ncol=2, widths=c(0.65, 0.35))
 
-filename <- "figure_importance_positivity"
+filename <- "figure5_7_importance_positivity"
 width <- 4.5
 height <- 2.5
 
@@ -1118,6 +1189,13 @@ ggsave(combined,
 ggsave(combined, 
        filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+fig5.7.n <- paste0("Responses related to importance: ", 
+                   sum(plot.data.importance$num),
+                   ". Responses related to positivity: ",
+                   sum(plot.data.positivity$num), ".")
+
+cat(fig5.7.n, file=file.path(base.folder, paste0(filename, ".txt")))
 
 # library(ggstance)
 # fig.us_importance <- ggplot(plot.data.importance, aes(y=Q3.19, x=prop)) + 
