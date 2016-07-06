@@ -88,7 +88,8 @@ cables.tip <- cables.geocoded %>%
          prop.cables.year.wl = cables.in.wl / total.all.countries,
          prop.cables.year.estimated = 
            estimated.cables.year / estimated.all.countries) %>%
-  select(-c(total.all.countries, estimated.all.countries))
+  select(-c(total.all.countries, estimated.all.countries)) %>%
+  filter(country != "United States")
 
 # Expand to full country-year panel format
 cables.panel <- cables.tip %>% 
