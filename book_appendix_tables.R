@@ -318,6 +318,48 @@ Pandoc.convert(file.path(getwd(), base.folder, paste0("table_methods_a4_no_tier1
                options = "-s", open=FALSE)
 
 
+# Analysis of cables
+cables.panel.all <- readRDS("final_figures/data_figureA_cables.rds")
+cables.presence.tip <- lm(prop_present100 ~ gdpcap.log + oda.log + 
+                            totalfreedom + tier + crim1 + 
+                            ht_incidence_transit + ht_incidence_origin + 
+                            ht_incidence_destination + ratproto2000 +
+                            region + as.factor(year),
+                          data=cables.panel.all)
+
+cables.presence.tip.no.region <- lm(prop_present100 ~ gdpcap.log + oda.log + 
+                                      totalfreedom + tier + crim1 + 
+                                      ht_incidence_transit + ht_incidence_origin + 
+                                      ht_incidence_destination + ratproto2000 +
+                                      as.factor(year),
+                                    data=cables.panel.all)
+
+var.labs <- c("GDP per capita (logged)", "Total foreign aid (logged)", 
+              "Worse total freedom", "TIP tier",
+              "Trafficking criminalized",
+              "Trafficking intensity in transit countries",
+              "Trafficking intensity in countries of origin",
+              "Trafficking intensity in destination countries",
+              "2000 TIP protocol ratification")
+
+col.labs <- c("Model AM5.1", "Model AM5.2")
+
+extra.lines <- list(c("Region fixed effects", c("Yes", "No")),
+                    c("Year fixed effects", c("Yes", "Yes")))
+
+title <- "Table methods A5: Relationship between cable availability and human trafficking"
+
+out.file <- file.path(base.folder, "table_methods_a5.html")
+
+stargazer(cables.presence.tip, cables.presence.tip.no.region,
+          type="html", out=out.file, out.header=TRUE, no.space=TRUE,
+          covariate.labels=var.labs, column.labels=col.labs, 
+          dep.var.caption="Percent of estimated cables actually present",
+          omit="\\.factor|region",
+          model.numbers=FALSE, dep.var.labels.include=FALSE,
+          notes.align="l", add.lines=extra.lines)
+
+
 # -----------
 # Chapter 2
 # -----------

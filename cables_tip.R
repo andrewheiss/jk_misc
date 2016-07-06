@@ -161,8 +161,6 @@ wdi.clean <- wdi.raw %>%
                            gsub(" \\(all income levels\\)", "", levels(region)))) %>%
   select(-c(country, capital, longitude, latitude, income, lending))
 
-
-# Model cable presence
 cables.panel.all <- cables.panel %>%
   left_join(wdi.clean, by=c("iso2" = "iso2c", "year")) %>%
   left_join(df.tip, by=c("year", "iso2")) %>%
@@ -170,50 +168,7 @@ cables.panel.all <- cables.panel %>%
   # Get rid of crazy outliers (Syria 2007 and Turkey 2009)
   filter(prop_present100 < 100)
 
-model.simple <- lm(prop_present100 ~ gdpcap.log + oda.log + totalfreedom,
-            data=cables.panel.all)
-
-model.fe <- lm(prop_present100 ~ gdpcap.log + oda.log + totalfreedom +
-                 region + as.factor(year),
-               data=cables.panel.all)
-
-model.tip <- lm(prop_present100 ~ gdpcap.log + oda.log + totalfreedom +
-                  tier + crim1 + ht_incidence_transit + ht_incidence_origin + 
-                  ht_incidence_destination + ratproto2000 +
-                  region + as.factor(year),
-                data=cables.panel.all)
-
-extra.lines <- list(c("Year fixed effects", c("No", "Yes", "Yes")),
-                    c("Country fixed effects", c("No", "Yes", "Yes")))
-
-stargazer(model.simple, model.fe, model.tip,
-          type="text", no.space=TRUE,
-          dep.var.caption="Percent of estimated cables actually present",
-          omit="\\.factor|region",
-          model.numbers=FALSE, dep.var.labels.include=FALSE,
-          notes.align="l", add.lines=extra.lines)
-
-
-# ----------------
-# Write to Stata
-# ----------------
-# # Add fancy Stata labels
-# labs <- c("Country name", "COW code", "Year", 
-#           "Number of cables originating from country (in Wikileaks)", 
-#           "Number of cables related to TIP (in Wikileaks)", 
-#           "Estimated number of cables per day",
-#           "Estimated number of cables that year",
-#           "Proportion of cables related to TIP (in Wikileaks)", 
-#           "Proportion of total number of cables that year (in Wikileaks)",
-#           "Proportion of cables related to TIP (estimated)", 
-#           "Proportion of total number of cables that year (estimated)")
-# 
-# cables.panel %<>% add_labels(labs)  # For haven and RStudio
-# attr(cables.panel, "var.labels") <- labs  # For foreign
-# 
-# # write_dta(cables.panel, "data/cables_panel.dta")
-# write.dta(cables.panel, "data/cables_panel.dta")
-saveRDS(cables.panel, file="final_figures/data_figureA_cables.rds")
+saveRDS(cables.panel.all, file="final_figures/data_figureA_cables.rds")
 
 
 # ------------------------
@@ -291,12 +246,6 @@ effort.map.binned <- ggplot(effort.full, aes(fill=bin.clean, map_id=id)) +
                                          keywidth=0.75, keyheight=0.75)) +
   theme_blank_map() + 
   theme(legend.position="bottom")
-effort.map.binned
-ggsave(effort.map.binned, 
-       filename="figures/map_avg_tip_effort_adjusted.pdf", 
-       device=cairo_pdf)
-ggsave(effort.map.binned, 
-       filename="figures/map_avg_tip_effort_adjusted.png")
 
 # Actual number of cables
 actual.cables.map <- ggplot(effort.full, aes(fill=num.cables, map_id=id)) +
@@ -317,7 +266,6 @@ actual.cables.map <- ggplot(effort.full, aes(fill=num.cables, map_id=id)) +
   theme_blank_map(base_size=10) + 
   theme(legend.position="bottom",
         plot.title=element_text(hjust=0.5, size=rel(1)))
-actual.cables.map
 
 # Estimated number of cables
 estimated.cables.map <- ggplot(effort.full, aes(fill=estimated.per.year, map_id=id)) +
@@ -338,7 +286,6 @@ estimated.cables.map <- ggplot(effort.full, aes(fill=estimated.per.year, map_id=
   theme_blank_map(base_size=10) + 
   theme(legend.position="bottom",
         plot.title=element_text(hjust=0.5, size=rel(1)))
-estimated.cables.map
 
 # Proporition of estimated cables that exist
 prop.present.map <- ggplot(effort.full, aes(fill=prop.present, map_id=id)) +
@@ -359,17 +306,9 @@ prop.present.map <- ggplot(effort.full, aes(fill=prop.present, map_id=id)) +
   theme_blank_map(base_size=10) + 
   theme(legend.position="bottom",
         plot.title=element_text(hjust=0.5, size=rel(1)))
-prop.present.map
 
 cables.map <- arrangeGrob(estimated.cables.map, actual.cables.map,
                           prop.present.map, ncol=1)
-grid.draw(cables.map)
-ggsave(cables.map, 
-       filename="figures/map_cables.pdf", 
-       device=cairo_pdf, width=4.5, height=7, units="in")
-ggsave(cables.map, 
-       filename="figures/map_cables.png",
-       width=4.5, height=5, units="in")
 
 
 # ------------------------------------

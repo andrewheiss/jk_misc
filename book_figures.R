@@ -49,6 +49,7 @@ source("funding.R")
 source("reactions.R")
 source("policy_index.R")
 source("ratifications.R")
+source("cables_tip.R")
 
 
 # -----------
@@ -987,6 +988,27 @@ ggsave(fig.cho.all.vs.cases.tier1.out,
 ggsave(fig.cho.all.vs.cases.tier1.out, 
        filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+# Figure A5: TIP-related cables per 1000 expected cables
+filename <- "figureA5_tip_effort_tip_cables_per_1000_expected"
+width <- 4.5
+height <- 2.5
+ggsave(effort.map.binned, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(effort.map.binned, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+# Figure A6: Estimated cables, actual cables, and proportion of actual/estimated
+filename <- "figureA6_cables_estimated_actual"
+width <- 4.5
+height <- 7
+ggsave(cables.map, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(cables.map, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+cables.map <- arrangeGrob(estimated.cables.map, actual.cables.map,
+                          prop.present.map, ncol=1)
 
 # # Total TIP funding to case study countries
 # cases <- c("ARM", "IDN", "ECU", "MOZ", "KAZ", "ARG", "ISR", 
