@@ -122,6 +122,19 @@ cables.panel <- cables.tip %>%
     .$country == "Curacao" ~ "CW",
     TRUE ~ .$iso2))
 
+
+# TIP data
+df.complete.orig <- readRDS("final_tables/df_complete.rds")
+
+df.tip <- df.complete.orig %>% ungroup() %>%
+  filter(year >= 2000) %>%
+  mutate(percapeconasst0 = econasst0 / data9) %>%
+  select(cowcode, year, tier, crim1, 
+         ht_incidence_transit, ht_incidence_origin, ht_incidence_destination,
+         econasst0, percapeconasst0, ratproto2000, gdppercapita,
+         corrupt, totalfreedom) %>%
+  mutate(iso2 = countrycode(cowcode, "cown", "iso2c"))
+
 # World Bank World Development Indicators (WDI)
 # http://data.worldbank.org/data-catalog/world-development-indicators
 # Use WDI::WDI() to access the data
@@ -147,79 +160,32 @@ wdi.clean <- wdi.raw %>%
                            gsub(" \\(all income levels\\)", "", levels(region)))) %>%
   select(-c(country, capital, longitude, latitude, income, lending))
 
-# Democracy (Freedom House)
-if (!file.exists(file.path("original_files", "freedom_house.xlsx"))) {
-  fh.url <- paste0("https://freedomhouse.org/sites/default/files/", 
-                   "Country%20Ratings%20and%20Status%2C%20",
-                   "1973-2016%20%28FINAL%29_0.xlsx")
-  fh.tmp <- file.path("original_files", "freedom_house.xlsx")
-  download.file(fh.url, fh.tmp)
-}
-
-fh.raw <- read_excel(file.path("original_files", "freedom_house.xlsx"), 
-                     skip=6)
-
-# Calculate the number of years covered in the data (each year has three columns)
-num.years <- (ncol(fh.raw) - 1)/3
-
-# Create combinations of all the variables and years
-var.years <- expand.grid(var = c('PR', 'CL', 'Status'), 
-                         year = 1972:(1972 + num.years - 1))
-
-colnames(fh.raw) <- c('country', paste(var.years$var, var.years$year, sep="_"))
-
-# Split columns and convert to long
-fh <- fh.raw %>%
-  gather(var.year, value, -country) %>%
-  separate(var.year, into=c("indicator", "year"), sep="_") %>%
-  filter(!is.na(country)) %>%
-  spread(indicator, value) %>%
-  mutate(year = as.numeric(year),
-         CL = suppressWarnings(as.integer(CL)),
-         PR = suppressWarnings(as.integer(PR)),
-         Status = factor(Status, levels=c("NF", "PF", "F"), 
-                         labels=c("Not free", "Partially free", "Free"),
-                         ordered=TRUE),
-         total.freedom = CL + PR,
-         country.clean = countrycode(country, "country.name", "country.name")) %>%
-  filter(!is.na(CL) & !is.na(PR)) %>%
-  # All the cases we're interested in are after 2000, so we can remove these
-  # problematic double countries
-  filter(!(country %in% c("Germany, E.", "Germany, W.", "USSR", "Vietnam, N.", 
-                          "Vietnam, S.", "Yemen, N.", "Yemen, S."))) %>%
-  # Again, because we only care about post-2000 Serbia, merge with Yugoslavia
-  mutate(country.clean = ifelse(country.clean == "Yugoslavia", 
-                                "Serbia", country.clean)) %>%
-  select(-country, country=country.clean)
-
-fh.summary <- fh %>%
-  filter(year >= 2000) %>%
-  group_by(country, year) %>%
-  summarize(total.freedom = mean(total.freedom, na.rm=TRUE)) %>%
-  ungroup() %>%
-  mutate(iso2 = countrycode(country, "country.name", "iso2c")) %>%
-  mutate(iso2 = ifelse(country == "Kosovo", "XK", iso2)) %>%
-  select(-country)
 
 # Model cable presence
 cables.panel.all <- cables.panel %>%
   left_join(wdi.clean, by=c("iso2" = "iso2c", "year")) %>%
-  left_join(fh.summary, by=c("year", "iso2")) %>%
+  left_join(df.tip, by=c("year", "iso2")) %>%
   mutate(prop_present100 = prop_present * 100) %>%
   # Get rid of crazy outliers (Syria 2007 and Turkey 2009)
   filter(prop_present100 < 100)
 
-model.simple <- lm(prop_present100 ~ gdpcap.log + oda.log + total.freedom,
+model.simple <- lm(prop_present100 ~ gdpcap.log + oda.log + totalfreedom,
             data=cables.panel.all)
 
-model.fe <- lm(prop_present100 ~ gdpcap.log + oda.log + total.freedom +
+model.fe <- lm(prop_present100 ~ gdpcap.log + oda.log + totalfreedom +
                  region + as.factor(year),
                data=cables.panel.all)
 
-extra.lines <- list(c("Year fixed effects", c("No", "Yes")),
-                    c("Country fixed effects", c("No", "Yes")))
+model.tip <- lm(prop_present100 ~ gdpcap.log + oda.log + totalfreedom +
+                  tier + crim1 + ht_incidence_transit + ht_incidence_origin + 
+                  ht_incidence_destination + ratproto2000 +
+                  region + as.factor(year),
+                data=cables.panel.all)
 
-stargazer(model.simple, model.fe,
+extra.lines <- list(c("Year fixed effects", c("No", "Yes", "Yes")),
+                    c("Country fixed effects", c("No", "Yes", "Yes")))
+
+stargazer(model.simple, model.fe, model.tip,
           type="text", no.space=TRUE,
           dep.var.caption="Percent of estimated cables actually present",
           omit="\\.factor|region",
