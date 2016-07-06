@@ -28,3 +28,5 @@ figures/*.pdf
 figures/*.png
 EDB/figures/*.pdf
 EDB/figures/*.png
+figures/map_avg_tip_effort_adjusted.pdf
+figures/map_avg_tip_effort_adjusted.png
