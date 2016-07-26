@@ -998,17 +998,17 @@ ggsave(effort.map.binned, filename=file.path(base.folder, paste0(filename, ".pdf
 ggsave(effort.map.binned, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-# Figure A6: Estimated cables, actual cables, and proportion of actual/estimated
+# Figure A6: Proportion of actual/estimated
 filename <- "figureA6_cables_estimated_actual"
 width <- 4.5
-height <- 7
-ggsave(cables.map, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+height <- 3.5
+caption <- "Proporition of estimated cables that exist"
+ggsave(prop.present.map, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(cables.map, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(prop.present.map, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
-cables.map <- arrangeGrob(estimated.cables.map, actual.cables.map,
-                          prop.present.map, ncol=1)
 
 # # Total TIP funding to case study countries
 # cases <- c("ARM", "IDN", "ECU", "MOZ", "KAZ", "ARG", "ISR", 

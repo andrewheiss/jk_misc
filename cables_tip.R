@@ -302,7 +302,7 @@ prop.present.map <- ggplot(effort.full, aes(fill=prop.present, map_id=id)) +
                       limits=c(0, max(effort.full$prop.present)),
                       guide=guide_colorbar(draw.llim=TRUE, barwidth=15, 
                                            barheight=0.5, ticks=FALSE)) +
-  labs(title="Proporition of estimated cables that exist") +
+  # labs(title="Proporition of estimated cables that exist") +
   theme_blank_map(base_size=10) + 
   theme(legend.position="bottom",
         plot.title=element_text(hjust=0.5, size=rel(1)))
