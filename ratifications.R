@@ -11,10 +11,10 @@ source("shared_functions.R")
 base.folder <- "final_figures"
 
 # Get ratification data directly from the UN
-treaty.url <- "https://treaties.un.org/Pages/ViewDetails.aspx?src=TREATY&mtdsg_no=XVIII-12-a&chapter=18&lang=en"
+treaty.url <- "https://web.archive.org/web/20160403063433/https://treaties.un.org/Pages/ViewDetails.aspx?src=TREATY&mtdsg_no=XVIII-12-a&chapter=18&lang=en"
 
 ratifications <- read_html(treaty.url) %>%
-  html_nodes(xpath='//*[@id="ctl00_ctl00_ContentPlaceHolder1_ContentPlaceHolderInnerPage_tblgrid"]') %>%
+  html_nodes(xpath='//*[@id="ctl00_ContentPlaceHolder1_tblgrid"]') %>%
   html_table(header=TRUE) %>% bind_rows() %>%
   set_colnames(c("participant", "signature", "ratification")) %>%
   mutate(participant = countrycode(participant, "country.name", "country.name")) %>%
