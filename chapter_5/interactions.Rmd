@@ -4304,6 +4304,450 @@ p.funding.int.demote <- ggplot(plot.predict, aes(x=log.total.funding1, y=prob)) 
 p.funding.int.demote
 ```
 
+---
+
+## Government stability × downgrading
+
+### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+prob.crim.stability.demote <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  gather(demote_type, demote_value, c(new_watch1, new_watch2, 
+                                      new_watch3, no.demotion)) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years", 
+                                       "No demotion"))) %>%
+  filter(demote_value == 1) %>%
+  mutate(stability_bin = cut(icrg.stability, c(0, seq(1, 12, 1)), 
+                             include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(demote_type, stability_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.stability.demote %>% ungroup() %>%
+  do(expand.grid(demote_type = levels(.$demote_type), stability_bin = levels(.$stability_bin))) %>%
+  left_join(prob.crim.stability.demote, by=c("demote_type", "stability_bin")) %>%
+  mutate(stability_bin = factor(stability_bin, 
+                                labels=sapply(levels(stability_bin), FUN=clean.labs, 
+                                              adjust=FALSE))) %>%
+  filter(crim.yes > 0)
+
+p.stability.prob.demote <- ggplot(full, aes(x=stability_bin, y=prob.yes, 
+                                 colour=demote_type, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Government stability (ICRG)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) +
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.stability.prob.demote
+```
+
+### Interactions (models)
+
+```{r, results='asis', echo=FALSE}
+model.stability.simple.demote <- glm(crim1 ~ icrg.stability_lag + fh_cl1 +
+                                     new_watch3 + new_watch2 + new_watch1 +
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.stability.int.demote <- glm(crim1 ~ icrg.stability_lag + fh_cl1 +
+                                  new_watch3 + new_watch2 + new_watch1 +
+                         icrg.stability_lag * new_watch3 + 
+                         icrg.stability_lag * new_watch2 + 
+                         icrg.stability_lag * new_watch1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+ses <- list(get.or.se(model.stability.simple.demote),
+            get.or.se(model.stability.int.demote))
+
+var.labs <- c("Government stability (ICRG)",
+              "Worse democracy (Freedom House civil liberties)", 
+              "First demotion (t−3)", "First demotion (t−2)", 
+              "First demotion (t−1)",
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Government stability × First demotion (t−3)", 
+              "Government stability × First demotion (t−2)", 
+              "Government stability × First demotion (t−1)")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.stability.simple.demote, model.stability.int.demote), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.stability.simple.demote, model.stability.int.demote,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
+          keep.stat=c("n", "ll"), se=ses,
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.stability.int.demote
+
+covars <- model$model %>%
+  select(-icrg.stability_lag, -starts_with("new_watch")) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005),
+         id = 1)  # For joining into fully expanded dataframe later
+
+new.combinations <- expand.grid(icrg.stability_lag = seq(4, 12, 1),
+                                new_watch = c("1", "2", "3"))
+
+baseline.combinations <- data_frame(icrg.stability_lag = seq(4, 12, 1)) %>%
+  mutate(new_watch = NA, new_watch1 = 0, new_watch2 = 0, new_watch3 = 0)
+
+new.data <- new.combinations %>%
+  bind_cols(data.frame(model.matrix(icrg.stability_lag ~ new_watch + 0, 
+                                    data=new.combinations))) %>%
+  bind_rows(baseline.combinations) %>%
+  mutate(id = 1) %>% left_join(covars, by="id") %>%
+  select(-c(id, new_watch))
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
+  mutate(demote_type = ifelse(new_watch1 == 1, "1 year", NA),
+         demote_type = ifelse(new_watch2 == 1, "2 years", demote_type),
+         demote_type = ifelse(new_watch3 == 1, "3 years", demote_type),
+         demote_type = ifelse(new_watch1 + new_watch2 + new_watch3 == 0, 
+                              "No demotion", demote_type))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted)
+
+p.stability.int.demote <- ggplot(plot.predict, aes(x=icrg.stability_lag, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=demote_type), 
+              alpha=0.2) + 
+  geom_line(aes(colour=demote_type), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Government stability (ICRG)", y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=demote.colors, name="Time since\ndemotion") + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion")+
+  theme_light()
+p.stability.int.demote
+```
+
+---
+
+## Conflict × downgrading
+
+### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+prob.crim.conflict.demote <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  gather(demote_type, demote_value, c(new_watch1, new_watch2, 
+                                      new_watch3, no.demotion)) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years", 
+                                       "No demotion"))) %>%
+  filter(demote_value == 1) %>%
+  mutate(conflict_bin = cut(icrg.conflict, c(0, seq(2, 24, 2)), 
+                             include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(demote_type, conflict_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.conflict.demote %>% ungroup() %>%
+  do(expand.grid(demote_type = levels(.$demote_type), conflict_bin = levels(.$conflict_bin))) %>%
+  left_join(prob.crim.conflict.demote, by=c("demote_type", "conflict_bin")) %>%
+  mutate(conflict_bin = factor(conflict_bin, 
+                                labels=sapply(levels(conflict_bin), FUN=clean.labs, 
+                                              adjust=FALSE))) %>%
+  filter(crim.yes > 0)
+
+p.conflict.prob.demote <- ggplot(full, aes(x=conflict_bin, y=prob.yes, 
+                                 colour=demote_type, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Internal and external conflict (ICRG)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) +
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.conflict.prob.demote
+```
+
+### Interactions (models)
+
+```{r, results='asis', echo=FALSE}
+model.conflict.simple.demote <- glm(crim1 ~ icrg.conflict_lag + fh_cl1 +
+                                    new_watch3 + new_watch2 + new_watch1 +
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.conflict.int.demote <- glm(crim1 ~ icrg.conflict_lag + fh_cl1 +
+                                 new_watch3 + new_watch2 + new_watch1 +
+                         icrg.conflict_lag * new_watch3 + 
+                         icrg.conflict_lag * new_watch2 + 
+                         icrg.conflict_lag * new_watch1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+ses <- list(get.or.se(model.conflict.simple.demote),
+            get.or.se(model.conflict.int.demote))
+
+var.labs <- c("Internal and external conflict (ICRG)",
+              "Worse democracy (Freedom House civil liberties)", 
+              "First demotion (t−3)", "First demotion (t−2)", 
+              "First demotion (t−1)",
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Internal and external conflict × First demotion (t−3)", 
+              "Internal and external conflict × First demotion (t−2)", 
+              "Internal and external conflict × First demotion (t−1)")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.conflict.simple.demote, model.conflict.int.demote), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.conflict.simple.demote, model.conflict.int.demote,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
+          keep.stat=c("n", "ll"), se=ses,
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.conflict.int.demote
+
+covars <- model$model %>%
+  select(-icrg.conflict_lag, -starts_with("new_watch")) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005),
+         id = 1)  # For joining into fully expanded dataframe later
+
+new.combinations <- expand.grid(icrg.conflict_lag = seq(10, 24, 0.5),
+                                new_watch = c("1", "2", "3"))
+
+baseline.combinations <- data_frame(icrg.conflict_lag = seq(10, 24, 0.5)) %>%
+  mutate(new_watch = NA, new_watch1 = 0, new_watch2 = 0, new_watch3 = 0)
+
+new.data <- new.combinations %>%
+  bind_cols(data.frame(model.matrix(icrg.conflict_lag ~ new_watch + 0, 
+                                    data=new.combinations))) %>%
+  bind_rows(baseline.combinations) %>%
+  mutate(id = 1) %>% left_join(covars, by="id") %>%
+  select(-c(id, new_watch))
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
+  mutate(demote_type = ifelse(new_watch1 == 1, "1 year", NA),
+         demote_type = ifelse(new_watch2 == 1, "2 years", demote_type),
+         demote_type = ifelse(new_watch3 == 1, "3 years", demote_type),
+         demote_type = ifelse(new_watch1 + new_watch2 + new_watch3 == 0, 
+                              "No demotion", demote_type))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted)
+
+p.conflict.int.demote <- ggplot(plot.predict, aes(x=icrg.conflict_lag, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=demote_type), 
+              alpha=0.2) + 
+  geom_line(aes(colour=demote_type), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Internal and external conflict (ICRG)", y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=demote.colors, name="Time since\ndemotion") + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion")+
+  theme_light()
+p.conflict.int.demote
+```
+
+---
+
+## GDP/capita × downgrading
+
+### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+prob.crim.gdpcap.demote <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  gather(demote_type, demote_value, c(new_watch1, new_watch2, 
+                                      new_watch3, no.demotion)) %>%
+  mutate(demote_type = factor(demote_type, 
+                              labels=c("1 year", "2 years", "3 years", 
+                                       "No demotion"))) %>%
+  filter(demote_value == 1) %>%
+  mutate(gdpcap_bin = cut(loggdppercap_1, c(0, seq(8, 11, 1)), 
+                             include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(demote_type, gdpcap_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.gdpcap.demote %>% ungroup() %>%
+  do(expand.grid(demote_type = levels(.$demote_type), gdpcap_bin = levels(.$gdpcap_bin))) %>%
+  left_join(prob.crim.gdpcap.demote, by=c("demote_type", "gdpcap_bin")) %>%
+  mutate(gdpcap_bin = factor(gdpcap_bin, 
+                                labels=sapply(levels(gdpcap_bin), FUN=clean.labs, 
+                                              adjust=TRUE))) %>%
+  filter(crim.yes > 0)
+
+p.gdpcap.prob.demote <- ggplot(full, aes(x=gdpcap_bin, y=prob.yes, 
+                                 colour=demote_type, size=crim.yes)) + 
+  geom_point() +
+  labs(x="GDP per capita (logged)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) +
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.gdpcap.prob.demote
+```
+
+### Interactions (models)
+
+```{r, results='asis', echo=FALSE}
+model.gdpcap.simple.demote <- glm(crim1 ~ loggdppercap_1 + fh_cl1 +
+                                  new_watch3 + new_watch2 + new_watch1 +
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.gdpcap.int.demote <- glm(crim1 ~ loggdppercap_1 + fh_cl1 +
+                               new_watch3 + new_watch2 + new_watch1 +
+                         loggdppercap_1 * new_watch3 + 
+                         loggdppercap_1 * new_watch2 + 
+                         loggdppercap_1 * new_watch1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+ses <- list(get.or.se(model.gdpcap.simple.demote),
+            get.or.se(model.gdpcap.int.demote))
+
+var.labs <- c("GDP per capita (logged)",
+              "Worse democracy (Freedom House civil liberties)", 
+              "First demotion (t−3)", "First demotion (t−2)", 
+              "First demotion (t−1)",
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "GDP per capita × First demotion (t−3)", 
+              "GDP per capita × First demotion (t−2)", 
+              "GDP per capita × First demotion (t−1)")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.gdpcap.simple.demote, model.gdpcap.int.demote), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.gdpcap.simple.demote, model.gdpcap.int.demote,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
+          keep.stat=c("n", "ll"), se=ses,
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.gdpcap.int.demote
+
+covars <- model$model %>%
+  select(-loggdppercap_1, -starts_with("new_watch")) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005),
+         id = 1)  # For joining into fully expanded dataframe later
+
+new.combinations <- expand.grid(loggdppercap_1 = seq(4, 11, 0.5),
+                                new_watch = c("1", "2", "3"))
+
+baseline.combinations <- data_frame(loggdppercap_1 = seq(4, 11, 0.5)) %>%
+  mutate(new_watch = NA, new_watch1 = 0, new_watch2 = 0, new_watch3 = 0)
+
+new.data <- new.combinations %>%
+  bind_cols(data.frame(model.matrix(loggdppercap_1 ~ new_watch + 0, 
+                                    data=new.combinations))) %>%
+  bind_rows(baseline.combinations) %>%
+  mutate(id = 1) %>% left_join(covars, by="id") %>%
+  select(-c(id, new_watch))
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit))) %>%
+  mutate(demote_type = ifelse(new_watch1 == 1, "1 year", NA),
+         demote_type = ifelse(new_watch2 == 1, "2 years", demote_type),
+         demote_type = ifelse(new_watch3 == 1, "3 years", demote_type),
+         demote_type = ifelse(new_watch1 + new_watch2 + new_watch3 == 0, 
+                              "No demotion", demote_type))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted)
+
+p.conflict.int.demote <- ggplot(plot.predict, aes(x=loggdppercap_1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=demote_type), 
+              alpha=0.2) + 
+  geom_line(aes(colour=demote_type), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="GDP per capita (logged)", y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_x_continuous(labels=trans_format("exp", dollar_format())) +
+  scale_fill_manual(values=demote.colors, name="Time since\ndemotion") + 
+  scale_colour_manual(values=demote.colors, name="Time since\ndemotion")+
+  theme_light()
+p.conflict.int.demote
+```
+
+---
+
 # Summary
 
 Different forms of scorecard diplomacy have varying effects on the probability of TIP criminalization in a country when interacted with other explanatory variables. These interactive effects are summarized visually and in prose in the table below.
