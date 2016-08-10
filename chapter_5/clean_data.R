@@ -532,6 +532,7 @@ df.table5 <- reactions %>%
 
 df.icrg <- read_feather("../data/icrg_all.feather") %>%
   select(year = year.num, cowcode, icrg.stability, icrg.internal, icrg.external) %>%
+  mutate(icrg.conflict = icrg.internal + icrg.external) %>%
   group_by(cowcode) %>%
   mutate_each(funs(lag = lag), starts_with("icrg"))
 
