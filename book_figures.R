@@ -193,6 +193,18 @@ ggsave(fig2.8a, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
 # Figure 2.9: Embassies or foreign governments NGOs reported as active partners in the fight against human trafficking
+df.fig2.9 <- read_csv(file.path(base.folder, 
+                                "../data/data_figure2_x_active_embassies.csv"))
+
+num.countries <- nrow(df.fig2.9)  # Number of countries mentioned
+num.mentions <- sum(df.fig2.9$num)  # Number of mentions
+
+df.fig2.9.most <- read_csv(file.path(base.folder, 
+                                     "../data/data_figure2_x_most_active_embassies.csv"))
+
+num.countries.most <- nrow(df.fig2.9.most)  # Number of countries mentioned
+num.mentions.most <- sum(df.fig2.9.most$total)  # Number of mentions
+
 df.fig2.9.active <- read_csv(file.path(base.folder, 
                                        "data_figure2_9_active_embassies_plot.csv")) %>%
   mutate(country = factor(country, levels=country, ordered=TRUE),
@@ -237,6 +249,10 @@ ggsave(fig2.9, filename=file.path(base.folder, paste0(filename, ".pdf")),
        width=width, height=height, device=cairo_pdf)
 ggsave(fig2.9, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+embassies.active.n <- sprintf("%d unique countries mentioned as partner; %d total mentions. %d unique countries mentioned as most active partner; %d total mentions.",
+                              num.countries, num.mentions, num.countries.most, num.mentions.most)
+cat(embassies.active.n, file=file.path(base.folder, paste0(filename, ".txt")))
 
 # Figure 2.10: Distribution of US grants across purposes
 filename <- "figure2_10_grants_purpose"
