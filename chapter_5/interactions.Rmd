@@ -53,7 +53,7 @@ report.colors <- c("#E97F01", "#014358")
 rating.colors <- c("#490A3D", "#EA2E49")
 demote.colors <- c("#00A0B0", "#6A4A3C", "#CC333F", "#8A9B0F")
 
-df.correct <- df.correct %>%
+df.correct <- df.correct.icrg %>%
   mutate(in.report = ifelse(tier1 == 0, "Not in report", "In report"),
          in.report = factor(in.report, levels=c("Not in report", "In report"),
                             ordered=TRUE),
@@ -1180,6 +1180,373 @@ p.funding.int.report <- ggplot(plot.predict, aes(x=log.total.funding1, y=prob)) 
   scale_colour_manual(values=report.colors, name=NULL)+
   theme_light()
 p.funding.int.report
+```
+
+---
+
+## Government stability × presence in TIP report
+
+### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+prob.crim.stability.report <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(stability_bin = cut(icrg.stability, c(0, seq(1, 12, 1)), 
+                             include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(in.report, stability_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.stability.report %>% ungroup() %>%
+  do(expand.grid(in.report = levels(.$in.report), stability_bin = levels(.$stability_bin))) %>%
+  left_join(prob.crim.stability.report, by=c("in.report", "stability_bin")) %>%
+  mutate(stability_bin = factor(stability_bin, 
+                                labels=sapply(levels(stability_bin), FUN=clean.labs, 
+                                              adjust=FALSE))) %>%
+  filter(crim.yes > 0)
+
+p.stability.prob.report <- ggplot(full, aes(x=stability_bin, y=prob.yes, 
+                                 colour=in.report, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Government stability (ICRG)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) +
+  scale_colour_manual(values=report.colors, name="Presence in report") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.stability.prob.report
+```
+
+### Interactions (models)
+
+```{r, results='asis', echo=FALSE}
+model.stability.simple.report <- glm(crim1 ~ icrg.stability_lag + fh_cl1 + inreport1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.stability.int.report <- glm(crim1 ~ icrg.stability_lag + fh_cl1 + inreport1 + 
+                         icrg.stability_lag * inreport1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+ses <- list(get.or.se(model.stability.simple.report),
+            get.or.se(model.stability.int.report))
+
+var.labs <- c("Government stability (ICRG)",
+              "Worse democracy (Freedom House civil liberties)", "In TIP report", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Government stability × In TIP report")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.stability.simple.report, model.stability.int.report), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.stability.simple.report, model.stability.int.report,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
+          keep.stat=c("n", "ll"), se=ses,
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.stability.int.report
+
+new.data <- model$model %>%
+  select(-icrg.stability_lag) %>%
+  group_by(inreport1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(icrg.stability_lag = seq(4, 12, 1), 
+                         inreport1 = c(0, 1)), by="inreport1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+p.stability.int.report <- ggplot(plot.predict, aes(x=icrg.stability_lag, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=inreport1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Government stability (ICRG)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=report.colors, name=NULL) + 
+  scale_colour_manual(values=report.colors, name=NULL)+
+  theme_light()
+p.stability.int.report
+```
+
+---
+
+## Conflict × presence in TIP report
+
+### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+prob.crim.conflict.report <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(conflict_bin = cut(icrg.conflict, c(0, seq(2, 24, 2)), 
+                             include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(in.report, conflict_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.conflict.report %>% ungroup() %>%
+  do(expand.grid(in.report = levels(.$in.report), conflict_bin = levels(.$conflict_bin))) %>%
+  left_join(prob.crim.conflict.report, by=c("in.report", "conflict_bin")) %>%
+  mutate(conflict_bin = factor(conflict_bin, 
+                                labels=sapply(levels(conflict_bin), FUN=clean.labs, 
+                                              adjust=FALSE))) %>%
+  filter(crim.yes > 0)
+
+p.conflict.prob.report <- ggplot(full, aes(x=conflict_bin, y=prob.yes, 
+                                 colour=in.report, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Internal and external conflict (ICRG)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) +
+  scale_colour_manual(values=report.colors, name="Presence in report") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.conflict.prob.report
+```
+
+### Interactions (models)
+
+```{r, results='asis', echo=FALSE}
+model.conflict.simple.report <- glm(crim1 ~ icrg.conflict_lag + fh_cl1 + inreport1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.conflict.int.report <- glm(crim1 ~ icrg.conflict_lag + fh_cl1 + inreport1 + 
+                         icrg.conflict_lag * inreport1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+ses <- list(get.or.se(model.conflict.simple.report),
+            get.or.se(model.conflict.int.report))
+
+var.labs <- c("Internal and external conflict (ICRG)",
+              "Worse democracy (Freedom House civil liberties)", "In TIP report", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Internal and external conflict × In TIP report")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.conflict.simple.report, model.conflict.int.report), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.conflict.simple.report, model.conflict.int.report,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
+          keep.stat=c("n", "ll"), se=ses,
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.conflict.int.report
+
+new.data <- model$model %>%
+  select(-icrg.conflict_lag) %>%
+  group_by(inreport1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(icrg.conflict_lag = seq(10, 24, 0.5), 
+                         inreport1 = c(0, 1)), by="inreport1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+p.conflict.int.report <- ggplot(plot.predict, aes(x=icrg.conflict_lag, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=inreport1), size=1) +
+  # geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Internal and external conflict (ICRG)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=report.colors, name=NULL) + 
+  scale_colour_manual(values=report.colors, name=NULL)+
+  theme_light()
+p.conflict.int.report
+```
+
+---
+
+## GDP/capita × presence in TIP report
+
+### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+prob.crim.gdpcap.report <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(gdpcap_bin = cut(loggdppercap_1, c(0, seq(8, 11, 1)), 
+                             include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(in.report, gdpcap_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.gdpcap.report %>% ungroup() %>%
+  do(expand.grid(in.report = levels(.$in.report), gdpcap_bin = levels(.$gdpcap_bin))) %>%
+  left_join(prob.crim.gdpcap.report, by=c("in.report", "gdpcap_bin")) %>%
+  mutate(gdpcap_bin = factor(gdpcap_bin, 
+                                labels=sapply(levels(gdpcap_bin), FUN=clean.labs, 
+                                              adjust=TRUE))) %>%
+  filter(crim.yes > 0)
+
+p.gdpcap.prob.report <- ggplot(full, aes(x=gdpcap_bin, y=prob.yes, 
+                                 colour=in.report, size=crim.yes)) + 
+  geom_point() +
+  labs(x="GDP per capita (logged)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) +
+  scale_colour_manual(values=report.colors, name="Presence in report") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.gdpcap.prob.report
+```
+
+### Interactions (models)
+
+```{r, results='asis', echo=FALSE}
+model.gdpcap.simple.report <- glm(crim1 ~ loggdppercap_1 + fh_cl1 + inreport1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.gdpcap.int.report <- glm(crim1 ~ loggdppercap_1 + fh_cl1 + inreport1 + 
+                         loggdppercap_1 * inreport1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+ses <- list(get.or.se(model.gdpcap.simple.report),
+            get.or.se(model.gdpcap.int.report))
+
+var.labs <- c("GDP per capita (logged)",
+              "Worse democracy (Freedom House civil liberties)", "In TIP report", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "GDP per capita × In TIP report")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.gdpcap.simple.report, model.gdpcap.int.report), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.gdpcap.simple.report, model.gdpcap.int.report,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
+          keep.stat=c("n", "ll"), se=ses,
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.gdpcap.int.report
+
+new.data <- model$model %>%
+  select(-loggdppercap_1) %>%
+  group_by(inreport1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(loggdppercap_1 = seq(4, 11, 0.5), 
+                         inreport1 = c(0, 1)), by="inreport1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(inreport1 = factor(inreport1, labels=c("Not in report", "In report"),
+                            ordered=TRUE))
+
+p.gdpcap.int.report <- ggplot(plot.predict, aes(x=loggdppercap_1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=inreport1), size=1) +
+  # geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="GDP per capita (logged)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_x_continuous(labels=trans_format("exp", dollar_format())) +
+  scale_fill_manual(values=report.colors, name=NULL) + 
+  scale_colour_manual(values=report.colors, name=NULL)+
+  theme_light()
+p.gdpcap.int.report
 ```
 
 ---
