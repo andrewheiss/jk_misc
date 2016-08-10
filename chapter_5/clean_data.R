@@ -4,6 +4,7 @@ library(haven)
 library(readr)
 library(readxl)
 library(countrycode)
+library(feather)
 
 # Load and clean original Stata file
 df.orig <- read_dta("../original_files/kelley_simmons_ajps_2014_replication.dta") %>%
@@ -528,6 +529,18 @@ df.table5 <- reactions %>%
          avg.funding.ngos1 = lag(avg.funding.ngos),
          prop_tip_wl1 = lag(prop_tip_wl),
          prop_tip_estimated1 = lag(prop_tip_estimated))
+
+df.icrg <- read_feather("../data/icrg_all.feather") %>%
+  select(year = year.num, cowcode, icrg.stability, icrg.internal, icrg.external) %>%
+  group_by(cowcode) %>%
+  mutate_each(funs(lag = lag), starts_with("icrg"))
+
+df.correct.icrg <- df.correct %>%
+  left_join(df.icrg, by = c("year", "cowcode"))
+
+# Make sure the joining didn't add any extra rows
+testthat::expect_equal(nrow(df.correct), nrow(df.correct.icrg))
+
 # # Democracy data
 # polity.url <- "http://www.systemicpeace.org/inscr/p4v2014.xls"
 # polity.tmp <- paste0(tempdir(), basename(polity.url))
