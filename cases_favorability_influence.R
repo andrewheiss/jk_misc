@@ -6,6 +6,8 @@ library(ggrepel)
 
 source("shared_functions.R")
 
+base.folder <- "final_figures"
+
 cases <- read_csv("data/cases_favorability_influence.csv") %>%
   gather(country, score, -Countries) %>%
   rename(variable = Countries) %>%
@@ -45,3 +47,12 @@ ggsave(p.cases.favor.influence, filename=file.path(base.folder, paste0(filename,
 ggsave(p.cases.favor.influence, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
+
+# Correlation
+capture.output({
+  cat("Correlation between influence and favorability\n")
+  print(cor.test(cases$Favorability, cases$Influence))
+  cat("\n\n")
+  cat("Simple regression, just for fun\n")
+  summary(lm(Favorability ~ Influence, data=cases))
+}, file=file.path(base.folder, paste0(filename, ".txt")))
