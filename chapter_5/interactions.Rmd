@@ -2627,6 +2627,371 @@ p.funding.int.rating <- ggplot(plot.predict, aes(x=log.total.funding1, y=prob)) 
 p.funding.int.rating
 ```
 
+## Government stability × lowest tier ratings
+
+### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+prob.crim.stability.rating <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(stability_bin = cut(icrg.stability, c(0, seq(1, 12, 1)), 
+                             include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(lower.rating, stability_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.stability.rating %>% ungroup() %>%
+  do(expand.grid(lower.rating = levels(.$lower.rating), stability_bin = levels(.$stability_bin))) %>%
+  left_join(prob.crim.stability.rating, by=c("lower.rating", "stability_bin")) %>%
+  mutate(stability_bin = factor(stability_bin, 
+                                labels=sapply(levels(stability_bin), FUN=clean.labs, 
+                                              adjust=FALSE))) %>%
+  filter(crim.yes > 0)
+
+p.stability.prob.rating <- ggplot(full, aes(x=stability_bin, y=prob.yes, 
+                                 colour=lower.rating, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Government stability (ICRG)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) +
+  scale_colour_manual(values=rating.colors, name="TIP rating") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.stability.prob.rating
+```
+
+### Interactions (models)
+
+```{r, results='asis', echo=FALSE}
+model.stability.simple.rating <- glm(crim1 ~ icrg.stability_lag + fh_cl1 + low_tier1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.stability.int.rating <- glm(crim1 ~ icrg.stability_lag + fh_cl1 + low_tier1 + 
+                         icrg.stability_lag * low_tier1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+ses <- list(get.or.se(model.stability.simple.rating),
+            get.or.se(model.stability.int.rating))
+
+var.labs <- c("Government stability (ICRG)",
+              "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Government stability × Lowest tier")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.stability.simple.rating, model.stability.int.rating), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.stability.simple.rating, model.stability.int.rating,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
+          keep.stat=c("n", "ll"), se=ses,
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.stability.int.rating
+
+new.data <- model$model %>%
+  select(-icrg.stability_lag) %>%
+  group_by(low_tier1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(icrg.stability_lag = seq(4, 12, 1), 
+                         low_tier1 = c(0, 1)), by="low_tier1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+p.stability.int.rating <- ggplot(plot.predict, aes(x=icrg.stability_lag, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=low_tier1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=low_tier1), size=1) +
+  geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Government stability (ICRG)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=rating.colors, name=NULL) + 
+  scale_colour_manual(values=rating.colors, name=NULL)+
+  theme_light()
+p.stability.int.rating
+```
+
+---
+
+## Conflict × lowest tier ratings
+
+### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+prob.crim.conflict.rating <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(conflict_bin = cut(icrg.conflict, c(0, seq(2, 24, 2)), 
+                             include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(lower.rating, conflict_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.conflict.rating %>% ungroup() %>%
+  do(expand.grid(lower.rating = levels(.$lower.rating), conflict_bin = levels(.$conflict_bin))) %>%
+  left_join(prob.crim.conflict.rating, by=c("lower.rating", "conflict_bin")) %>%
+  mutate(conflict_bin = factor(conflict_bin, 
+                                labels=sapply(levels(conflict_bin), FUN=clean.labs, 
+                                              adjust=FALSE))) %>%
+  filter(crim.yes > 0)
+
+p.conflict.prob.rating <- ggplot(full, aes(x=conflict_bin, y=prob.yes, 
+                                 colour=lower.rating, size=crim.yes)) + 
+  geom_point() +
+  labs(x="Internal and external conflict (ICRG)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) +
+  scale_colour_manual(values=rating.colors, name="TIP rating") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.conflict.prob.rating
+```
+
+### Interactions (models)
+
+```{r, results='asis', echo=FALSE}
+model.conflict.simple.rating <- glm(crim1 ~ icrg.conflict_lag + fh_cl1 + low_tier1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.conflict.int.rating <- glm(crim1 ~ icrg.conflict_lag + fh_cl1 + low_tier1 + 
+                         icrg.conflict_lag * low_tier1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+ses <- list(get.or.se(model.conflict.simple.rating),
+            get.or.se(model.conflict.int.rating))
+
+var.labs <- c("Internal and external conflict (ICRG)",
+              "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "Internal and external conflict × Lowest tier")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.conflict.simple.rating, model.conflict.int.rating), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.conflict.simple.rating, model.conflict.int.rating,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
+          keep.stat=c("n", "ll"), se=ses,
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.conflict.int.rating
+
+new.data <- model$model %>%
+  select(-icrg.conflict_lag) %>%
+  group_by(low_tier1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(icrg.conflict_lag = seq(10, 24, 0.5), 
+                         low_tier1 = c(0, 1)), by="low_tier1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+p.conflict.int.rating <- ggplot(plot.predict, aes(x=icrg.conflict_lag, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=low_tier1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=low_tier1), size=1) +
+  # geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="Internal and external conflict (ICRG)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_fill_manual(values=rating.colors, name=NULL) + 
+  scale_colour_manual(values=rating.colors, name=NULL)+
+  theme_light()
+p.conflict.int.rating
+```
+
+---
+
+## GDP/capita × lowest tier ratings
+
+### Descriptive
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+prob.crim.gdpcap.rating <- df.correct %>%
+  filter(crim1_minus1 == 0, year > 2000) %>%
+  mutate(gdpcap_bin = cut(loggdppercap_1, c(0, seq(8, 11, 1)), 
+                             include.lowest=TRUE, ordered_result=TRUE)) %>%
+  # Treatment
+  group_by(lower.rating, gdpcap_bin) %>%
+  summarize(total = n(),
+            crim.no = sum(crim1 == 0),
+            crim.yes = sum(crim1 == 1),
+            prob.yes = crim.yes / total)
+
+# group_by() drops unused levels, so we have to make a full skeleton dataframe
+full <- prob.crim.gdpcap.rating %>% ungroup() %>%
+  do(expand.grid(lower.rating = levels(.$lower.rating), gdpcap_bin = levels(.$gdpcap_bin))) %>%
+  left_join(prob.crim.gdpcap.rating, by=c("lower.rating", "gdpcap_bin")) %>%
+  mutate(gdpcap_bin = factor(gdpcap_bin, 
+                                labels=sapply(levels(gdpcap_bin), FUN=clean.labs, 
+                                              adjust=TRUE))) %>%
+  filter(crim.yes > 0)
+
+p.gdpcap.prob.rating <- ggplot(full, aes(x=gdpcap_bin, y=prob.yes, 
+                                 colour=lower.rating, size=crim.yes)) + 
+  geom_point() +
+  labs(x="GDP per capita (logged)", 
+       y="Actual probability of criminalization") + 
+  scale_y_continuous(labels=percent) +
+  scale_colour_manual(values=rating.colors, name="TIP rating") +
+  guides(size=guide_legend(title="Number of cases\nwhere criminalized", order=1)) +
+  theme_light()
+p.gdpcap.prob.rating
+```
+
+### Interactions (models)
+
+```{r, results='asis', echo=FALSE}
+model.gdpcap.simple.rating <- glm(crim1 ~ loggdppercap_1 + fh_cl1 + low_tier1 + 
+                          women1 + ratproto2000_1 + 
+                    corrected_regcrim1_1 + missinfo8_2 + year.factor,# + 
+                    # bigaid1 + logpop_1 + loggdppercap_1 + corruption_1,
+                  data=df.logit.models,
+                  family=binomial(link="logit"))
+model.gdpcap.int.rating <- glm(crim1 ~ loggdppercap_1 + fh_cl1 + low_tier1 + 
+                         loggdppercap_1 * low_tier1 + 
+                           women1 + ratproto2000_1 + 
+                           corrected_regcrim1_1 + missinfo8_2 + year.factor,
+                         data=df.logit.models,
+                         family=binomial(link="logit"))
+
+ses <- list(get.or.se(model.gdpcap.simple.rating),
+            get.or.se(model.gdpcap.int.rating))
+
+var.labs <- c("GDP per capita (logged)",
+              "Worse democracy (Freedom House civil liberties)", "Lowest tier", 
+              "Share of women in parliament", 
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing info",
+              "GDP per capita × Lowest tier")
+
+extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
+                    c("Pseudo R-squared",
+                      sapply(list(model.gdpcap.simple.rating, model.gdpcap.int.rating), 
+                             calc.pseudo.r.squared)))
+
+stargazer(model.gdpcap.simple.rating, model.gdpcap.int.rating,
+          covariate.labels=var.labs, 
+          dep.var.labels.include=FALSE,
+          dep.var.caption="Criminalization",
+          apply.coef=exp, type="html", p.auto=FALSE, omit="year\\.factor",
+          keep.stat=c("n", "ll"), se=ses,
+          notes.align="l", add.lines=extra.lines,
+          notes=c("Log odds reported; standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."))
+```
+
+### Interactions (visualized)
+
+*Note: All covariate values held at their mean or modal values; year held constant at 2005. Rug below indicates actual observed values.*
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, warning=FALSE}
+model <- model.gdpcap.int.rating
+
+new.data <- model$model %>%
+  select(-loggdppercap_1) %>%
+  group_by(low_tier1) %>%
+  summarise_each(funs(mean), -(year.factor)) %>%
+  mutate(year.factor = factor(2005)) %>%
+  right_join(expand.grid(loggdppercap_1 = seq(4, 11, 0.5), 
+                         low_tier1 = c(0, 1)), by="low_tier1")
+
+plot.predict <- augment(model, newdata=new.data) %>%
+  mutate(prob = model$family$linkinv(.fitted),
+         prob.lower = model$family$linkinv(.fitted - (std * .se.fit)),
+         prob.upper = model$family$linkinv(.fitted + (std * .se.fit)),
+         low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+plot.data <- augment(model, type.predict="response") %>%
+  rename(prob = .fitted) %>%
+  mutate(low_tier1 = factor(low_tier1, labels=c("1 or 2", "Watchlist or 3"),
+                            ordered=TRUE))
+
+p.gdpcap.int.rating <- ggplot(plot.predict, aes(x=loggdppercap_1, y=prob)) +  
+  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=low_tier1), 
+              alpha=0.2) + 
+  geom_line(aes(colour=low_tier1), size=1) +
+  # geom_rug(data=plot.data, alpha=0.3, size=0.3, sides="b") + 
+  labs(x="GDP per capita (logged)", 
+       y="Predicted probability of criminalization") + 
+  scale_y_continuous(labels=percent) + 
+  scale_x_continuous(labels=trans_format("exp", dollar_format())) +
+  scale_fill_manual(values=rating.colors, name=NULL) + 
+  scale_colour_manual(values=rating.colors, name=NULL)+
+  theme_light()
+p.gdpcap.int.rating
+```
+
 ---
 
 # Downgrading
