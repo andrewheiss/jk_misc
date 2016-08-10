@@ -10,6 +10,7 @@ library(stargazer)
 library(survival)
 library(countrycode)
 library(ggplot2)
+library(ggstance)
 library(scales)
 
 source("shared_functions.R")
@@ -785,6 +786,35 @@ stargazer(model5.3.1, model5.3.2,
           model.numbers=FALSE, dep.var.labels.include=FALSE,
           notes.align="l", add.lines=extra.lines, keep.stat=c("n"),
           notes.label="Notes:", notes=notes, title=title)
+
+# Coefficient plot
+models <- list("Model 5.1.2" = model5.1.2,
+               "Model 5.2.2" = model5.2.2,
+               "Model 5.2.3" = model5.2.3)
+
+vars.included <- c(".*")
+vars.search <- paste0(vars.included, collapse="|")
+
+plot.data <- models %>%
+  purrr::map_df(tidy, exponentiate=TRUE, .id="model.name") %>%
+  filter(stringr::str_detect(term, vars.search)) %>%
+  mutate(xmin = estimate + (qnorm(0.025) * std.error),
+         xmax = estimate + (qnorm(0.975) * std.error)) %>%
+  # left_join(coef.names, by="term") %>%
+  mutate(model.name = factor(model.name, levels=rev(unique(model.name)),
+                             ordered=TRUE))
+
+coef.plot <- ggplot(plot.data, aes(y=term, x=estimate, colour=model.name)) + 
+  geom_vline(xintercept=1, colour="#8C2318", alpha=0.6, size=1) + 
+  geom_pointrangeh(aes(xmin=xmin, xmax=xmax), size=.5, 
+                   position=position_dodge(width=.7)) + 
+  scale_colour_manual(values=c("#004259", "#FC7300", "#BFDB3B"), name="",
+                      guide=guide_legend(reverse=TRUE)) +
+  coord_cartesian(xlim=c(0, 10)) +
+  labs(x="Odds ratio", y=NULL) +
+  theme_clean() + theme(legend.key.size=unit(.7, "line"),
+                        legend.key = element_blank())
+coef.plot
 
 
 # -----------
