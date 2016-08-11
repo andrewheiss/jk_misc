@@ -612,6 +612,41 @@ stargazer(model4.1.1, model4.1.2, model4.1.3,
           notes.label="Notes:", notes=notes, title=title)
 
 
+# Coefficient plot
+models <- list("Model 4.1.3" = model4.1.3)
+
+plot.data <- models %>%
+  purrr::map_df(tidy, exponentiate=TRUE, .id="model.name") %>%
+  filter(term != "(Intercept)") %>%
+  mutate(xmin = estimate + (qnorm(0.025) * std.error),
+         xmax = estimate + (qnorm(0.975) * std.error)) %>%
+  left_join(coef.names, by="term") %>%
+  mutate(model.name = factor(model.name, levels=unique(model.name),
+                             ordered=TRUE)) %>%
+  mutate(term = factor(term, levels=tail(names(model4.1.3$coefficients), -1),
+                       ordered=TRUE)) %>%
+  arrange(term) %>%
+  mutate(clean.name = factor(clean.name, levels=rev(unique(clean.name)),
+                             ordered=TRUE))
+
+coef.plot <- ggplot(plot.data, aes(y=clean.name, x=estimate)) + 
+  geom_vline(xintercept=1, colour="#6B4A3D", alpha=0.6, size=0.5) + 
+  geom_pointrangeh(aes(xmin=xmin, xmax=xmax), size=.5, 
+                   position=position_dodge(width=.7)) + 
+  coord_cartesian(xlim=c(0, 7)) +
+  labs(x="Odds ratio", y=NULL) +
+  theme_clean(10)
+coef.plot
+
+filename <- "figureX_chapter_4_coef_plot"
+width <- 4.5
+height <- 3
+ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+
 # -----------
 # Chapter 5
 # -----------
@@ -826,6 +861,47 @@ coef.plot <- ggplot(plot.data, aes(y=clean.name, x=estimate,
 filename <- "figureX_chapter_5_coef_plot"
 width <- 4.5
 height <- 3
+ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+
+# Coefficient plot
+models <- list("Model 5.1.2    " = model5.3.1,
+               "Model 5.2.2" = model5.3.2)
+
+vars.included <- c("reactionnomedia1", "totalreactionnomedia1")
+vars.search <- paste0(vars.included, collapse="|")
+
+plot.data <- models %>%
+  purrr::map_df(tidy, exponentiate=TRUE, .id="model.name") %>%
+  filter(stringr::str_detect(term, vars.search)) %>%
+  mutate(xmin = estimate + (qnorm(0.025) * std.error),
+         xmax = estimate + (qnorm(0.975) * std.error)) %>%
+  left_join(coef.names, by="term") %>%
+  mutate(model.name = factor(model.name, levels=unique(model.name),
+                             ordered=TRUE)) %>%
+  mutate(term = factor(term, levels=vars.included, ordered=TRUE)) %>%
+  arrange(term) %>%
+  mutate(clean.name = factor(clean.name, levels=rev(unique(clean.name)),
+                             ordered=TRUE))
+
+coef.plot <- ggplot(plot.data, aes(y=clean.name, x=estimate,
+                                   colour=model.name, shape=model.name)) + 
+  geom_vline(xintercept=1, colour="#6B4A3D", alpha=0.6, size=0.5) + 
+  geom_pointrangeh(aes(xmin=xmin, xmax=xmax), size=.5, 
+                   position=position_dodge(width=.7)) + 
+  scale_colour_manual(values=c("black", "grey70"), name="") +
+  scale_shape_manual(values=c(19, 17), name="") +
+  coord_cartesian(xlim=c(0, 3)) +
+  labs(x="Odds ratio", y=NULL) +
+  theme_clean(10) + theme(legend.key.width=unit(2, "line"),
+                          legend.key = element_blank())
+
+filename <- "figureX_chapter_5a_coef_plot"
+width <- 4.5
+height <- 2
 ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
 ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".png")),
