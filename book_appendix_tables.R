@@ -868,8 +868,8 @@ ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".png")),
 
 
 # Coefficient plot
-models <- list("Model 5.1.2    " = model5.3.1,
-               "Model 5.2.2" = model5.3.2)
+models <- list("Model 5.3.1    " = model5.3.1,
+               "Model 5.3.2" = model5.3.2)
 
 vars.included <- c("reactionnomedia1", "totalreactionnomedia1")
 vars.search <- paste0(vars.included, collapse="|")
