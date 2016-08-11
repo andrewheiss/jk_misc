@@ -104,6 +104,9 @@ get.or.se <- function(model) {
 # -----------------------
 # Load and reshape data
 # -----------------------
+# Coefficient names for coefficient plots
+coef.names <- read_csv("final_figures/coef_names.csv")
+
 # Full, clean, properly lagged data
 df.complete.orig <- readRDS("final_tables/df_complete.rds")
 df.robustness <- read_feather("data/robustness_df.feather")
@@ -788,11 +791,11 @@ stargazer(model5.3.1, model5.3.2,
           notes.label="Notes:", notes=notes, title=title)
 
 # Coefficient plot
-models <- list("Model 5.1.2" = model5.1.2,
-               "Model 5.2.2" = model5.2.2,
+models <- list("Model 5.1.2    " = model5.1.2,
+               "Model 5.2.2    " = model5.2.2,
                "Model 5.2.3" = model5.2.3)
 
-vars.included <- c(".*")
+vars.included <- c("inreport1", "tier1_1", "tier1_2", "tier1_25", "tier1_3", "new_watch3", "new_watch2", "new_watch1")
 vars.search <- paste0(vars.included, collapse="|")
 
 plot.data <- models %>%
@@ -800,21 +803,33 @@ plot.data <- models %>%
   filter(stringr::str_detect(term, vars.search)) %>%
   mutate(xmin = estimate + (qnorm(0.025) * std.error),
          xmax = estimate + (qnorm(0.975) * std.error)) %>%
-  # left_join(coef.names, by="term") %>%
-  mutate(model.name = factor(model.name, levels=rev(unique(model.name)),
+  left_join(coef.names, by="term") %>%
+  mutate(model.name = factor(model.name, levels=unique(model.name),
+                             ordered=TRUE)) %>%
+  mutate(term = factor(term, levels=vars.included, ordered=TRUE)) %>%
+  arrange(term) %>%
+  mutate(clean.name = factor(clean.name, levels=rev(unique(clean.name)),
                              ordered=TRUE))
 
-coef.plot <- ggplot(plot.data, aes(y=term, x=estimate, colour=model.name)) + 
-  geom_vline(xintercept=1, colour="#8C2318", alpha=0.6, size=1) + 
+coef.plot <- ggplot(plot.data, aes(y=clean.name, x=estimate,
+                                   colour=model.name, shape=model.name)) + 
+  geom_vline(xintercept=1, colour="#6B4A3D", alpha=0.6, size=0.5) + 
   geom_pointrangeh(aes(xmin=xmin, xmax=xmax), size=.5, 
                    position=position_dodge(width=.7)) + 
-  scale_colour_manual(values=c("#004259", "#FC7300", "#BFDB3B"), name="",
-                      guide=guide_legend(reverse=TRUE)) +
+  scale_colour_manual(values=c("grey70", "black", "black"), name="") +
+  scale_shape_manual(values=c(19, 19, 17), name="") +
   coord_cartesian(xlim=c(0, 10)) +
   labs(x="Odds ratio", y=NULL) +
-  theme_clean() + theme(legend.key.size=unit(.7, "line"),
-                        legend.key = element_blank())
-coef.plot
+  theme_clean(10) + theme(legend.key.width=unit(2, "line"),
+                          legend.key = element_blank())
+
+filename <- "figureX_chapter_5_coef_plot"
+width <- 4.5
+height <- 3
+ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
 
 
 # -----------
