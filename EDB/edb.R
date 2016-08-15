@@ -9,8 +9,8 @@ library(gridExtra)
 library(gtable)
 library(Cairo)
 
-df.what <- read_dta("/Users/andrew/Dropbox (Personal)/Andrew/EDB/MasterWBMarch16_15_WHAT.dta")
-df <- read_dta("/Users/andrew/Dropbox (Personal)/Andrew/EDB/MasterWBMarch16_15.dta")
+# df.what <- read_dta("/Users/andrew/Dropbox/Andrew/EDB/MasterWBMarch16_15_WHAT.dta")
+df <- read_dta("/Users/andrew/Dropbox/Andrew/EDB/MasterWBMarch16_15.dta")
 
 
 rankings <- c("-0.242***", "-0.261", "-0.033*", "-0.088***", "0.032", "-1.339***", "-67.590***", "-0.133***", "-0.087*", "-0.256***", "-0.249", "-0.031", "-0.092***", "0.048", "-1.293***", "-67.840***", "-0.135***", "-0.077*", "-0.260***", "-0.313", "-0.033", "-0.093***", "0.047", "-1.279***", "-67.358***", "-0.134***", "-0.079*", "-0.237**", "-2.634**", "-0.065**", "-0.075**", "0.040", "-0.045", "-9.040*", "-0.017*", "-0.063", "-0.237**", "-2.634**", "-0.065**", "-0.075**", "0.040", "-0.045", "-9.040*", "-0.017*", "-0.063", "-0.225**", "-2.279**", "-0.061**", "-0.057*", "0.040", "-0.204***", "-14.114**", "-0.017*", "-0.063")
@@ -20,7 +20,7 @@ write_csv(data.frame(matrix(rankings, nrow=9)), path="~/Desktop/table_3.csv")
 
 
 # Clean messy Stata outreg2 output
-# year.coefs <- read_csv("~/Dropbox (Personal)/Andrew/EDB/years_coefs.csv") %>%
+# year.coefs <- read_csv("~/Dropbox/Andrew/EDB/years_coefs.csv") %>%
 #   separate(VARIABLES, c("year", "param"), sep="\\.") %>%
 #   mutate(param = ifelse(param == "year", "coef", param),
 #          year = ymd(paste0(year, "-01-01"))) %>%
@@ -30,7 +30,7 @@ write_csv(data.frame(matrix(rankings, nrow=9)), path="~/Desktop/table_3.csv")
 #   mutate(upper = coef + (qnorm(0.975) * se),
 #          lower = coef + (qnorm(0.025) * se))
 
-year.coefs <- read_csv("~/Dropbox (Personal)/Andrew/EDB/years_coefs_controls.csv") %>%
+year.coefs <- read_csv("~/Dropbox/Andrew/EDB/years_coefs_controls.csv") %>%
   separate(VARIABLES, c("year", "param"), sep="\\.") %>%
   mutate(param = ifelse(param == "year", "coef", param),
          year = ymd(paste0(year, "-01-01"))) %>%
@@ -125,17 +125,17 @@ p.all <- cbind(rbind(ggplotGrob(p.days.log), ggplotGrob(p.procedures)),
                rbind(ggplotGrob(p.capital.log), ggplotGrob(p.cost.log)))
 grid::grid.draw(p.all)
 ggsave(p.all, 
-       filename="~/Dropbox (Personal)/Andrew/EDB/figures/year_changes_controls.pdf",
+       filename="~/Dropbox/Andrew/EDB/figures/year_changes_controls.pdf",
        width=6, height=6, units="in", device=cairo_pdf)
 ggsave(p.all, 
-       filename="~/Dropbox (Personal)/Andrew/EDB/figures/year_changes_controls.png",
+       filename="~/Dropbox/Andrew/EDB/figures/year_changes_controls.png",
        width=6, height=6, units="in", type="cairo", dpi=300)
 
 
 # -----------------
 # Gap in rankings
 # -----------------
-gap.df <- read_csv("~/Dropbox (Personal)/Andrew/EDB/ranking_gap.csv") %>%
+gap.df <- read_csv("~/Dropbox/Andrew/EDB/ranking_gap.csv") %>%
   select(Variable, Mean, Std_Dev, Gap) %>%
   mutate(Gap = factor(Gap)) %>%
   mutate(se = Std_Dev / sqrt(n()),
@@ -157,9 +157,9 @@ plot.ranking.gap <- ggplot(gap.df, aes(x=Variable, y=Mean, fill=Gap)) +
         axis.ticks.x=element_blank(),
         legend.position="bottom")
 plot.ranking.gap
-ggsave(plot.ranking.gap, filename="~/Dropbox (Personal)/Andrew/EDB/figures/ranking_gap.pdf",
+ggsave(plot.ranking.gap, filename="~/Dropbox/Andrew/EDB/figures/ranking_gap.pdf",
        width=5, height=4, units="in", device=cairo_pdf)
-ggsave(plot.ranking.gap, filename="~/Dropbox (Personal)/Andrew/EDB/figures/ranking_gap.png",
+ggsave(plot.ranking.gap, filename="~/Dropbox/Andrew/EDB/figures/ranking_gap.png",
        width=5, height=4, units="in", type="cairo", dpi=300)
 
 plot.ranking.gap.bars <- plot.ranking.gap + 
@@ -167,8 +167,8 @@ plot.ranking.gap.bars <- plot.ranking.gap +
                 width=0.25, colour="grey60", size=0.5)
 
 ggsave(plot.ranking.gap.bars, 
-       filename="~/Dropbox (Personal)/Andrew/EDB/figures/ranking_gap_bars.pdf",
+       filename="~/Dropbox/Andrew/EDB/figures/ranking_gap_bars.pdf",
        width=5, height=4, units="in", device=cairo_pdf)
 ggsave(plot.ranking.gap.bars, 
-       filename="~/Dropbox (Personal)/Andrew/EDB/figures/ranking_gap_bars.png",
+       filename="~/Dropbox/Andrew/EDB/figures/ranking_gap_bars.png",
        width=5, height=4, units="in", type="cairo", dpi=300)
