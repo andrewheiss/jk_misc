@@ -50,7 +50,7 @@ blank <- grid::rectGrob(gp=grid::gpar(col="white"))
 # ------------
 # Original raw data
 countries.with.edb.bureau <- read_csv("EDB/data/countries_with_edb_bureau.csv")
-edb.raw <- read_dta("~/Dropbox (Personal)/Andrew/EDB/MasterWBMarch16_15.dta") %>%
+edb.raw <- read_dta("~/Dropbox/Andrew/EDB/MasterWBMarch16_15.dta") %>%
   rename(p_edb_rank = p_ebd_rank) %>%
   mutate(has.bureau = ccode %in% countries.with.edb.bureau$cowcode,
          has.bureau = factor(has.bureau, 
@@ -177,18 +177,19 @@ edb.rankings <- edb.raw %>%
                                         "Laos", "Niger"),
          label = ifelse(add.label, countryname, NA))
 
-annotations <- data_frame(x = c(max(edb.rankings$`2014`, na.rm=TRUE), 0),
-                          y = c(0, max(edb.rankings$`2005`, na.rm=TRUE)),
-                          text = c("Outliers\nworsening", "Outliers\nimproving"),
+annotations <- data_frame(x = c(max(edb.rankings$`2005`, na.rm=TRUE), 0),
+                          y = c(0, max(edb.rankings$`2014`, na.rm=TRUE)),
+                          text = c("Outliers\nimproving", "Outliers\nworsening"),
                           hjust = c("right", "left"),
                           vjust = c("bottom", "top"))
 
-reference.line <- data_frame(x = c(0, max(edb.rankings$`2014`, na.rm=TRUE)),
-                             y = c(0, max(edb.rankings$`2005`, na.rm=TRUE)))
+reference.line <- data_frame(x = c(0, max(edb.rankings$`2005`, na.rm=TRUE)),
+                             y = c(0, max(edb.rankings$`2014`, na.rm=TRUE)))
 
 set.seed(1234)
-plot.rankings.cor <- ggplot(edb.rankings, aes(x=`2014`, y=`2005`, 
+plot.rankings.cor <- ggplot(edb.rankings, aes(x=`2005`, y=`2014`, 
                                               colour=has.bureau, label=label)) + 
+  geom_smooth(aes(fill=has.bureau), method="lm", size=0.5, alpha=0.1, fullrange=TRUE) +
   geom_line(data=reference.line, aes(x=x, y=y, label=NULL), colour="grey70", size=0.5) +
   geom_point(size=1) +
   geom_label_repel(aes(fill=has.bureau), colour="white", 
@@ -197,7 +198,7 @@ plot.rankings.cor <- ggplot(edb.rankings, aes(x=`2014`, y=`2005`,
             colour="grey40", size=2, lineheight=1) +
   scale_color_manual(values=c("#004259", "#FC7300"), name=NULL) +
   scale_fill_manual(values=c("#004259", "#FC7300"), name=NULL, guide=FALSE) +
-  labs(x="Rank in 2014", y="Rank in 2005", 
+  labs(x="Rank in 2005", y="Rank in 2014", 
        title="Ease of Doing Business Index, 2005 vs. 2014",
        subtitle="Countries with EDB reform committees highlighted",
        caption=paste("Ease of Doing Business Index reports, 2005 and 2014", 
@@ -213,6 +214,7 @@ set.seed(1234)
 ggsave(plot.rankings.cor, filename="EDB/figures/bureau_rankings.png",
        width=5, height=4, units="in", type="cairo", dpi=300)
 
+
 set.seed(1234)
 plot.rankings.cor.notitle <- plot.rankings.cor + 
   labs(title=NULL, subtitle=NULL, caption=NULL)
@@ -223,6 +225,7 @@ ggsave(plot.rankings.cor.notitle, filename="EDB/figures/bureau_rankings_notitle.
 set.seed(1234)
 ggsave(plot.rankings.cor.notitle, filename="EDB/figures/bureau_rankings_notitle.png",
        width=5, height=3.5, units="in", type="cairo", dpi=300)
+
 
 # Do the number of reforms predict absolute gains in EDB rankings?
 # If bureaucracies are more strategic, correlation between number of reforms
