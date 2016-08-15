@@ -177,6 +177,9 @@ edb.rankings <- edb.raw %>%
                                         "Laos", "Niger"),
          label = ifelse(add.label, countryname, NA))
 
+# model.rankings <- lm(`2014` ~ `2005` + has.bureau + `2005` * has.bureau, data=edb.rankings)
+# summary(model.rankings)
+
 annotations <- data_frame(x = c(max(edb.rankings$`2005`, na.rm=TRUE), 0),
                           y = c(0, max(edb.rankings$`2014`, na.rm=TRUE)),
                           text = c("Outliers\nimproving", "Outliers\nworsening"),
@@ -198,6 +201,7 @@ plot.rankings.cor <- ggplot(edb.rankings, aes(x=`2005`, y=`2014`,
             colour="grey40", size=2, lineheight=1) +
   scale_color_manual(values=c("#004259", "#FC7300"), name=NULL) +
   scale_fill_manual(values=c("#004259", "#FC7300"), name=NULL, guide=FALSE) +
+  coord_cartesian(xlim=c(0, 160), ylim=c(0, 190)) +
   labs(x="Rank in 2005", y="Rank in 2014", 
        title="Ease of Doing Business Index, 2005 vs. 2014",
        subtitle="Countries with EDB reform committees highlighted",
