@@ -338,8 +338,47 @@ stargazer(model.proced.2005, model.days_ln.2005,
           add.lines=list(c("Year fixed effects", rep("No", 8))),
           notes="Robust standard errors clustered by country")
 
+#' ### Simple ITS controlling for lags
+model.proced.2005_lag <- lm(sb_proced ~ sb_proced_lag +
+                     year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                   data=edb.its)
+model.proced.2005_lag.se <- robust.clusterify(model.proced.2005_lag, edb.its, edb.its$ccode)
 
-#' ### Simple interrupted time series + loans + country fixed effects
+model.days_ln.2005_lag <- lm(sb_days_ln ~ sb_days_ln_lag +
+                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                    data=edb.its)
+model.days_ln.2005_lag.se <- robust.clusterify(model.days_ln.2005_lag, edb.its, edb.its$ccode)
+
+model.cost_ln.2005_lag <- lm(sb_cost_ln ~ sb_cost_ln_lag +
+                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                    data=edb.its)
+model.cost_ln.2005_lag.se <- robust.clusterify(model.cost_ln.2005_lag, edb.its, edb.its$ccode)
+
+model.capital_ln.2005_lag <- lm(sb_capital_ln ~ sb_capital_ln_lag +
+                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                    data=edb.its.cap.constrained)
+model.capital_ln.2005_lag.se <- robust.clusterify(model.capital_ln.2005_lag, edb.its.cap.constrained, edb.its.cap.constrained$ccode)
+
+#' Simple ITS models included as models 1, 3, 5, and 7 for comparison with
+#' versions that control for lagged DV.
+#' 
+#+ results='asis'
+stargazer(model.proced.2005, model.proced.2005_lag,
+          model.days_ln.2005, model.days_ln.2005_lag,
+          model.cost_ln.2005, model.cost_ln.2005_lag,
+          model.capital_ln.2005, model.capital_ln.2005_lag,
+          se=list(model.proced.2005.se$coefs[,2], model.proced.2005_lag.se$coefs[,2],
+                  model.days_ln.2005.se$coefs[,2], model.days_ln.2005_lag.se$coefs[,2],
+                  model.cost_ln.2005.se$coefs[,2], model.cost_ln.2005_lag.se$coefs[,2],
+                  model.capital_ln.2005.se$coefs[,2], model.capital_ln.2005_lag.se$coefs[,2]),
+          type="html", dep.var.caption="EDB outcomes with lagged DV as control",
+          intercept.bottom=FALSE,
+          omit="\\.factor",
+          add.lines=list(c("Year fixed effects", rep("No", 8))),
+          notes="Robust standard errors clustered by country")
+
+
+#' ### Simple ITS + loans + country fixed effects
 model.proced_loan_fe.2005 <- lm(sb_proced ~ 
                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005 +
                      loan_ln + as.factor(ccode), 
