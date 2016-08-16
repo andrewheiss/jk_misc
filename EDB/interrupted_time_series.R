@@ -4,6 +4,7 @@
 #' date: "`r format(Sys.time(), '%B %e, %Y')`"
 #' output: 
 #'   html_document: 
+#'     css: html/fixes.css
 #'     code_folding: hide
 #'     toc: yes
 #'     toc_float: 
@@ -169,8 +170,102 @@ robust.clusterify <- function(model, dat, cluster) {
   })
 }
 
+#' ## Starting a business variables over time
+plot.edb <- edb.its %>%
+  select(year, sb_days, sb_proced, sb_cost, sb_capital) %>%
+  gather(variable, value, -year) %>%
+  group_by(year, variable) %>%
+  summarise(avg = mean(value, na.rm=TRUE)) %>%
+  filter(!is.nan(avg))
 
-#' ## Interrupted time series
+plot.interventions <- data_frame(year = 2005:2006,
+                                 intervention = c("2005", "2006"))
+
+ggplot(plot.edb, aes(x=year, y=avg)) +
+  geom_vline(data=plot.interventions, aes(xintercept=year,
+                                          colour=intervention),
+             linetype="dashed", size=0.5) +
+  geom_line() + 
+  scale_color_manual(values=c("red", "blue"), name=NULL) +
+  labs(x=NULL, y=NULL, title="Average values of sb variables over time") +
+  facet_wrap(~ variable, scales="free_y") + 
+  theme_edb()
+
+
+#' ## Model results
+#' 
+#' ### Original models from spring version of paper
+#' 
+model.proced.orig <- lm(sb_proced ~ sb_proced_lag + ranked.2005_lag + gdpcap_ln_lag + 
+                          gdpgrowth_lag + polity_lag + pop_ln_lag, 
+                        data=edb.its)
+model.proced.orig.se <- robust.clusterify(model.proced.orig, edb.its, edb.its$ccode)
+
+model.days.orig <- lm(sb_days ~ sb_days_lag + ranked.2005_lag + gdpcap_ln_lag + 
+                          gdpgrowth_lag + polity_lag + pop_ln_lag, 
+                        data=edb.its)
+model.days.orig.se <- robust.clusterify(model.days.orig, edb.its, edb.its$ccode)
+
+model.days_ln.orig <- lm(sb_days_ln ~ sb_days_ln_lag + ranked.2005_lag + gdpcap_ln_lag + 
+                          gdpgrowth_lag + polity_lag + pop_ln_lag, 
+                        data=edb.its)
+model.days_ln.orig.se <- robust.clusterify(model.days_ln.orig, edb.its, edb.its$ccode)
+
+model.cost_ln.orig <- lm(sb_cost_ln ~ sb_cost_ln_lag + ranked.2005_lag + gdpcap_ln_lag + 
+                          gdpgrowth_lag + polity_lag + pop_ln_lag, 
+                        data=edb.its)
+model.cost_ln.orig.se <- robust.clusterify(model.cost_ln.orig, edb.its, edb.its$ccode)
+
+model.capital_ln.orig <- lm(sb_capital_ln ~ sb_capital_ln_lag + ranked.2005_lag + gdpcap_ln_lag + 
+                          gdpgrowth_lag + polity_lag + pop_ln_lag, 
+                        data=edb.its)
+model.capital_ln.orig.se <- robust.clusterify(model.capital_ln.orig, edb.its, edb.its$ccode)
+
+
+model.proced.orig.nolag <- lm(sb_proced ~ ranked.2005_lag + gdpcap_ln_lag + 
+                          gdpgrowth_lag + polity_lag + pop_ln_lag, 
+                        data=edb.its)
+model.proced.orig.nolag.se <- robust.clusterify(model.proced.orig.nolag, edb.its, edb.its$ccode)
+
+model.days.orig.nolag <- lm(sb_days ~ ranked.2005_lag + gdpcap_ln_lag + 
+                        gdpgrowth_lag + polity_lag + pop_ln_lag, 
+                      data=edb.its)
+model.days.orig.nolag.se <- robust.clusterify(model.days.orig.nolag, edb.its, edb.its$ccode)
+
+model.days_ln.orig.nolag <- lm(sb_days_ln ~ ranked.2005_lag + gdpcap_ln_lag + 
+                           gdpgrowth_lag + polity_lag + pop_ln_lag, 
+                         data=edb.its)
+model.days_ln.orig.nolag.se <- robust.clusterify(model.days_ln.orig.nolag, edb.its, edb.its$ccode)
+
+model.cost_ln.orig.nolag <- lm(sb_cost_ln ~ ranked.2005_lag + gdpcap_ln_lag + 
+                           gdpgrowth_lag + polity_lag + pop_ln_lag, 
+                         data=edb.its)
+model.cost_ln.orig.nolag.se <- robust.clusterify(model.cost_ln.orig.nolag, edb.its, edb.its$ccode)
+
+model.capital_ln.orig.nolag <- lm(sb_capital_ln ~ ranked.2005_lag + gdpcap_ln_lag + 
+                              gdpgrowth_lag + polity_lag + pop_ln_lag, 
+                            data=edb.its)
+model.capital_ln.orig.nolag.se <- robust.clusterify(model.capital_ln.orig.nolag, edb.its, edb.its$ccode)
+
+#+ results="asis"
+stargazer(model.proced.orig, model.proced.orig.nolag,
+          model.days.orig, model.days.orig.nolag,
+          model.days_ln.orig, model.days_ln.orig.nolag,
+          model.cost_ln.orig, model.cost_ln.orig.nolag,
+          model.capital_ln.orig, model.capital_ln.orig.nolag,
+          se=list(model.proced.orig.se$coefs[,2], model.proced.orig.nolag.se$coefs[,2], 
+                  model.days.orig.se$coefs[,2], model.days.orig.nolag.se$coefs[,2],
+                  model.days_ln.orig.se$coefs[,2], model.days_ln.orig.nolag.se$coefs[,2],
+                  model.cost_ln.orig.se$coefs[,2], model.cost_ln.orig.nolag.se$coefs[,2], 
+                  model.capital_ln.orig.se$coefs[,2], model.capital_ln.orig.nolag.se$coefs[,2]),
+          type="html", dep.var.caption="EDB outcomes",
+          intercept.bottom=FALSE,
+          omit="\\.factor",
+          add.lines=list(c("Year fixed effects", rep("No", 10))),
+          notes="Robust standard errors clustered by country")
+
+
+#' ### Simple interrupted time series
 #' 
 #' How to interpret coefficients:
 #' 
@@ -179,11 +274,6 @@ robust.clusterify <- function(model, dat, cluster) {
 #' - β~2~ = `ranked`: immediate effect of the event - change in intercept at point of experiment
 #' - β~3~ = `year.centered:ranked`: change in slope after the experiment - what happens after
 #'
-#' 
-
-#' ## Model results
-#' 
-#' ### Simple interrupted time series
 #' 
 model.proced.2005 <- lm(sb_proced ~ 
                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
