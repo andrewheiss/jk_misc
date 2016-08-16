@@ -196,6 +196,12 @@ ggplot(plot.edb, aes(x=year, y=avg)) +
 #' 
 #' ### Original models from spring version of paper
 #' 
+#' These are the models from the first column of the paper from April/May, just
+#' for the sake of comparison. There are only tiny differences in coefficients,
+#' since data from 1999 is now omitted (it wasn't in the original models).
+#' 
+#' <img src="img/original_stata_models.png" class="img-responsive"/>
+#' 
 model.proced.orig <- lm(sb_proced ~ sb_proced_lag + ranked.2005_lag + gdpcap_ln_lag + 
                           gdpgrowth_lag + polity_lag + pop_ln_lag, 
                         data=edb.its)
