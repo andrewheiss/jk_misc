@@ -6,5 +6,6 @@ chapter_3_blanks_files/
 chapter_5/interactions.html
 chapter_5/interactions_files/
 EDB/html/
+EDB/img/
 EDB/interrupted_time_series.html
 EDB/interrupted_time_series_files/
