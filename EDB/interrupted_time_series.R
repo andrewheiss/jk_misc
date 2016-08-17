@@ -58,15 +58,25 @@ edb.its <- read_dta("~/Dropbox/Andrew/EDB/MasterWBMarch16_15.dta") %>%
   ungroup()
 
 edb.its.constrained.countries <- edb.its %>%
-  mutate(in.report.in.2004 = year == 2004 & !is.na(sb_days)) %>%
+  mutate(in.report.in.2004 = year == 2004 & !is.na(sb_days),
+         in.report.in.2001 = year == 2001 & !is.na(sb_days)) %>%
   group_by(ccode) %>%
-  summarise(in.2004 = sum(in.report.in.2004))
+  summarise(in.2004 = sum(in.report.in.2004),
+            in.2001 = sum(in.report.in.2001))
 
 edb.its <- edb.its %>%
   left_join(edb.its.constrained.countries, by="ccode") %>%
   filter(in.2004 == 1)
 
+edb.its.2001 <- edb.its %>%
+  filter(in.2001 == 1)
+
+edb.its.committee <- edb.its %>%
+  filter(ccode %in% countries.with.edb.bureau$cowcode)
+
 edb.its.cap.constrained <- filter(edb.its, year >= 2003)
+
+edb.its.2001.cap.constrained <- filter(edb.its.2001, year >= 2003)
 
 
 theme_edb <- function(base_size=9, base_family="Clear Sans Light") {
@@ -171,8 +181,10 @@ robust.clusterify <- function(model, dat, cluster) {
 }
 
 #' ## Starting a business variables over time
+#' 
+#' ### Countries in 2004 report
 plot.edb <- edb.its %>%
-  select(year, sb_days, sb_proced, sb_cost, sb_capital) %>%
+  select(year, sb_days, sb_proced, sb_cost, sb_capital, con_days, con_proced) %>%
   gather(variable, value, -year) %>%
   group_by(year, variable) %>%
   summarise(avg = mean(value, na.rm=TRUE)) %>%
@@ -181,13 +193,41 @@ plot.edb <- edb.its %>%
 plot.interventions <- data_frame(year = 2005:2006,
                                  intervention = c("2005", "2006"))
 
+#+ fig.width=6, fig.height=3.5
 ggplot(plot.edb, aes(x=year, y=avg)) +
   geom_vline(data=plot.interventions, aes(xintercept=year,
                                           colour=intervention),
              linetype="dashed", size=0.5) +
   geom_line() + 
   scale_color_manual(values=c("red", "blue"), name=NULL) +
-  labs(x=NULL, y=NULL, title="Average values of sb variables over time") +
+  labs(x=NULL, y=NULL, title="Average values of sb variables over time",
+       subtitle="Only countries included in 2004 report") +
+  facet_wrap(~ variable, scales="free_y") + 
+  theme_edb()
+
+#' ### Countries in 2001 report
+plot.edb.2001 <- edb.its.2001 %>%
+  select(year, sb_days, sb_proced, sb_cost, sb_capital, con_days, con_proced) %>%
+  gather(variable, value, -year) %>%
+  group_by(year, variable) %>%
+  summarise(avg = mean(value, na.rm=TRUE)) %>%
+  filter(!is.nan(avg))
+
+plot.interventions <- data_frame(year = 2005:2006,
+                                 intervention = c("2005", "2006"))
+
+#+ fig.width=6, fig.height=3.5
+ggplot(plot.edb.2001, aes(x=year, y=avg)) +
+  geom_vline(data=plot.interventions, aes(xintercept=year,
+                                          colour=intervention),
+             linetype="dashed", size=0.5) +
+  geom_line() + 
+  scale_color_manual(values=c("red", "blue"), name=NULL) +
+  labs(x=NULL, y=NULL, title="Average values of sb variables over time",
+       subtitle="Only countries included in 2001 report") +
+  facet_wrap(~ variable, scales="free_y") + 
+  theme_edb()
+
   facet_wrap(~ variable, scales="free_y") + 
   theme_edb()
 
@@ -375,6 +415,57 @@ stargazer(model.proced.2005, model.proced.2005_lag,
           intercept.bottom=FALSE,
           omit="\\.factor",
           add.lines=list(c("Year fixed effects", rep("No", 8))),
+          notes="Robust standard errors clustered by country")
+
+
+#' ### Simple ITS, constrained to original 2001 countries
+model.proced.2005.2001 <- lm(sb_proced ~ 
+                     year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                   data=edb.its.2001)
+model.proced.2005.2001.se <- robust.clusterify(model.proced.2005.2001, edb.its.2001, edb.its.2001$ccode)
+
+model.days_ln.2005.2001 <- lm(sb_days_ln ~ 
+                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                    data=edb.its.2001)
+model.days_ln.2005.2001.se <- robust.clusterify(model.days_ln.2005.2001, edb.its.2001, edb.its.2001$ccode)
+
+model.cost_ln.2005.2001 <- lm(sb_cost_ln ~ 
+                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                    data=edb.its.2001)
+model.cost_ln.2005.2001.se <- robust.clusterify(model.cost_ln.2005.2001, edb.its.2001, edb.its.2001$ccode)
+
+model.capital_ln.2005.2001 <- lm(sb_capital_ln ~ 
+                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                    data=edb.its.2001.cap.constrained)
+model.capital_ln.2005.2001.se <- robust.clusterify(model.capital_ln.2005.2001, edb.its.2001.cap.constrained, edb.its.2001.cap.constrained$ccode)
+
+model.capital_ln_controls.2005.2001 <- lm(sb_capital_ln ~ 
+                                            year.centered.2005 + ranked.2005 + 
+                                            year.centered.2005 * ranked.2005 + 
+                                            gdpcap_ln_lag + gdpgrowth_lag + 
+                                            pop_ln_lag + polity_lag +
+                                            as.factor(ccode), 
+                                          data=edb.its.2001.cap.constrained)
+model.capital_ln_controls.2005.2001.se <- robust.clusterify(model.capital_ln_controls.2005.2001, edb.its.2001.cap.constrained, edb.its.2001.cap.constrained$ccode)
+
+#' Models 2, 4, 6, and 8 are constrained to countries that appeared in the
+#' original 2001 EDB report.
+#' 
+#+ results='asis'
+stargazer(model.proced.2005, model.proced.2005.2001,
+          model.days_ln.2005, model.days_ln.2005.2001,
+          model.cost_ln.2005, model.cost_ln.2005.2001,
+          model.capital_ln.2005, model.capital_ln.2005.2001,
+          model.capital_ln_controls.2005.2001,
+          se=list(model.proced.2005.se$coefs[,2], model.proced.2005.2001.se$coefs[,2],
+                  model.days_ln.2005.se$coefs[,2], model.days_ln.2005.2001.se$coefs[,2],
+                  model.cost_ln.2005.se$coefs[,2], model.cost_ln.2005.2001.se$coefs[,2],
+                  model.capital_ln.2005.se$coefs[,2], model.capital_ln.2005.2001.se$coefs[,2],
+                  model.capital_ln_controls.2005.2001.se$coefs[,2]),
+          type="html", dep.var.caption="EDB outcomes, limited to countries in 2001 report",
+          intercept.bottom=FALSE,
+          omit="\\.factor",
+          add.lines=list(c("Year fixed effects", c(rep("No", 8), "Yes"))),
           notes="Robust standard errors clustered by country")
 
 
