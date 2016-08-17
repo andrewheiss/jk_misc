@@ -11,6 +11,7 @@ library(ggstance)
 library(scales)
 library(gridExtra)
 library(Cairo)
+library(stargazer)
 
 
 theme_edb <- function(base_size=9, base_family="Clear Sans Light") {
@@ -175,10 +176,24 @@ edb.rankings <- edb.raw %>%
                                         "Bangladesh", "Nigeria", "Pakistan",
                                         "Norway", "New Zealand",
                                         "Laos", "Niger"),
-         label = ifelse(add.label, countryname, NA))
+         label = ifelse(add.label, countryname, NA)) %>%
+  mutate(change.in.ranking = `2014` - `2005`)
 
-# model.rankings <- lm(`2014` ~ `2005` + has.bureau + `2005` * has.bureau, data=edb.rankings)
-# summary(model.rankings)
+# model.rankings <- lm(`2014` ~ `2005` + has.bureau,
+#                      data=edb.rankings)
+# 
+# model.rankings.int <- lm(`2014` ~ `2005` + has.bureau + `2005` * has.bureau,
+#                          data=edb.rankings)
+# 
+# model.rankings.change <- lm(change.in.ranking ~ has.bureau,
+#                             data=edb.rankings)
+# 
+# var.labs <- c("2005 ranking", "Has reform committee",
+#               "2005 ranking × has reform committee")
+# 
+# stargazer(model.rankings, model.rankings.int, model.rankings.change, 
+#           covariate.labels=var.labs,
+#           type="html", out="~/Desktop/committees.html")
 
 annotations <- data_frame(x = c(max(edb.rankings$`2005`, na.rm=TRUE), 0),
                           y = c(0, max(edb.rankings$`2014`, na.rm=TRUE)),
