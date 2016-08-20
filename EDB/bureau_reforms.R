@@ -305,6 +305,7 @@ summary.corr <- function(x, y=NULL) {
 # list columns at the same time creates duplicate columns. Unnest columns
 # individually as needed when plotting
 reform.rankings.summary <- edb.reforms.rankings %>%
+  filter(!(year %in% c(2005, 2006, 2015))) %>%
   group_by(has.bureau) %>%
   do(change = summary.corr(.$change1, .$num.reforms),
      reforms = summary.corr(.$num.reforms))
@@ -317,6 +318,36 @@ plot.avg.reforms <- ggplot(unnest(reform.rankings.summary, reforms),
        title="Reform committees and EDB rankings",
        subtitle="Average number of EDB reforms") +
   theme_edb() + theme(axis.text.y=element_text(hjust=0))
+
+ggsave(plot.avg.reforms, filename="EDB/figures/bureau_avg_reforms.pdf",
+       width=5, height=3, units="in", device=cairo_pdf)
+ggsave(plot.avg.reforms, filename="EDB/figures/bureau_avg_reforms.png",
+       width=5, height=3, units="in", type="cairo", dpi=300)
+
+reform.rankings.summary.year <- edb.reforms.rankings %>%
+  filter(!(year %in% c(2005, 2006, 2015))) %>%
+  group_by(has.bureau, year) %>%
+  summarise(avg = mean(num.reforms, na.rm=TRUE),
+            stdev = sd(num.reforms, na.rm=TRUE), 
+            std.error = stdev / sqrt(length(num.reforms)), 
+            lower = avg + (qnorm(0.025) * std.error), 
+            upper = avg + (qnorm(0.975) * std.error))
+
+plot.avg.reforms.year <- ggplot(reform.rankings.summary.year, 
+                           aes(y=has.bureau, x=avg, colour=has.bureau)) + 
+  geom_pointrangeh(aes(xmin=lower, xmax=upper)) +
+  scale_color_manual(values=c("#004259", "#FC7300"), guide=FALSE) + 
+  labs(y=NULL, x="Reforms",
+       title="Reform committees and EDB rankings",
+       subtitle="Average number of EDB reforms") +
+  theme_edb() + theme(axis.text.y=element_text(hjust=0)) +
+  facet_wrap(~ year, ncol=2)
+
+ggsave(plot.avg.reforms.year, filename="EDB/figures/bureau_avg_reforms_year.pdf",
+       width=5, height=4, units="in", device=cairo_pdf)
+ggsave(plot.avg.reforms.year, filename="EDB/figures/bureau_avg_reforms_year.png",
+       width=5, height=4, units="in", type="cairo", dpi=300)
+
 
 plot.avg.rank.change <- ggplot(unnest(reform.rankings.summary, change), 
        aes(y=has.bureau, x=avg, colour=has.bureau)) + 
