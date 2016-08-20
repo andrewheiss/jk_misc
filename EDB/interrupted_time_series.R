@@ -7,8 +7,7 @@
 #'     css: html/fixes.css
 #'     code_folding: hide
 #'     toc: yes
-#'     toc_float: 
-#'       collapsed: false
+#'     toc_float: true
 #'     toc_depth: 4
 #'     highlight: pygments
 #'     self_contained: no
@@ -25,6 +24,7 @@ library(broom)
 library(readr)
 library(ggplot2)
 library(ggstance)
+library(gridExtra)
 library(haven)
 library(stargazer)
 library(lubridate)
@@ -32,6 +32,8 @@ library(lazyeval)
 library(sandwich)
 library(lmtest)
 library(broom)
+library(pander)
+library(countrycode)
 
 knitr::opts_chunk$set(cache=FALSE, fig.retina=2,
                       tidy.opts=list(width.cutoff=120),  # For code
@@ -74,11 +76,22 @@ edb.its.2001 <- edb.its %>%
 edb.its.committee <- edb.its %>%
   filter(ccode %in% countries.with.edb.bureau$cowcode)
 
+edb.its.2001.committee <- edb.its %>%
+  filter(in.2001 == 1) %>%
+  filter(ccode %in% countries.with.edb.bureau$cowcode)
+
+edb.its.2001.nocommittee <- edb.its %>%
+  filter(in.2001 == 1) %>%
+  filter(!(ccode %in% countries.with.edb.bureau$cowcode))
+
 edb.its.cap.constrained <- filter(edb.its, year >= 2003)
 
 edb.its.2001.cap.constrained <- filter(edb.its.2001, year >= 2003)
 
 edb.its.committee.cap.constrained <- filter(edb.its.committee, year >= 2003)
+
+edb.its.2001.committee.cap.constrained <- filter(edb.its.2001.committee, year >= 2003)
+edb.its.2001.nocommittee.cap.constrained <- filter(edb.its.2001.nocommittee, year >= 2003)
 
 
 theme_edb <- function(base_size=9, base_family="Clear Sans Light") {
@@ -195,13 +208,15 @@ plot.edb <- edb.its %>%
 plot.interventions <- data_frame(year = 2005:2006,
                                  intervention = c("2005", "2006"))
 
-#+ fig.width=6, fig.height=3.5
+#+ fig.width=9, fig.height=5.5
 ggplot(plot.edb, aes(x=year, y=avg)) +
   geom_vline(data=plot.interventions, aes(xintercept=year,
                                           colour=intervention),
              linetype="dashed", size=0.5) +
   geom_line() + 
   scale_color_manual(values=c("red", "blue"), name=NULL) +
+  scale_x_continuous(limits=c(2000, 2015), breaks=seq(2000, 2015, 5)) +
+  coord_cartesian(xlim=c(2000, 2015)) +
   labs(x=NULL, y=NULL, title="Average values of sb variables over time",
        subtitle="Only countries included in 2004 report") +
   facet_wrap(~ variable, scales="free_y") + 
@@ -218,13 +233,15 @@ plot.edb.2001 <- edb.its.2001 %>%
 plot.interventions <- data_frame(year = 2005:2006,
                                  intervention = c("2005", "2006"))
 
-#+ fig.width=6, fig.height=3.5
+#+ fig.width=9, fig.height=5.5
 ggplot(plot.edb.2001, aes(x=year, y=avg)) +
   geom_vline(data=plot.interventions, aes(xintercept=year,
                                           colour=intervention),
              linetype="dashed", size=0.5) +
   geom_line() + 
   scale_color_manual(values=c("red", "blue"), name=NULL) +
+  scale_x_continuous(limits=c(2000, 2015), breaks=seq(2000, 2015, 5)) +
+  coord_cartesian(xlim=c(2000, 2015)) +
   labs(x=NULL, y=NULL, title="Average values of sb variables over time",
        subtitle="Only countries included in 2001 report") +
   facet_wrap(~ variable, scales="free_y") + 
@@ -241,17 +258,154 @@ plot.edb.committee <- edb.its.committee %>%
 plot.interventions <- data_frame(year = 2005:2006,
                                  intervention = c("2005", "2006"))
 
-#+ fig.width=6, fig.height=3.5
+#+ fig.width=9, fig.height=5.5
 ggplot(plot.edb.committee, aes(x=year, y=avg)) +
   geom_vline(data=plot.interventions, aes(xintercept=year,
                                           colour=intervention),
              linetype="dashed", size=0.5) +
   geom_line() + 
   scale_color_manual(values=c("red", "blue"), name=NULL) +
+  scale_x_continuous(limits=c(2000, 2015), breaks=seq(2000, 2015, 5)) +
+  coord_cartesian(xlim=c(2000, 2015)) +
   labs(x=NULL, y=NULL, title="Average values of sb variables over time",
        subtitle="Only countries that have EDB reform committees by 2015") +
   facet_wrap(~ variable, scales="free_y") + 
   theme_edb()
+
+#' ### Countries in report in 2001, with/without reform committees
+plot.edb.committee.2001 <- edb.its.2001 %>%
+  mutate(has.committee = factor(ccode %in% countries.with.edb.bureau$cowcode,
+                                levels=c(FALSE, TRUE),
+                                labels=c("No committee", "Committee"),
+                                ordered=TRUE)) %>%
+  select(year, has.committee, sb_days, sb_proced, sb_cost, sb_capital) %>%
+  # select(year, has.committee, sb_days, sb_proced, sb_cost, sb_capital, con_days, con_proced) %>%
+  gather(variable, value, -year, -has.committee) %>%
+  group_by(year, variable, has.committee) %>%
+  summarise(avg = mean(value, na.rm=TRUE)) %>%
+  filter(!is.nan(avg)) %>%
+  ungroup() %>%
+  mutate(variable = factor(variable, levels=c("sb_proced", "sb_days",
+                                              "sb_cost", "sb_capital"),
+                           labels=c("Procedures", "Days", "Cost", "Capital"),
+                           ordered=TRUE))
+
+plot.interventions <- data_frame(year = 2005:2006,
+                                 intervention = c("2005", "2006"))
+
+# plot.con_days <- ggplot(filter(plot.edb.committee.2001, variable=="con_days"), 
+#                         aes(x=year, y=avg)) +
+#   geom_vline(data=plot.interventions, aes(xintercept=year,
+#                                           colour=intervention),
+#              linetype="dashed", size=0.5) +
+#   geom_line() + 
+#   labs(x=NULL, y="Days") +
+#   scale_x_continuous(limits=c(2000, 2015), breaks=seq(2000, 2015, 5)) +
+#   coord_cartesian(xlim=c(2000, 2015)) +
+#   scale_color_manual(values=c("red", "blue"), name=NULL, guide=FALSE) +
+#   facet_wrap(~ variable + has.committee) + 
+#   theme_edb()
+# 
+# plot.con_proced <- ggplot(filter(plot.edb.committee.2001, variable=="con_proced"), 
+#                         aes(x=year, y=avg)) +
+#   geom_vline(data=plot.interventions, aes(xintercept=year,
+#                                           colour=intervention),
+#              linetype="dashed", size=0.5) +
+#   geom_line() + 
+#   labs(x=NULL, y="Procedures") +
+#   scale_x_continuous(limits=c(2000, 2015), breaks=seq(2000, 2015, 5)) +
+#   coord_cartesian(xlim=c(2000, 2015)) +
+#   scale_color_manual(values=c("red", "blue"), name=NULL, guide=FALSE) +
+#   facet_wrap(~ variable + has.committee) + 
+#   theme_edb()
+
+plot.sb_capital <- ggplot(filter(plot.edb.committee.2001, variable=="Capital"), 
+                        aes(x=year, y=avg)) +
+  geom_vline(data=plot.interventions, aes(xintercept=year,
+                                          colour=intervention),
+             linetype="dashed", size=0.5) +
+  geom_line() + 
+  labs(x=NULL, y="Percent") +
+  scale_x_continuous(limits=c(2000, 2015), breaks=seq(2000, 2015, 5)) +
+  coord_cartesian(xlim=c(2000, 2015)) +
+  scale_color_manual(values=c("red", "blue"), name=NULL, guide=FALSE) +
+  facet_wrap(~ variable + has.committee) + 
+  theme_edb() + theme(axis.text.x = element_text(angle=45, hjust=1))
+
+plot.sb_cost <- ggplot(filter(plot.edb.committee.2001, variable=="Cost"), 
+                        aes(x=year, y=avg)) +
+  geom_vline(data=plot.interventions, aes(xintercept=year,
+                                          colour=intervention),
+             linetype="dashed", size=0.5) +
+  geom_line() + 
+  labs(x=NULL, y="Percent") +
+  scale_x_continuous(limits=c(2000, 2015), breaks=seq(2000, 2015, 5)) +
+  coord_cartesian(xlim=c(2000, 2015)) +
+  scale_color_manual(values=c("red", "blue"), name=NULL, guide=FALSE) +
+  facet_wrap(~ variable + has.committee) + 
+  theme_edb() + theme(axis.text.x = element_text(angle=45, hjust=1))
+
+plot.sb_days <- ggplot(filter(plot.edb.committee.2001, variable=="Days"), 
+                        aes(x=year, y=avg)) +
+  geom_vline(data=plot.interventions, aes(xintercept=year,
+                                          colour=intervention),
+             linetype="dashed", size=0.5) +
+  geom_line() + 
+  labs(x=NULL, y="Days") +
+  scale_x_continuous(limits=c(2000, 2015), breaks=seq(2000, 2015, 5)) +
+  coord_cartesian(xlim=c(2000, 2015)) +
+  scale_color_manual(values=c("red", "blue"), name=NULL, guide=FALSE) +
+  facet_wrap(~ variable + has.committee) + 
+  theme_edb() + theme(axis.text.x = element_text(angle=45, hjust=1))
+
+plot.sb_proced <- ggplot(filter(plot.edb.committee.2001, variable=="Procedures"), 
+                        aes(x=year, y=avg)) +
+  geom_vline(data=plot.interventions, aes(xintercept=year,
+                                          colour=intervention),
+             linetype="dashed", size=0.5) +
+  geom_line() + 
+  labs(x=NULL, y="Procedures") +
+  scale_x_continuous(limits=c(2000, 2015), breaks=seq(2000, 2015, 5)) +
+  coord_cartesian(xlim=c(2000, 2015)) +
+  scale_color_manual(values=c("red", "blue"), name=NULL, guide=FALSE) +
+  facet_wrap(~ variable + has.committee) + 
+  theme_edb() + theme(axis.text.x = element_text(angle=45, hjust=1))
+
+plot.with.committees <- ggplot(filter(plot.edb.committee.2001, has.committee=="Committee"), 
+                         aes(x=year, y=avg)) +
+  geom_vline(data=plot.interventions, aes(xintercept=year,
+                                          colour=intervention),
+             linetype="dashed", size=0.5) +
+  geom_line() + 
+  labs(x=NULL, y=NULL, title="Countries with reform committees") +
+  scale_x_continuous(limits=c(2000, 2015), breaks=seq(2000, 2015, 5)) +
+  coord_cartesian(xlim=c(2000, 2015)) +
+  scale_color_manual(values=c("red", "blue"), name=NULL, guide=FALSE) +
+  facet_wrap(~ variable, scales="free_y") + 
+  theme_edb()# + theme(axis.text.x = element_text(angle=45, hjust=1))
+
+plot.without.committees <- ggplot(filter(plot.edb.committee.2001, has.committee=="No committee"), 
+                               aes(x=year, y=avg)) +
+  geom_vline(data=plot.interventions, aes(xintercept=year,
+                                          colour=intervention),
+             linetype="dashed", size=0.5) +
+  geom_line() + 
+  labs(x=NULL, y=NULL, title="Countries without reform committees") +
+  scale_x_continuous(limits=c(2000, 2015), breaks=seq(2000, 2015, 5)) +
+  coord_cartesian(xlim=c(2000, 2015)) +
+  scale_color_manual(values=c("red", "blue"), name=NULL, guide=FALSE) +
+  facet_wrap(~ variable, scales="free_y") + 
+  theme_edb()# + theme(axis.text.x = element_text(angle=45, hjust=1))
+
+#+ fig.width=5, fig.height=4
+plot.without.committees
+
+#+ fig.width=5, fig.height=4
+plot.with.committees
+
+#+ fig.width=10, fig.height=4
+grid.arrange(plot.without.committees, plot.with.committees, ncol=2)
+
 
 
 #' ## Model results
@@ -399,6 +553,184 @@ stargazer(model.proced.2005, model.days_ln.2005,
           omit="\\.factor",
           add.lines=list(c("Year fixed effects", rep("No", 8))),
           notes="Robust standard errors clustered by country")
+
+
+#' ### Simple: In since 2001
+model.proced.2005.2001 <- lm(sb_proced ~ 
+                     year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                   data=edb.its.2001)
+model.proced.2005.2001.se <- robust.clusterify(model.proced.2005.2001, edb.its.2001, edb.its.2001$ccode)
+
+model.days_ln.2005.2001 <- lm(sb_days_ln ~ 
+                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                    data=edb.its.2001)
+model.days_ln.2005.2001.se <- robust.clusterify(model.days_ln.2005.2001, edb.its.2001, edb.its.2001$ccode)
+
+model.cost_ln.2005.2001 <- lm(sb_cost_ln ~ 
+                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                    data=edb.its.2001)
+model.cost_ln.2005.2001.se <- robust.clusterify(model.cost_ln.2005.2001, edb.its.2001, edb.its.2001$ccode)
+
+model.capital_ln.2005.2001 <- lm(sb_capital_ln ~ 
+                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                    data=edb.its.2001.cap.constrained)
+model.capital_ln.2005.2001.se <- robust.clusterify(model.capital_ln.2005.2001, edb.its.2001.cap.constrained, edb.its.2001.cap.constrained$ccode)
+
+
+model.proced.2006.2001 <- lm(sb_proced ~ 
+                     year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006, 
+                   data=edb.its.2001)
+model.proced.2006.2001.se <- robust.clusterify(model.proced.2006.2001, edb.its.2001, edb.its.2001$ccode)
+
+model.days_ln.2006.2001 <- lm(sb_days_ln ~ 
+                      year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006, 
+                    data=edb.its.2001)
+model.days_ln.2006.2001.se <- robust.clusterify(model.days_ln.2006.2001, edb.its.2001, edb.its.2001$ccode)
+
+model.cost_ln.2006.2001 <- lm(sb_cost_ln ~ 
+                      year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006, 
+                    data=edb.its.2001)
+model.cost_ln.2006.2001.se <- robust.clusterify(model.cost_ln.2006.2001, edb.its.2001, edb.its.2001$ccode)
+
+model.capital_ln.2006.2001 <- lm(sb_capital_ln ~ 
+                      year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006, 
+                    data=edb.its.2001.cap.constrained)
+model.capital_ln.2006.2001.se <- robust.clusterify(model.capital_ln.2006.2001, edb.its.2001.cap.constrained, edb.its.2001.cap.constrained$ccode)
+
+
+#+ results='asis'
+stargazer(model.proced.2005.2001, model.days_ln.2005.2001,
+          model.cost_ln.2005.2001, model.capital_ln.2005.2001,
+          model.proced.2006.2001, model.days_ln.2006.2001,
+          model.cost_ln.2006.2001, model.capital_ln.2006.2001,
+          se=list(model.proced.2005.2001.se$coefs[,2], model.days_ln.2005.2001.se$coefs[,2],
+                  model.cost_ln.2005.2001.se$coefs[,2], model.capital_ln.2005.2001.se$coefs[,2],
+                  model.proced.2006.2001.se$coefs[,2], model.days_ln.2006.2001.se$coefs[,2],
+                  model.cost_ln.2006.2001.se$coefs[,2], model.capital_ln.2006.2001.se$coefs[,2]),
+          type="html", dep.var.caption="EDB outcomes, only countries in 2001 report",
+          intercept.bottom=FALSE,
+          omit="\\.factor",
+          add.lines=list(c("Year fixed effects", rep("No", 8))),
+          notes="Robust standard errors clustered by country")
+
+
+#' ### Simple: Only those with reform committees
+model.proced.2005.committee <- lm(sb_proced ~ 
+                     year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                   data=edb.its.committee)
+model.proced.2005.committee.se <- robust.clusterify(model.proced.2005.committee, edb.its.committee, edb.its.committee$ccode)
+
+model.days_ln.2005.committee <- lm(sb_days_ln ~ 
+                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                    data=edb.its.committee)
+model.days_ln.2005.committee.se <- robust.clusterify(model.days_ln.2005.committee, edb.its.committee, edb.its.committee$ccode)
+
+model.cost_ln.2005.committee <- lm(sb_cost_ln ~ 
+                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                    data=edb.its.committee)
+model.cost_ln.2005.committee.se <- robust.clusterify(model.cost_ln.2005.committee, edb.its.committee, edb.its.committee$ccode)
+
+model.capital_ln.2005.committee <- lm(sb_capital_ln ~ 
+                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                    data=edb.its.committee.cap.constrained)
+model.capital_ln.2005.committee.se <- robust.clusterify(model.capital_ln.2005.committee, edb.its.committee.cap.constrained, edb.its.committee.cap.constrained$ccode)
+
+
+model.proced.2006.committee <- lm(sb_proced ~ 
+                     year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006, 
+                   data=edb.its.committee)
+model.proced.2006.committee.se <- robust.clusterify(model.proced.2006.committee, edb.its.committee, edb.its.committee$ccode)
+
+model.days_ln.2006.committee <- lm(sb_days_ln ~ 
+                      year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006, 
+                    data=edb.its.committee)
+model.days_ln.2006.committee.se <- robust.clusterify(model.days_ln.2006.committee, edb.its.committee, edb.its.committee$ccode)
+
+model.cost_ln.2006.committee <- lm(sb_cost_ln ~ 
+                      year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006, 
+                    data=edb.its.committee)
+model.cost_ln.2006.committee.se <- robust.clusterify(model.cost_ln.2006.committee, edb.its.committee, edb.its.committee$ccode)
+
+model.capital_ln.2006.committee <- lm(sb_capital_ln ~ 
+                      year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006, 
+                    data=edb.its.committee.cap.constrained)
+model.capital_ln.2006.committee.se <- robust.clusterify(model.capital_ln.2006.committee, edb.its.committee.cap.constrained, edb.its.committee.cap.constrained$ccode)
+
+
+#+ results='asis'
+stargazer(model.proced.2005.committee, model.days_ln.2005.committee,
+          model.cost_ln.2005.committee, model.capital_ln.2005.committee,
+          model.proced.2006.committee, model.days_ln.2006.committee,
+          model.cost_ln.2006.committee, model.capital_ln.2006.committee,
+          se=list(model.proced.2005.committee.se$coefs[,2], model.days_ln.2005.committee.se$coefs[,2],
+                  model.cost_ln.2005.committee.se$coefs[,2], model.capital_ln.2005.committee.se$coefs[,2],
+                  model.proced.2006.committee.se$coefs[,2], model.days_ln.2006.committee.se$coefs[,2],
+                  model.cost_ln.2006.committee.se$coefs[,2], model.capital_ln.2006.committee.se$coefs[,2]),
+          type="html", dep.var.caption="EDB outcomes, only countries with EDB committees",
+          intercept.bottom=FALSE,
+          omit="\\.factor",
+          add.lines=list(c("Year fixed effects", rep("No", 8))),
+          notes="Robust standard errors clustered by country")
+
+
+#' ### Simple: In since 2001 and with reform committees
+model.proced.2005.2001.committee <- lm(sb_proced ~ 
+                     year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                   data=edb.its.2001.committee)
+model.proced.2005.2001.committee.se <- robust.clusterify(model.proced.2005.2001.committee, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.days_ln.2005.2001.committee <- lm(sb_days_ln ~ 
+                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                    data=edb.its.2001.committee)
+model.days_ln.2005.2001.committee.se <- robust.clusterify(model.days_ln.2005.2001.committee, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.cost_ln.2005.2001.committee <- lm(sb_cost_ln ~ 
+                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                    data=edb.its.2001.committee)
+model.cost_ln.2005.2001.committee.se <- robust.clusterify(model.cost_ln.2005.2001.committee, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.capital_ln.2005.2001.committee <- lm(sb_capital_ln ~ 
+                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005, 
+                    data=edb.its.2001.committee.cap.constrained)
+model.capital_ln.2005.2001.committee.se <- robust.clusterify(model.capital_ln.2005.2001.committee, edb.its.2001.committee.cap.constrained, edb.its.2001.committee.cap.constrained$ccode)
+
+
+model.proced.2006.2001.committee <- lm(sb_proced ~ 
+                     year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006, 
+                   data=edb.its.2001.committee)
+model.proced.2006.2001.committee.se <- robust.clusterify(model.proced.2006.2001.committee, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.days_ln.2006.2001.committee <- lm(sb_days_ln ~ 
+                      year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006, 
+                    data=edb.its.2001.committee)
+model.days_ln.2006.2001.committee.se <- robust.clusterify(model.days_ln.2006.2001.committee, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.cost_ln.2006.2001.committee <- lm(sb_cost_ln ~ 
+                      year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006, 
+                    data=edb.its.2001.committee)
+model.cost_ln.2006.2001.committee.se <- robust.clusterify(model.cost_ln.2006.2001.committee, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.capital_ln.2006.2001.committee <- lm(sb_capital_ln ~ 
+                      year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006, 
+                    data=edb.its.2001.committee.cap.constrained)
+model.capital_ln.2006.2001.committee.se <- robust.clusterify(model.capital_ln.2006.2001.committee, edb.its.2001.committee.cap.constrained, edb.its.2001.committee.cap.constrained$ccode)
+
+
+#+ results='asis'
+stargazer(model.proced.2005.2001.committee, model.days_ln.2005.2001.committee,
+          model.cost_ln.2005.2001.committee, model.capital_ln.2005.2001.committee,
+          model.proced.2006.2001.committee, model.days_ln.2006.2001.committee,
+          model.cost_ln.2006.2001.committee, model.capital_ln.2006.2001.committee,
+          se=list(model.proced.2005.2001.committee.se$coefs[,2], model.days_ln.2005.2001.committee.se$coefs[,2],
+                  model.cost_ln.2005.2001.committee.se$coefs[,2], model.capital_ln.2005.2001.committee.se$coefs[,2],
+                  model.proced.2006.2001.committee.se$coefs[,2], model.days_ln.2006.2001.committee.se$coefs[,2],
+                  model.cost_ln.2006.2001.committee.se$coefs[,2], model.capital_ln.2006.2001.committee.se$coefs[,2]),
+          type="html", dep.var.caption="EDB outcomes, only countries in 2001 report with EDB committees",
+          intercept.bottom=FALSE,
+          omit="\\.factor",
+          add.lines=list(c("Year fixed effects", rep("No", 8))),
+          notes="Robust standard errors clustered by country")
+
 
 #' ### Simple ITS controlling for lags
 model.proced.2005_lag <- lm(sb_proced ~ sb_proced_lag +
@@ -679,6 +1011,310 @@ stargazer(model.proced_controls_fe.2005, model.days_ln_controls_fe.2005,
           omit="\\.factor",
           add.lines=list(c("Year fixed effects", rep("Yes", 8))),
           notes="Robust standard errors clustered by country")
+
+
+#' ## Seth's ideas: difference-ish models
+#' 
+#' $$
+#' y_t = \beta_0 + \beta_1 y_{t-1} + \beta_2 T + \epsilon
+#' $$
+#' 
+#' ### Models for all countries in 2001 report
+model.proced.lag.2005.all <- lm(sb_proced ~ sb_proced_lag + ranked.2005, 
+                                data=edb.its.2001)
+model.proced.lag.2005.all.se <- robust.clusterify(model.proced.lag.2005.all, edb.its.2001, edb.its.2001$ccode)
+
+model.days_ln.lag.2005.all <- lm(sb_days_ln ~ sb_days_ln_lag + ranked.2005, 
+                                 data=edb.its.2001)
+model.days_ln.lag.2005.all.se <- robust.clusterify(model.days_ln.lag.2005.all, edb.its.2001, edb.its.2001$ccode)
+
+model.cost_ln.lag.2005.all <- lm(sb_cost_ln ~ sb_cost_ln_lag + ranked.2005, 
+                                 data=edb.its.2001)
+model.cost_ln.lag.2005.all.se <- robust.clusterify(model.cost_ln.lag.2005.all, edb.its.2001, edb.its.2001$ccode)
+
+model.capital_ln.lag.2005.all <- lm(sb_capital_ln ~ sb_capital_ln_lag + ranked.2005, 
+                                    data=edb.its.2001.cap.constrained)
+model.capital_ln.lag.2005.all.se <- robust.clusterify(model.capital_ln.lag.2005.all, edb.its.2001.cap.constrained, edb.its.2001.cap.constrained$ccode)
+
+
+model.proced.lag.2006.all <- lm(sb_proced ~ sb_proced_lag + ranked.2006, 
+                                data=edb.its.2001)
+model.proced.lag.2006.all.se <- robust.clusterify(model.proced.lag.2006.all, edb.its.2001, edb.its.2001$ccode)
+
+model.days_ln.lag.2006.all <- lm(sb_days_ln ~ sb_days_ln_lag + ranked.2006, 
+                                 data=edb.its.2001)
+model.days_ln.lag.2006.all.se <- robust.clusterify(model.days_ln.lag.2006.all, edb.its.2001, edb.its.2001$ccode)
+
+model.cost_ln.lag.2006.all <- lm(sb_cost_ln ~ sb_cost_ln_lag + ranked.2006, 
+                                 data=edb.its.2001)
+model.cost_ln.lag.2006.all.se <- robust.clusterify(model.cost_ln.lag.2006.all, edb.its.2001, edb.its.2001$ccode)
+
+model.capital_ln.lag.2006.all <- lm(sb_capital_ln ~ sb_capital_ln_lag + ranked.2006, 
+                                    data=edb.its.2001.cap.constrained)
+model.capital_ln.lag.2006.all.se <- robust.clusterify(model.capital_ln.lag.2006.all, edb.its.2001.cap.constrained, edb.its.2001.cap.constrained$ccode)
+
+
+#
+#+ results='asis'
+stargazer(model.proced.lag.2005.all, model.days_ln.lag.2005.all,
+          model.cost_ln.lag.2005.all, model.capital_ln.lag.2005.all,
+          model.proced.lag.2006.all, model.days_ln.lag.2006.all,
+          model.cost_ln.lag.2006.all, model.capital_ln.lag.2006.all,
+          se=list(model.proced.lag.2005.all.se$coefs[,2], model.days_ln.lag.2005.all.se$coefs[,2],
+                  model.cost_ln.lag.2005.all.se$coefs[,2], model.capital_ln.lag.2005.all.se$coefs[,2],
+                  model.proced.lag.2006.all.se$coefs[,2], model.days_ln.lag.2006.all.se$coefs[,2],
+                  model.cost_ln.lag.2006.all.se$coefs[,2], model.capital_ln.lag.2006.all.se$coefs[,2]),
+          type="html", dep.var.caption="EDB outcomes (all countries from 2001 report)",
+          intercept.bottom=FALSE,
+          omit="\\.factor",
+          add.lines=list(c("Year fixed effects", rep("No", 8))),
+          notes="Robust standard errors clustered by country")
+
+
+#' ### Models for countries with/without reform committees
+model.proced.lag.2005.nocom <- lm(sb_proced ~ sb_proced_lag + ranked.2005, 
+                        data=edb.its.2001.nocommittee)
+model.proced.lag.2005.nocom.se <- robust.clusterify(model.proced.lag.2005.nocom, edb.its.2001.nocommittee, edb.its.2001.nocommittee$ccode)
+
+model.days_ln.lag.2005.nocom <- lm(sb_days_ln ~ sb_days_ln_lag + ranked.2005, 
+                         data=edb.its.2001.nocommittee)
+model.days_ln.lag.2005.nocom.se <- robust.clusterify(model.days_ln.lag.2005.nocom, edb.its.2001.nocommittee, edb.its.2001.nocommittee$ccode)
+
+model.cost_ln.lag.2005.nocom <- lm(sb_cost_ln ~ sb_cost_ln_lag + ranked.2005, 
+                         data=edb.its.2001.nocommittee)
+model.cost_ln.lag.2005.nocom.se <- robust.clusterify(model.cost_ln.lag.2005.nocom, edb.its.2001.nocommittee, edb.its.2001.nocommittee$ccode)
+
+model.capital_ln.lag.2005.nocom <- lm(sb_capital_ln ~ sb_capital_ln_lag + ranked.2005, 
+                            data=edb.its.2001.nocommittee.cap.constrained)
+model.capital_ln.lag.2005.nocom.se <- robust.clusterify(model.capital_ln.lag.2005.nocom, edb.its.2001.nocommittee.cap.constrained, edb.its.2001.nocommittee.cap.constrained$ccode)
+
+
+model.proced.lag.2006.nocom <- lm(sb_proced ~ sb_proced_lag + ranked.2006, 
+                        data=edb.its.2001.nocommittee)
+model.proced.lag.2006.nocom.se <- robust.clusterify(model.proced.lag.2006.nocom, edb.its.2001.nocommittee, edb.its.2001.nocommittee$ccode)
+
+model.days_ln.lag.2006.nocom <- lm(sb_days_ln ~ sb_days_ln_lag + ranked.2006, 
+                         data=edb.its.2001.nocommittee)
+model.days_ln.lag.2006.nocom.se <- robust.clusterify(model.days_ln.lag.2006.nocom, edb.its.2001.nocommittee, edb.its.2001.nocommittee$ccode)
+
+model.cost_ln.lag.2006.nocom <- lm(sb_cost_ln ~ sb_cost_ln_lag + ranked.2006, 
+                         data=edb.its.2001.nocommittee)
+model.cost_ln.lag.2006.nocom.se <- robust.clusterify(model.cost_ln.lag.2006.nocom, edb.its.2001.nocommittee, edb.its.2001.nocommittee$ccode)
+
+model.capital_ln.lag.2006.nocom <- lm(sb_capital_ln ~ sb_capital_ln_lag + ranked.2006, 
+                            data=edb.its.2001.nocommittee.cap.constrained)
+model.capital_ln.lag.2006.nocom.se <- robust.clusterify(model.capital_ln.lag.2006.nocom, edb.its.2001.nocommittee.cap.constrained, edb.its.2001.nocommittee.cap.constrained$ccode)
+
+
+model.proced.lag.2005.com <- lm(sb_proced ~ sb_proced_lag + ranked.2005, 
+                        data=edb.its.2001.committee)
+model.proced.lag.2005.com.se <- robust.clusterify(model.proced.lag.2005.com, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.days_ln.lag.2005.com <- lm(sb_days_ln ~ sb_days_ln_lag + ranked.2005, 
+                         data=edb.its.2001.committee)
+model.days_ln.lag.2005.com.se <- robust.clusterify(model.days_ln.lag.2005.com, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.cost_ln.lag.2005.com <- lm(sb_cost_ln ~ sb_cost_ln_lag + ranked.2005, 
+                         data=edb.its.2001.committee)
+model.cost_ln.lag.2005.com.se <- robust.clusterify(model.cost_ln.lag.2005.com, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.capital_ln.lag.2005.com <- lm(sb_capital_ln ~ sb_capital_ln_lag + ranked.2005, 
+                            data=edb.its.2001.committee.cap.constrained)
+model.capital_ln.lag.2005.com.se <- robust.clusterify(model.capital_ln.lag.2005.com, edb.its.2001.committee.cap.constrained, edb.its.2001.committee.cap.constrained$ccode)
+
+
+model.proced.lag.2006.com <- lm(sb_proced ~ sb_proced_lag + ranked.2006, 
+                        data=edb.its.2001.committee)
+model.proced.lag.2006.com.se <- robust.clusterify(model.proced.lag.2006.com, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.days_ln.lag.2006.com <- lm(sb_days_ln ~ sb_days_ln_lag + ranked.2006, 
+                         data=edb.its.2001.committee)
+model.days_ln.lag.2006.com.se <- robust.clusterify(model.days_ln.lag.2006.com, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.cost_ln.lag.2006.com <- lm(sb_cost_ln ~ sb_cost_ln_lag + ranked.2006, 
+                         data=edb.its.2001.committee)
+model.cost_ln.lag.2006.com.se <- robust.clusterify(model.cost_ln.lag.2006.com, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.capital_ln.lag.2006.com <- lm(sb_capital_ln ~ sb_capital_ln_lag + ranked.2006, 
+                            data=edb.its.2001.committee.cap.constrained)
+model.capital_ln.lag.2006.com.se <- robust.clusterify(model.capital_ln.lag.2006.com, edb.its.2001.committee.cap.constrained, edb.its.2001.committee.cap.constrained$ccode)
+
+
+#+ results='asis'
+stargazer(model.proced.lag.2005.nocom, model.proced.lag.2005.com,
+          model.days_ln.lag.2005.nocom, model.days_ln.lag.2005.com,
+          model.proced.lag.2006.nocom, model.proced.lag.2006.com,
+          model.days_ln.lag.2006.nocom, model.days_ln.lag.2006.com,
+          se=list(model.proced.lag.2005.nocom$coefs[,2], model.proced.lag.2005.com$coefs[,2],
+                  model.days_ln.lag.2005.nocom$coefs[,2], model.days_ln.lag.2005.com$coefs[,2],
+                  model.proced.lag.2006.nocom$coefs[,2], model.proced.lag.2006.com$coefs[,2],
+                  model.days_ln.lag.2006.nocom$coefs[,2], model.days_ln.lag.2006.com$coefs[,2]),
+          type="html", dep.var.caption="EDB outcomes",
+          intercept.bottom=FALSE,
+          omit="\\.factor",
+          add.lines=list(c("Year fixed effects", rep("No", 8)),
+                         c("EDB reform committee", rep(c("No", "Yes"), 4))),
+          notes="Robust standard errors clustered by country")
+
+#+ results='asis'
+stargazer(model.cost_ln.lag.2005.nocom, model.cost_ln.lag.2005.com,
+          model.capital_ln.lag.2005.nocom, model.capital_ln.lag.2005.com,
+          model.cost_ln.lag.2006.nocom, model.cost_ln.lag.2006.com,
+          model.capital_ln.lag.2006.nocom, model.capital_ln.lag.2006.com,
+          se=list(model.cost_ln.lag.2005.nocom$coefs[,2], model.cost_ln.lag.2005.com$coefs[,2],
+                  model.capital_ln.lag.2005.nocom$coefs[,2], model.capital_ln.lag.2005.com$coefs[,2],
+                  model.cost_ln.lag.2006.nocom$coefs[,2], model.cost_ln.lag.2006.com$coefs[,2],
+                  model.capital_ln.lag.2006.nocom$coefs[,2], model.capital_ln.lag.2006.com$coefs[,2]),
+          type="html", dep.var.caption="EDB outcomes",
+          intercept.bottom=FALSE,
+          omit="\\.factor",
+          add.lines=list(c("Year fixed effects", rep("No", 8)),
+                         c("EDB reform committee", rep(c("No", "Yes"), 4))),
+          notes="Robust standard errors clustered by country")
+
+
+#' ### ITS for countries in 2001 report, with and without reform committees
+model.proced.lag.2005.its.nocom <- lm(sb_proced ~
+                                      year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005,
+                        data=edb.its.2001.nocommittee)
+model.proced.lag.2005.its.nocom.se <- robust.clusterify(model.proced.lag.2005.its.nocom, edb.its.2001.nocommittee, edb.its.2001.nocommittee$ccode)
+
+model.days_ln.lag.2005.its.nocom <- lm(sb_days_ln ~
+                                       year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005,
+                         data=edb.its.2001.nocommittee)
+model.days_ln.lag.2005.its.nocom.se <- robust.clusterify(model.days_ln.lag.2005.its.nocom, edb.its.2001.nocommittee, edb.its.2001.nocommittee$ccode)
+
+model.cost_ln.lag.2005.its.nocom <- lm(sb_cost_ln ~
+                                       year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005,
+                         data=edb.its.2001.nocommittee)
+model.cost_ln.lag.2005.its.nocom.se <- robust.clusterify(model.cost_ln.lag.2005.its.nocom, edb.its.2001.nocommittee, edb.its.2001.nocommittee$ccode)
+
+model.capital_ln.lag.2005.its.nocom <- lm(sb_capital_ln ~
+                                          year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005,
+                            data=edb.its.2001.nocommittee.cap.constrained)
+model.capital_ln.lag.2005.its.nocom.se <- robust.clusterify(model.capital_ln.lag.2005.its.nocom, edb.its.2001.nocommittee.cap.constrained, edb.its.2001.nocommittee.cap.constrained$ccode)
+
+
+model.proced.lag.2006.its.nocom <- lm(sb_proced ~
+                                      year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006,
+                        data=edb.its.2001.nocommittee)
+model.proced.lag.2006.its.nocom.se <- robust.clusterify(model.proced.lag.2006.its.nocom, edb.its.2001.nocommittee, edb.its.2001.nocommittee$ccode)
+
+model.days_ln.lag.2006.its.nocom <- lm(sb_days_ln ~
+                                       year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006,
+                         data=edb.its.2001.nocommittee)
+model.days_ln.lag.2006.its.nocom.se <- robust.clusterify(model.days_ln.lag.2006.its.nocom, edb.its.2001.nocommittee, edb.its.2001.nocommittee$ccode)
+
+model.cost_ln.lag.2006.its.nocom <- lm(sb_cost_ln ~
+                                       year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006,
+                         data=edb.its.2001.nocommittee)
+model.cost_ln.lag.2006.its.nocom.se <- robust.clusterify(model.cost_ln.lag.2006.its.nocom, edb.its.2001.nocommittee, edb.its.2001.nocommittee$ccode)
+
+model.capital_ln.lag.2006.its.nocom <- lm(sb_capital_ln ~
+                                          year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006,
+                            data=edb.its.2001.nocommittee.cap.constrained)
+model.capital_ln.lag.2006.its.nocom.se <- robust.clusterify(model.capital_ln.lag.2006.its.nocom, edb.its.2001.nocommittee.cap.constrained, edb.its.2001.nocommittee.cap.constrained$ccode)
+
+
+model.proced.lag.2005.its.com <- lm(sb_proced ~
+                                    year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005,
+                        data=edb.its.2001.committee)
+model.proced.lag.2005.its.com.se <- robust.clusterify(model.proced.lag.2005.its.com, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.days_ln.lag.2005.its.com <- lm(sb_days_ln ~
+                                     year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005,
+                         data=edb.its.2001.committee)
+model.days_ln.lag.2005.its.com.se <- robust.clusterify(model.days_ln.lag.2005.its.com, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.cost_ln.lag.2005.its.com <- lm(sb_cost_ln ~
+                                     year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005,
+                         data=edb.its.2001.committee)
+model.cost_ln.lag.2005.its.com.se <- robust.clusterify(model.cost_ln.lag.2005.its.com, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.capital_ln.lag.2005.its.com <- lm(sb_capital_ln ~
+                                        year.centered.2005 + ranked.2005 + year.centered.2005 * ranked.2005,
+                            data=edb.its.2001.committee.cap.constrained)
+model.capital_ln.lag.2005.its.com.se <- robust.clusterify(model.capital_ln.lag.2005.its.com, edb.its.2001.committee.cap.constrained, edb.its.2001.committee.cap.constrained$ccode)
+
+
+model.proced.lag.2006.its.com <- lm(sb_proced ~ 
+                                    year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006,
+                        data=edb.its.2001.committee)
+model.proced.lag.2006.its.com.se <- robust.clusterify(model.proced.lag.2006.its.com, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.days_ln.lag.2006.its.com <- lm(sb_days_ln ~ 
+                                     year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006,
+                         data=edb.its.2001.committee)
+model.days_ln.lag.2006.its.com.se <- robust.clusterify(model.days_ln.lag.2006.its.com, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.cost_ln.lag.2006.its.com <- lm(sb_cost_ln ~ 
+                                     year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006,
+                         data=edb.its.2001.committee)
+model.cost_ln.lag.2006.its.com.se <- robust.clusterify(model.cost_ln.lag.2006.its.com, edb.its.2001.committee, edb.its.2001.committee$ccode)
+
+model.capital_ln.lag.2006.its.com <- lm(sb_capital_ln ~ 
+                                        year.centered.2006 + ranked.2006 + year.centered.2006 * ranked.2006,
+                            data=edb.its.2001.committee.cap.constrained)
+model.capital_ln.lag.2006.its.com.se <- robust.clusterify(model.capital_ln.lag.2006.its.com, edb.its.2001.committee.cap.constrained, edb.its.2001.committee.cap.constrained$ccode)
+
+
+#+ results='asis'
+stargazer(model.proced.lag.2005.its.nocom, model.proced.lag.2005.its.com,
+          model.days_ln.lag.2005.its.nocom, model.days_ln.lag.2005.its.com,
+          model.proced.lag.2006.its.nocom, model.proced.lag.2006.its.com,
+          model.days_ln.lag.2006.its.nocom, model.days_ln.lag.2006.its.com,
+          se=list(model.proced.lag.2005.its.nocom.se$coefs[,2], model.proced.lag.2005.its.com.se$coefs[,2],
+                  model.days_ln.lag.2005.its.nocom.se$coefs[,2], model.days_ln.lag.2005.its.com.se$coefs[,2],
+                  model.proced.lag.2006.its.nocom.se$coefs[,2], model.proced.lag.2006.its.com.se$coefs[,2],
+                  model.days_ln.lag.2006.its.nocom.se$coefs[,2], model.days_ln.lag.2006.its.com.se$coefs[,2]),
+          type="html", dep.var.caption="EDB outcomes (ITS, with/without reform committees)",
+          intercept.bottom=FALSE,
+          omit="\\.factor",
+          add.lines=list(c("Year fixed effects", rep("No", 8)),
+                         c("EDB reform committee", rep(c("No", "Yes"), 4))),
+          notes="Robust standard errors clustered by country")
+
+#+ results='asis'
+stargazer(model.cost_ln.lag.2005.its.nocom, model.cost_ln.lag.2005.its.com,
+          model.capital_ln.lag.2005.its.nocom, model.capital_ln.lag.2005.its.com,
+          model.cost_ln.lag.2006.its.nocom, model.cost_ln.lag.2006.its.com,
+          model.capital_ln.lag.2006.its.nocom, model.capital_ln.lag.2006.its.com,
+          se=list(model.cost_ln.lag.2005.its.nocom.se$coefs[,2], model.cost_ln.lag.2005.its.com.se$coefs[,2],
+                  model.capital_ln.lag.2005.its.nocom.se$coefs[,2], model.capital_ln.lag.2005.its.com.se$coefs[,2],
+                  model.cost_ln.lag.2006.its.nocom.se$coefs[,2], model.cost_ln.lag.2006.its.com.se$coefs[,2],
+                  model.capital_ln.lag.2006.its.nocom.se$coefs[,2], model.capital_ln.lag.2006.its.com.se$coefs[,2]),
+          type="html", dep.var.caption="EDB outcomes (ITS, with/without reform committees)",
+          intercept.bottom=FALSE,
+          omit="\\.factor",
+          add.lines=list(c("Year fixed effects", rep("No", 8)),
+                         c("EDB reform committee", rep(c("No", "Yes"), 4))),
+          notes="Robust standard errors clustered by country")
+
+
+#' ### Flexible ITS (with year²)
+# make t more flexible in ITS by squaring it
+
+#' ## List of countries in initial 2001 report
+#' 
+#' \* indicates country has an EDB reform committee by 2015
+country.names <- edb.its.2001 %>%
+  group_by(ccode) %>%
+  summarise(cow = unique(ccode)) %>%
+  ungroup() %>%
+  mutate(has.committee = ifelse(ccode %in% countries.with.edb.bureau$cowcode, "\\*", ""),
+         Country = countrycode(cow, "cown", "country.name")) %>%
+  mutate(Country = case_when(
+           .$cow == 1001 ~ "Serbia",
+           .$cow == 1005 ~ "Hong Kong",
+           TRUE ~ .$Country
+         )) %>%
+  arrange(Country) %>%
+  mutate(Country = paste0(Country, has.committee)) %>%
+  select(Country)
+
+#+ results="asis"
+pandoc.table(matrix(c(country.names$Country, rep("", 2)), ncol=4),
+             split.tables=Inf)
 
 
 #' ## Figures
