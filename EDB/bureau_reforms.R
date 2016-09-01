@@ -1,5 +1,6 @@
 library(dplyr)
 library(tidyr)
+library(forcats)
 library(broom)
 library(readr)
 library(haven)
@@ -477,7 +478,17 @@ summary(model.committee)
 
 committee.tidy <- tidy(model.committee, conf.int=TRUE, exponentiate=TRUE) %>%
   filter(term != "(Intercept)") %>%
-  mutate(term = factor(term, levels=rev(term), ordered=TRUE))
+  mutate(term = factor(term, levels=rev(term), ordered=TRUE)) %>%
+  mutate(term = fct_recode(term,
+                           "Ease of doing business rank" = "p_edb_rank",
+                           "Political risk (ICRG)" = "icrg_index",
+                           "GDP per capita" = "gdpcap",
+                           "GDP growth" = "gdpgrowth",
+                           "Foreign direct investment\nnet inflows (% of GDP)" = "fdi_inper",
+                           "Trade" = "trade",
+                           "IBRD loans (logged)" = "log1p(ibrd)",
+                           "Polity IV" = "polity2",
+                           "Years execuive in office" = "yrsoffc"))
 
 plot.model.committee <- ggplot(committee.tidy, aes(x=estimate, y=term)) +
   geom_vline(xintercept=1, colour="#FF4036") +
