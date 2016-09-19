@@ -1244,9 +1244,8 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 # ------------------
 # Appendix 1
 # ----------
-# Figure A1: Map of survey participation
+# Figure A1a: Map of HQ countries
 hq.countries <- read_csv("final_figures/data_figureA_hq_map.csv")
-work.countries <- read_csv("final_figures/data_figureA_work_map.csv")
 
 hq.map <- ggplot(hq.countries, aes(fill=num.ceiling, map_id=id)) +
   geom_map(map=countries.ggmap, size=0.15, colour="black") + 
@@ -1273,8 +1272,15 @@ hq.map.n <- paste0("Number of NGOs: ",
                    ". Number of countries: ", 
                    nrow(filter(hq.countries, num.ngos > 0)),
                    ".")
-cat(hq.map.n, file=file.path(base.folder, paste0(filename, ".txt")))
 
+caption <- c("Figure A1a: Country location of NGO survey respondent headquarters",
+             hq.map.n) %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
+
+# Figure A1a: Map of work countries
+work.countries <- read_csv("final_figures/data_figureA_work_map.csv")
 
 work.map <- ggplot(work.countries, aes(fill=num.ceiling, map_id=id)) +
   geom_map(map=countries.ggmap, size=0.15, colour="black") + 
@@ -1299,7 +1305,11 @@ ggsave(work.map, filename=file.path(base.folder, paste0(filename, ".png")),
 work.map.n <- paste0("Number of countries: ", 
                      nrow(filter(work.countries, num.ngos > 0)),
                      ".")
-cat(work.map.n, file=file.path(base.folder, paste0(filename, ".txt")))
+
+caption <- c("Figure A1b: Country location of NGO survey respondent work",
+             work.map.n) %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # Figure A2: Percent of total estimated cables
@@ -1324,7 +1334,6 @@ figA2 <- ggplot(df.cables.est.year, aes(x=year, y=pct.available)) +
   labs(x=NULL, y="Percent of total estimated cables") + 
   scale_y_continuous(labels=percent) + 
   theme_clean(10)
-figA2
 
 filename <- "figureA2_wikileaks_prop_estimated"
 width <- 4.5
@@ -1333,6 +1342,9 @@ ggsave(figA2, filename=file.path(base.folder, paste0(filename, ".pdf")),
        width=width, height=height, device=cairo_pdf)
 ggsave(figA2, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+caption <- "Figure A2: Observed Wikileaks US Department of State cables as a percent of the estimated number of cables"
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # Figure A3: All cables vs. TIP cables vs. cables with reaction
@@ -1352,7 +1364,6 @@ figA3 <- ggplot(df.cable.missingness, aes(x=year, y=value)) +
   scale_y_continuous(labels=comma) + 
   facet_wrap(~ variable, ncol=1, scales="free") + 
   theme_clean(10)
-figA3
 
 filename <- "figureA3_wikileaks_missingness"
 width <- 4.5
@@ -1361,6 +1372,9 @@ ggsave(figA3, filename=file.path(base.folder, paste0(filename, ".pdf")),
        width=width, height=height, device=cairo_pdf)
 ggsave(figA3, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+caption <- "Figure A3: Count of observed Wikileaks cables, TIP-related cables, and TIP-related cables with a documented reaction"
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # Figure A4: Cho for all countries vs. case countries
@@ -1373,52 +1387,11 @@ ggsave(fig.cho.all.vs.cases, filename=file.path(base.folder, paste0(filename, ".
 ggsave(fig.cho.all.vs.cases, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-filename <- "figureA4_avg_all_vs_cases_excluding_always_tier1"
-width <- 4.5
-height <- 2.5
-ggsave(fig.cho.all.vs.cases.tier1.out, 
-       filename=file.path(base.folder, paste0(filename, ".pdf")), 
-       width=width, height=height, device=cairo_pdf)
-ggsave(fig.cho.all.vs.cases.tier1.out, 
-       filename=file.path(base.folder, paste0(filename, ".png")),
-       width=width, height=height, type="cairo", dpi=300)
-
-# Figure A5: TIP-related cables per 1000 expected cables
-filename <- "figureA5_tip_effort_tip_cables_per_1000_expected"
-width <- 4.5
-height <- 2.5
-ggsave(effort.map.binned, filename=file.path(base.folder, paste0(filename, ".pdf")), 
-       width=width, height=height, device=cairo_pdf)
-ggsave(effort.map.binned, filename=file.path(base.folder, paste0(filename, ".png")),
-       width=width, height=height, type="cairo", dpi=300)
-
-# Figure A6: Proportion of actual/estimated
-filename <- "figureA6_cables_estimated_actual"
-width <- 4.5
-height <- 3.5
-caption <- "Proporition of estimated cables that exist"
-ggsave(prop.present.map, filename=file.path(base.folder, paste0(filename, ".pdf")), 
-       width=width, height=height, device=cairo_pdf)
-ggsave(prop.present.map, filename=file.path(base.folder, paste0(filename, ".png")),
-       width=width, height=height, type="cairo", dpi=300)
+caption <- "Figure A4: Average 3P anti-TIP policy index for 15 case study countries compared to all other countries."
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
-# # Total TIP funding to case study countries
-# cases <- c("ARM", "IDN", "ECU", "MOZ", "KAZ", "ARG", "ISR", 
-#            "ARE", "NGA", "OMN", "HND", "JPN", "TCD", "ZWE", "MYS")
-# 
-# funding.cases <- funding.all.countries %>%
-#   filter(id %in% cases) %>%
-#   mutate(total = dollar(total),
-#          id = countrycode(id, "iso3c", "country.name")) %>%
-#   set_colnames(c("Country", "Total awarded"))
-# 
-# cat(pandoc.table.return(funding.cases, justify="lr", style="simple",
-#                         caption="Total TIP funding awarded to case study countries between 2002-2014"), 
-#     file=file.path(base.folder, "tablex_x_funding_cases.md"))
-
-
+# ----------
 # Appendix 2
 # ----------
 # Impact of report on media coverage
