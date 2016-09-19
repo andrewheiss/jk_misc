@@ -50,6 +50,7 @@ source("reactions.R")
 source("policy_index.R")
 source("ratifications.R")
 source("cables_tip.R")
+source("cases_favorability_influence.R")
 
 
 # -----------
@@ -1087,19 +1088,66 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # -----------
-# Chapter 6
+# Chapter 7
 # -----------
-# Figure 6.1: Variation in the Human Trafficking Index, 2000–2013
+# When does it work?
+#
+# Figure 7.1: Variation in the Human Trafficking Index, 2000–2013
 # Cho changes for case studies
 #
 # Dashed horizontal line indicates score when country entered the TIP report
-filename <- "figure6_1_cho_changes_case_studies"
+filename <- "figure7_1_cho_changes_case_studies"
 width <- 4.5
 height <- 6
 ggsave(fig.cho.changes, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
 ggsave(fig.cho.changes, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+caption <- c("Figure 7.1: Variation in the Human Trafficking Index for each case study country, 2000–2013.",
+             "Dashed horizontal line indicates policy score when the country entered the TIP Report. Vertical dashed lines indicate year country passed partial anti-TIP legislation, while solid vertical lines indicate year country passed full anti-TIP legislation.",
+             "Source: Author's data and Cho 2015") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
+
+# Figure 7.2: Factors that influence reputational concern and its translation into action
+# Copy of figure2_2_reputational_concerns_factors
+filename.original <- "figure2_2_reputational_concerns_factors"
+filename <- "figure7_2_reputational_concerns_factors"
+
+system(sprintf("cp %s %s", 
+               file.path(base.folder, paste0(filename.original, ".txt")),
+               file.path(base.folder, paste0(filename, ".txt"))))
+
+system(sprintf("cp %s %s", 
+               file.path(base.folder, paste0(filename.original, ".png")),
+               file.path(base.folder, paste0(filename, ".png"))))
+
+system(sprintf("cp %s %s", 
+               file.path(base.folder, paste0(filename.original, ".pdf")),
+               file.path(base.folder, paste0(filename, ".pdf"))))
+
+
+# Figure 7.3: Correlation between influence and favorability
+filename <- "figure7_3_cases_favor_influence"
+width <- 4.5
+height <- 3
+ggsave(p.cases.favor.influence, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(p.cases.favor.influence, filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+favor.influence.cor <- cor.test(cases$Favorability, cases$Influence)
+
+caption <- c("Figure 7.3: Correlation between influence and favorability",
+             sprintf("N = %d. Correlation = %.2f, p = %.2f", 
+                     favor.influence.cor$parameter + 2,
+                     favor.influence.cor$estimate,
+                     favor.influence.cor$p.value),
+             "Source: Author's data (see Table 5.1 and 6.1)") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # -----------
