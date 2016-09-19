@@ -67,8 +67,15 @@ ggsave(crim.map, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(crim.map, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
+caption <- c("The spread of domestic laws criminalizing human trafficking",
+             "Source: Author's data") %>% paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
 # Figure 1.2: The cycle of scorecard diplomacy
 # Exported from artboard in `Manual - Scorecard diplomacy cycle.ai`
+filename <- "figure1_2_scorecard_diplomacy_cycle"
+caption <- "The cycle of scorecard diplomacy"
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # -----------
@@ -78,9 +85,16 @@ ggsave(crim.map, filename=file.path(base.folder, paste0(filename, ".png")),
 #
 # Figure 2.1: Performance gaps and the relationship between ideals and practice 
 # Exported from artboard in `Manual - Performance gaps.ai`
+filename <- "figure2_1_performance_gaps"
+caption <- "Performance gaps and the relationship between ideals and practice"
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 # Figure 2.2: Factors that influence reputational concern and its translation into action
 # Exported from artboard in `Manual - Reputational concern factors.ai`
+filename <- "figure2_2_reputational_concerns_factors"
+caption <- "Factors that influence reputational concern and its translation into action"
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
 
 # Figure 2.1: Palermo Protocol ratifications
 filename <- "figure2_1_palermo_protocol_ratifications"
