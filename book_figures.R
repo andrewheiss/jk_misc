@@ -535,24 +535,29 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # -----------
-# Chapter 4
+# Chapter 5
 # -----------
-# Figure 4.1: Cycle of scorecard diplomacy
+# Micro-level evidence of reputational concerns
+#
+# Figure 5.1: Cycle of scorecard diplomacy, step 4
+# Exported from artboard in `Manual - Scorecard diplomacy cycle.ai`
+filename <- "figure5_1_cycle_step4"
+caption <- "Figure 5.1: The cycle of scorecard diplomacy"
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
-# Figure 4.2: Percent of TIP reports with a reported reaction
-# TODO: Second axis for wikileaks figure (figure 4_2) (or something else
-# because using two y axes is bad)
-df.fig4.raw <- read_csv("final_figures/data_figure4_2.csv") 
 
-df.num.reports <- df.fig4.raw %>%
+# Figure 5.2: Percent of TIP reports with a reported reaction
+df.fig5.2.raw <- read_csv("final_figures/data_figure5_2.csv") 
+
+df.num.reports <- df.fig5.2.raw %>%
   filter(grepl("Number", Variable)) %>%
   gather(year, num, -Variable)
 
-df.perc.reports <- df.fig4.raw %>%
+df.perc.reports <- df.fig5.2.raw %>%
   filter(grepl("Percent", Variable)) %>%
   gather(year, num, -Variable)
 
-fig4.2 <- ggplot() + 
+fig5.2 <- ggplot() + 
   geom_bar(data=df.num.reports, aes(x=year, y=num, fill=Variable), 
            stat="identity") + 
   geom_line(data=df.perc.reports, aes(x=year, y=num, colour=Variable, 
@@ -567,18 +572,31 @@ fig4.2 <- ggplot() +
                           legend.margin = unit(0.25, "lines"),
                           plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
 
-filename <- "figure4_2_wikileaks_coverage"
+filename <- "figure5_2_wikileaks_coverage"
 width <- 4.5
 height <- 3
-ggsave(fig4.2, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+ggsave(fig5.2, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(fig4.2, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(fig5.2, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-# Figure 4.3: Coding categories
+caption <- c("Figure 5.2: Percent of US Department of State TIP Reports with a documented reaction by the rated state",
+             "Source: US Department of State diplomatic cables, Wikileaks") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
-# Figure 4.4: Distribution of reactions
-filename <- "figure4_4_distribution_reactions"
+
+# Figure 5.3: Coding categories
+# Exported from artboard in `Manual - Coding categories.ai`
+filename <- "figure5_3_coding_categories"
+caption <- c("Figure 5.3: Reaction coding categories",
+             "For more details, please see the methods appendix.") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
+
+# Figure 5.4: Distribution of reactions
+filename <- "figure5_4_distribution_reactions"
 width <- 4.5
 height <- 4
 ggsave(p.reactions, filename=file.path(base.folder, paste0(filename, ".pdf")), 
@@ -586,11 +604,16 @@ ggsave(p.reactions, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(p.reactions, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-fig4.4.n <- paste0(sum(reactions$total), " reactions.")
-cat(fig4.4.n, file=file.path(base.folder, paste0(filename, ".txt")))
+fig5.4.n <- paste0(sum(reactions$total), " reactions.")
 
-# Figure 4.5: Co-occurrence of reactions
-df.fig4.5 <- read_csv("final_figures/data_figure4_5.csv") %>%
+caption <- c("Figure 5.4: Distribution of reactions documented in Wikileaks US embassy cables.",
+             fig5.4.n) %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
+
+# Figure 5.5: Co-occurrence of reactions
+df.fig5.5 <- read_csv("final_figures/data_figure5_5.csv") %>%
   mutate(Reaction = factor(Reaction, levels=rev(Reaction), ordered=TRUE)) %>%
   gather(Reaction2, num, -Reaction, na.rm=TRUE) %>%
   mutate(num.shade = ifelse(as.character(Reaction) != as.character(Reaction2),
@@ -598,7 +621,7 @@ df.fig4.5 <- read_csv("final_figures/data_figure4_5.csv") %>%
          num.shade = rescale(num.shade),
          text.color = ifelse(num.shade < 0.5 | is.na(num.shade), "black", "white"))
 
-fig4.5 <- ggplot(df.fig4.5, aes(x=Reaction2, y=Reaction, fill=num.shade)) + 
+fig5.5 <- ggplot(df.fig5.5, aes(x=Reaction2, y=Reaction, fill=num.shade)) + 
   geom_tile(colour="white") +
   geom_text(aes(label=num, colour=text.color), size=2.5, hjust=0.5, 
             family="Source Sans Pro Semibold") + 
@@ -609,26 +632,35 @@ fig4.5 <- ggplot(df.fig4.5, aes(x=Reaction2, y=Reaction, fill=num.shade)) +
   theme_clean(10) + theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1),
                           panel.grid=element_blank())
 
-filename <- "figure4_5_co_occurrence"
+filename <- "figure5_5_co_occurrence"
 width <- 4.5
 height <- 4
-ggsave(fig4.5, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+ggsave(fig5.5, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(fig4.5, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(fig5.5, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-df.fig4.5.n <- df.fig4.5 %>%
+df.fig5.5.n <- df.fig5.5 %>%
   filter(Reaction == Reaction2)
 
-fig4.5.n <- paste0(sum(df.fig4.5.n$num), " reactions.")
-cat(fig4.5.n, file=file.path(base.folder, paste0(filename, ".txt")))
+fig5.5.n <- paste0(sum(df.fig5.5.n$num), " reactions.")
 
-# Figure 4.6: Distribution of public versus private reactions, as percent of reports with a reported reaction
-df.fig4.6 <- read_csv("final_figures/data_figure4_6.csv") %>%
+caption <- c("Figure 5.5: Co-occurrence of reactions documented in Wikileaks US embassy cables.",
+             fig5.5.n) %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
+
+# Figure 5.6: Odds ratios of Model 4.1.3
+# Figure and caption enerated with `book_appendix_tables.R`
+
+
+# Figure 5.7: Distribution of public versus private reactions, as percent of reports with a reported reaction
+df.fig5.7 <- read_csv("final_figures/data_figure5_7.csv") %>%
   gather(scope, num, -Reaction) %>%
   mutate(Reaction = factor(Reaction, levels=rev(unique(Reaction)), ordered=TRUE))
 
-fig4.6 <- ggplot(df.fig4.6, aes(x=Reaction, y=num, fill=scope)) + 
+fig5.7 <- ggplot(df.fig5.7, aes(x=Reaction, y=num, fill=scope)) + 
   geom_bar(stat="identity", position=position_dodge()) + 
   labs(x=NULL, y=NULL) + 
   scale_y_continuous(labels=percent, breaks=seq(0, 0.5, 0.1)) + 
@@ -641,16 +673,22 @@ fig4.6 <- ggplot(df.fig4.6, aes(x=Reaction, y=num, fill=scope)) +
                           legend.margin = unit(0.25, "lines"),
                           plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
 
-filename <- "figure4_6_reaction_scope"
+filename <- "figure5_7_reaction_scope"
 width <- 4.5
 height <- 3.5
-ggsave(fig4.6, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+ggsave(fig5.7, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(fig4.6, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(fig5.7, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-fig4.6.n <- "This came from QDA Miner, so I don't know the original N. The figure gets its data from `final_figures/data_figure4_6.csv`."
-cat(fig4.6.n, file=file.path(base.folder, paste0(filename, ".txt")))
+fig5.7.n <- "306 reports."
+
+caption <- c("Figure 5.7: Distribution of public versus private reactions, as percent of all reports with a reported reaction.",
+             fig5.7.n,
+             "Public reactions are those published in the media. Private reactions are those documented in US Department of State embassy cables from Wikileaks.",
+             "Note: Public face-saving reactions were only relevant in private, as embassies could not report in the media that officials were making efforts to save face.") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # -----------

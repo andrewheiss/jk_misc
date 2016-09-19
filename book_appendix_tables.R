@@ -638,13 +638,22 @@ coef.plot <- ggplot(plot.data, aes(y=clean.name, x=estimate)) +
   theme_clean(10)
 coef.plot
 
-filename <- "figureX_chapter_4_coef_plot"
+filename <- "figure5_6_coef_plot"
 width <- 4.5
 height <- 3
 ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
 ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+fig5.6.n <- sprintf("N = %s", model4.1.3$df.null + 1)
+
+caption <- c("Figure 5.6: Odds ratios of Model 4.1.3",
+             "Logit model of probability of criminalization in the next year.",
+             fig5.6.n,
+             "Source: Author's data.") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path("final_figures", paste0(filename, ".txt")))
 
 
 # -----------
