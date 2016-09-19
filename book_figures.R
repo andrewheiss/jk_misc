@@ -1171,6 +1171,9 @@ system(sprintf("cp %s %s",
                file.path(base.folder, "cases", paste0(filename.original, ".pdf")),
                file.path(base.folder, paste0(filename, ".pdf"))))
 
+caption <- "Figure 8.1: Overview of Armenia TIP tiers, criminalization, governments, and the anti-TIP policy index"
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
 
 # Figure 8.2: Israel
 # Overview of Israel TIP tiers, criminalization, governments, and the anti-TIP policy index
@@ -1184,6 +1187,9 @@ system(sprintf("cp %s %s",
 system(sprintf("cp %s %s", 
                file.path(base.folder, "cases", paste0(filename.original, ".pdf")),
                file.path(base.folder, paste0(filename, ".pdf"))))
+
+caption <- "Figure 8.2: Overview of Israel TIP tiers, criminalization, governments, and the anti-TIP policy index"
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # Figure 8.3: Zimbabwe
@@ -1199,9 +1205,11 @@ system(sprintf("cp %s %s",
                file.path(base.folder, "cases", paste0(filename.original, ".pdf")),
                file.path(base.folder, paste0(filename, ".pdf"))))
 
+caption <- "Figure 8.3: Overview of Zimbabwe TIP tiers, criminalization, governments, and the anti-TIP policy index"
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
 
 # Figure 8.4: Japan
-# Overview of Japan TIP tiers, criminalization, governments, and the anti-TIP policy index
 filename.original <- "timeline_JPN"
 filename <- "figure8_4_JPN"
 
@@ -1212,6 +1220,9 @@ system(sprintf("cp %s %s",
 system(sprintf("cp %s %s", 
                file.path(base.folder, "cases", paste0(filename.original, ".pdf")),
                file.path(base.folder, paste0(filename, ".pdf"))))
+
+caption <- "Figure 8.4: Overview of Japan TIP tiers, criminalization, governments, and the anti-TIP policy index"
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # ------------------
