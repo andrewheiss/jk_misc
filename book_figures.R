@@ -1500,15 +1500,3 @@ fig.dem.down.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +
                           legend.key = element_blank(),
                           legend.margin = unit(0.25, "lines"),
                           plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
-
-filename <- "figureA2_6_3_interactions_democracy_demote"
-width <- 4.5
-height <- 3
-caption <- "Predicted probability of criminalization across different levels of democracy, given the time elapsed since receiving a demotion in TIP rating (Model 6.5.3)"
-ggsave(fig.dem.down.predict, 
-       filename=file.path(base.folder, paste0(filename, ".pdf")), 
-       width=width, height=height, device=cairo_pdf)
-ggsave(fig.dem.down.predict, 
-       filename=file.path(base.folder, paste0(filename, ".png")),
-       width=width, height=height, type="cairo", dpi=300)
-cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
