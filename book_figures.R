@@ -1405,7 +1405,7 @@ fig.media.report <- ggplot(plot.predict, aes(x=inreport, y=avg.logstory_exp)) +
   labs(x=NULL, y="Average predicted number of TIP-related stories") +
   theme_clean(10)
 
-filename <- "figureA_3_media_inreport_predict"
+filename <- "figureA2_3_media_inreport_predict"
 width <- 4.5
 height <- 3
 caption <- "Predicted number of TIP-related stories given a country’s presence in the annual TIP report; mean predicted values of every observation in Model 3.1.1"
@@ -1435,7 +1435,7 @@ fig.dem.report.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +
                           legend.margin = unit(0.25, "lines"),
                           plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
 
-filename <- "figureA_6_1_interactions_democracy_report"
+filename <- "figureA2_6_1_interactions_democracy_report"
 width <- 4.5
 height <- 3
 caption <- "Predicted probability of criminalization across different levels of democracy, given presence in the annual TIP report (Model 6.5.1)"
@@ -1467,7 +1467,7 @@ fig.dem.lowest.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +
                           legend.margin = unit(0.25, "lines"),
                           plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
 
-filename <- "figureA_6_2_interactions_democracy_lowest"
+filename <- "figureA2_6_2_interactions_democracy_lowest"
 width <- 4.5
 height <- 3
 caption <- "Predicted probability of criminalization across different levels of democracy, given assignment to the lowest TIP tier (Model 6.5.2)"
@@ -1501,7 +1501,7 @@ fig.dem.down.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +
                           legend.margin = unit(0.25, "lines"),
                           plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
 
-filename <- "figureA_6_3_interactions_democracy_demote"
+filename <- "figureA2_6_3_interactions_democracy_demote"
 width <- 4.5
 height <- 3
 caption <- "Predicted probability of criminalization across different levels of democracy, given the time elapsed since receiving a demotion in TIP rating (Model 6.5.3)"
