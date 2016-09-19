@@ -1151,9 +1151,67 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # -----------
-# Chapter 7
+# Chapter 8
 # -----------
-# Figure 7.1: Summary of claims
+# Country perspectives
+# Generate figures for all case studies, then copy necessary ones to final folder
+source("case_study_data_summaries.R")
+base.folder <- "final_figures"
+
+# Figure 8.1: Armenia
+# Overview of Armenia TIP tiers, criminalization, governments, and the anti-TIP policy index
+filename.original <- "timeline_ARM"
+filename <- "figure8_1_ARM"
+
+system(sprintf("cp %s %s", 
+               file.path(base.folder, "cases", paste0(filename.original, ".png")),
+               file.path(base.folder, paste0(filename, ".png"))))
+
+system(sprintf("cp %s %s", 
+               file.path(base.folder, "cases", paste0(filename.original, ".pdf")),
+               file.path(base.folder, paste0(filename, ".pdf"))))
+
+
+# Figure 8.2: Israel
+# Overview of Israel TIP tiers, criminalization, governments, and the anti-TIP policy index
+filename.original <- "timeline_ISR"
+filename <- "figure8_2_ISR"
+
+system(sprintf("cp %s %s", 
+               file.path(base.folder, "cases", paste0(filename.original, ".png")),
+               file.path(base.folder, paste0(filename, ".png"))))
+
+system(sprintf("cp %s %s", 
+               file.path(base.folder, "cases", paste0(filename.original, ".pdf")),
+               file.path(base.folder, paste0(filename, ".pdf"))))
+
+
+# Figure 8.3: Zimbabwe
+# Overview of Zimbabwe TIP tiers, criminalization, governments, and the anti-TIP policy index
+filename.original <- "timeline_ZWE"
+filename <- "figure8_3_ZWE"
+
+system(sprintf("cp %s %s", 
+               file.path(base.folder, "cases", paste0(filename.original, ".png")),
+               file.path(base.folder, paste0(filename, ".png"))))
+
+system(sprintf("cp %s %s", 
+               file.path(base.folder, "cases", paste0(filename.original, ".pdf")),
+               file.path(base.folder, paste0(filename, ".pdf"))))
+
+
+# Figure 8.4: Japan
+# Overview of Japan TIP tiers, criminalization, governments, and the anti-TIP policy index
+filename.original <- "timeline_JPN"
+filename <- "figure8_4_JPN"
+
+system(sprintf("cp %s %s", 
+               file.path(base.folder, "cases", paste0(filename.original, ".png")),
+               file.path(base.folder, paste0(filename, ".png"))))
+
+system(sprintf("cp %s %s", 
+               file.path(base.folder, "cases", paste0(filename.original, ".pdf")),
+               file.path(base.folder, paste0(filename, ".pdf"))))
 
 
 # ------------------
