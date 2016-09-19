@@ -68,12 +68,20 @@ ggsave(crim.map, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
 # Figure 1.2: The cycle of scorecard diplomacy
-# Exported from artboard in `Scorecard diplomacy cycle.ai`
+# Exported from artboard in `Manual - Scorecard diplomacy cycle.ai`
 
 
 # -----------
 # Chapter 2
 # -----------
+# Scorecard diplomacy and reputation
+#
+# Figure 2.1: Performance gaps and the relationship between ideals and practice 
+# Exported from artboard in `Manual - Performance gaps.ai`
+
+# Figure 2.2: Factors that influence reputational concern and its translation into action
+# Exported from artboard in `Manual - Reputational concern factors.ai`
+
 # Figure 2.1: Palermo Protocol ratifications
 filename <- "figure2_1_palermo_protocol_ratifications"
 width <- 4.5
