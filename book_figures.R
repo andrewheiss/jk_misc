@@ -368,12 +368,19 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
  
 # -----------
-# Chapter 3
+# Chapter 4
 # -----------
-# Figure 3.1: Cycle of scorecard diplomacy, step 3
+# How third parties boost reputational concerns
+#
+# Figure 4.1: Cycle of scorecard diplomacy, step 3
+# Exported from artboard in `Manual - Scorecard diplomacy cycle.ai`
+filename <- "figure4_1_cycle_step3"
+caption <- "Figure 4.1: The cycle of scorecard diplomacy"
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
-# Figure 3.2: Distribution of US TIP funding across sectors, 2001-2014
-filename <- "figure3_2_grants_sectors"
+
+# Figure 4.2: Distribution of US TIP funding across sectors, 2001-2014
+filename <- "figure4_2_grants_sectors"
 width <- 4.5
 height <- 1.5
 ggsave(grants.to.all.sectors, filename=file.path(base.folder, paste0(filename, ".pdf")), 
@@ -381,8 +388,15 @@ ggsave(grants.to.all.sectors, filename=file.path(base.folder, paste0(filename, "
 ggsave(grants.to.all.sectors, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-# Figure 3.3: Distribution of US TIP funding across IGOs and other agencies
-filename <- "figure3_3_grants_igos"
+caption <- c("Figure 4.2: Distribution of US Department of State TIP funding across sectors, 2001–2014.",
+             "Note: Does not include separate funding through other US agencies or some direct funding of IGOs",
+             "Source: US Department of State") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
+
+# Figure 4.3: Distribution of US TIP funding across IGOs and other agencies
+filename <- "figure4_3_grants_igos"
 width <- 4.5
 height <- 1.75
 ggsave(grants.to.igos, filename=file.path(base.folder, paste0(filename, ".pdf")), 
@@ -390,8 +404,15 @@ ggsave(grants.to.igos, filename=file.path(base.folder, paste0(filename, ".pdf"))
 ggsave(grants.to.igos, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-# Figure 3.4: Q3.18 from survey
-df.book.plots <- read_csv(file.path(base.folder, "data_figure3_4.csv"))
+caption <- c("Figure 4.3: Distribution of US TIP funding across IGOs and other agencies",
+             "Note: Does not include separate funding through other US agencies or some direct funding of IGOs",
+             "Source: US Department of State") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
+
+# Figure 4.4: Q3.18 from survey
+df.book.plots <- read_csv(file.path(base.folder, "data_figure4_4.csv"))
 
 df.Q3.18.lookup <- data_frame(q.num = c("Q3.18_1", "Q3.18_2", 
                                         "Q3.18_3", "Q3.18_4",
@@ -419,25 +440,31 @@ df.Q3.18 <- df.book.plots %>%
   left_join(df.Q3.18.lookup, by=c("question" = "q.num")) %>%
   mutate(q.label = factor(q.label, levels=rev(q.label), ordered=TRUE))
 
-fig3.4 <- ggplot(df.Q3.18, aes(x=q.label, y=prop)) +
+fig4.4 <- ggplot(df.Q3.18, aes(x=q.label, y=prop)) +
   geom_bar(stat="identity") + 
   labs(x=NULL, y=NULL) + 
   scale_y_continuous(labels=percent) +
   coord_flip() + 
   theme_clean(10)
 
-filename <- "figure3_4_contact_with_us"
+filename <- "figure4_4_contact_with_us"
 width <- 4.5
 height <- 2
-ggsave(fig3.4, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+ggsave(fig4.4, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(fig3.4, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(fig4.4, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-fig3.4.n <- paste0(unique(df.Q3.18$denom.Q3.18), " responses.")
-cat(fig3.4.n, file=file.path(base.folder, paste0(filename, ".txt")))
+fig4.4.n <- paste0(unique(df.Q3.18$denom.Q3.18), " responses.")
 
-# Figure 3.5: Stakeholders with whom NGOs discuss the TIP report
+caption <- c("Figure 4.4: NGO responses to the question: \"Over the last 10–15 years, has your organization worked directly with or had direct contact with the US embassy or government on human trafficking issues?\"",
+             fig4.4.n,
+             "Source: Author's NGO survey") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
+
+# Figure 4.5: Stakeholders with whom NGOs discuss the TIP report
 df.Q3.21.lookup <- data_frame(q.num = c("Q3.21_1", "Q3.21_2", 
                                         "Q3.21_3", "Q3.21_4"),
                               q.label = c("National government", 
@@ -460,40 +487,51 @@ df.Q3.21 <- df.book.plots %>%
   left_join(df.Q3.21.lookup, by=c("question" = "q.num")) %>%
   mutate(q.label = factor(q.label, levels=rev(q.label), ordered=TRUE))
 
-fig3.5 <- ggplot(df.Q3.21, aes(x=q.label, y=prop)) +
+fig4.5 <- ggplot(df.Q3.21, aes(x=q.label, y=prop)) +
   geom_bar(stat="identity") + 
   labs(x=NULL, y=NULL) + 
   scale_y_continuous(labels=percent) +
   coord_flip() + 
   theme_clean(10)
 
-filename <- "figure3_5_discuss_tip_report"
+filename <- "figure4_5_discuss_tip_report"
 width <- 4.5
 height <- 1.75
-ggsave(fig3.5, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+ggsave(fig4.5, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(fig3.5, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(fig4.5, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-fig3.5.n <- paste0(unique(df.Q3.21$denom.Q3.21), " responses.")
-cat(fig3.5.n, file=file.path(base.folder, paste0(filename, ".txt")))
+fig4.5.n <- paste0(unique(df.Q3.21$denom.Q3.21), " responses.")
 
-# Figure 3.6: Coverage in Oman
-df.fig3.6 <- read_csv("final_figures/data_figure3_6.csv") %>%
+caption <- c("Figure 4.5: Stakeholders with whom NGOs report discussing the US Department of State TIP Report",
+             fig4.5.n,
+             "Source: Author's NGO survey") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
+
+# Figure 4.6: Coverage in Oman
+df.fig4.6 <- read_csv("final_figures/data_figure4_6.csv") %>%
   mutate(Month = factor(Month, levels=Month, ordered=TRUE))
 
-fig3.6 <- ggplot(df.fig3.6, aes(x=Month, y=Number)) + 
+fig4.6 <- ggplot(df.fig4.6, aes(x=Month, y=Number)) + 
   geom_bar(stat="identity") +
   labs(x=NULL, y="Stories on TIP issues") + 
   theme_clean(10) + theme(axis.text.x = element_text(angle=45, hjust=0.5, vjust=0.5))
 
-filename <- "figure3_6_oman_coverage"
+filename <- "figure4_6_oman_coverage"
 width <- 4.5
 height <- 2
-ggsave(fig3.6, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+ggsave(fig4.6, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(fig3.6, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(fig4.6, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+caption <- c("Figure 4.6: Total news coverage of human trafficking issues in Oman, by publication month, 2005–2014",
+             "Source: Lexis Nexis") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # -----------
