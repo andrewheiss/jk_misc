@@ -55,7 +55,10 @@ source("cables_tip.R")
 # -----------
 # Chapter 1
 # -----------
-# Figure 1.1: The spread of criminalization around the world
+# Introduction
+#
+# Figure 1.1: The spread of domestic laws criminalizing human trafficking
+# Source: Author's data
 filename <- "figure1_1_crim_map"
 width <- 4.5
 height <- 5
@@ -64,7 +67,8 @@ ggsave(crim.map, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(crim.map, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-# Figure 1.2: Cycle of scorecard diplomacy, all steps
+# Figure 1.2: The cycle of scorecard diplomacy
+# Exported from artboard in `Scorecard diplomacy cycle.ai`
 
 
 # -----------
