@@ -4,6 +4,7 @@
 # Libraries for ggplot themes
 library(ggplot2)
 library(grid)
+library(gridExtra)
 library(scales)
 library(Cairo)
 

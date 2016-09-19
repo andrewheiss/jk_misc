@@ -867,13 +867,21 @@ coef.plot <- ggplot(plot.data, aes(y=clean.name, x=estimate,
   theme_clean(10) + theme(legend.key.width=unit(2, "line"),
                           legend.key = element_blank())
 
-filename <- "figureX_chapter_5_coef_plot"
+filename <- "figure6_7_coef_plot"
 width <- 4.5
 height <- 3
 ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
 ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+caption <- c("Figure 6.7: Odds ratios of the variables representing scorecard diplomacy",
+             sprintf("Duration models of time to criminalization. N = %s (models 5.1.2 and 5.2.5) and %s (model 5.2.3)", 
+                     format(model5.1.2$n, big.mark=",", trim=TRUE),
+                     format(model5.2.3$n, big.mark=",", trim=TRUE)),
+             "Source: Author's data. For full results, see the Results Appendix") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path("final_figures", paste0(filename, ".txt")))
 
 
 # Coefficient plot
@@ -908,13 +916,20 @@ coef.plot <- ggplot(plot.data, aes(y=clean.name, x=estimate,
   theme_clean(10) + theme(legend.key.width=unit(2, "line"),
                           legend.key = element_blank())
 
-filename <- "figureX_chapter_5a_coef_plot"
+filename <- "figure6_9_coef_plot"
 width <- 4.5
 height <- 2
 ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
 ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+caption <- c("Figure 6.9: Odds ratios of the variables representing scorecard diplomacy",
+             sprintf("Logit models of probability of criminalization in the next year. N = %s", 
+                     model5.3.1$df.null + 1),
+             "Source: Author's data. For full results, see the Results Appendix") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path("final_figures", paste0(filename, ".txt")))
 
 
 # -----------

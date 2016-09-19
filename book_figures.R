@@ -652,7 +652,7 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # Figure 5.6: Odds ratios of Model 4.1.3
-# Figure and caption enerated with `book_appendix_tables.R`
+# Figure and caption generated with `book_appendix_tables.R`
 
 
 # Figure 5.7: Distribution of public versus private reactions, as percent of reports with a reported reaction
@@ -692,16 +692,99 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # -----------
-# Chapter 5
+# Chapter 6
 # -----------
-# Figure 5.1: Cycle of scorecard diplomacy, step 5
+# From reputational concerns to effects on laws, practices and norms
+#
+# Figure 6.1: Importance and positivity of the US
+df.importance.positivity <- read_csv(file.path(base.folder, "data_q3_19_25.csv")) %>%
+  mutate(Q3.19 = factor(Q3.19, levels=c("Most important actor", 
+                                        "Somewhat important actor", 
+                                        "Not an important actor", "Don't know"), 
+                        labels=c("Most important", "Somewhat important", 
+                                 "Not important", "Don't know"), 
+                        ordered=TRUE),
+         Q3.25 = factor(Q3.25, levels=c("Positive", "Mixed", 
+                                        "Negative", "Don't know"),
+                        ordered=TRUE))
 
-# Figure 5.2: Criminalization and TIP report inclusion over time
-df.fig5.2 <- read_csv("final_figures/data_figure5_2.csv") %>%
+plot.data.importance <- df.importance.positivity %>%
+  group_by(Q3.19) %>%
+  summarize(num = n()) %>%
+  na.omit() %>%
+  mutate(prop = num / sum(num),
+         prop.nice = sprintf("%.1f%%", prop * 100),
+         Q3.19 = factor(Q3.19, levels=rev(levels(Q3.19)), ordered=TRUE))
+
+fig.us_importance <- ggplot(plot.data.importance, aes(x=Q3.19, y=prop)) + 
+  geom_bar(stat="identity") + 
+  geom_rect(ymin=-0.01, ymax=0.36, xmin=2.5, xmax=4.5, 
+            fill=NA, colour="grey10", size=0.25) +
+  geom_segment(x=3.5, xend=3.5, y=0.36, yend=0.40, size=0.25,
+               arrow = arrow(length = unit(0.03, "npc"))) +
+  labs(x=NULL, y=NULL) + 
+  scale_y_continuous(labels = percent) + 
+  coord_flip(ylim=c(0, 0.40)) + theme_clean(10)
+fig.us_importance
+
+plot.data.positivity <- df.importance.positivity %>%
+  group_by(Q3.25) %>%
+  summarize(num = n()) %>%
+  na.omit() %>%
+  mutate(prop = num / sum(num),
+         prop.nice = sprintf("%.1f%%", prop * 100),
+         Q3.25 = factor(Q3.25, levels=rev(levels(Q3.25)), ordered=TRUE))
+
+fig.us_positivity <- ggplot(plot.data.positivity, aes(x=Q3.25, y=prop)) + 
+  geom_bar(stat="identity") + 
+  labs(x=NULL, y=NULL) + 
+  scale_y_continuous(labels = percent) + 
+  coord_flip() + theme_clean(10)
+fig.us_positivity
+
+blank <- rectGrob(gp=gpar(col="white"))
+
+combined <- arrangeGrob(fig.us_importance, 
+                        arrangeGrob(fig.us_positivity, blank),
+                        ncol=2, widths=c(0.65, 0.35))
+
+filename <- "figure6_1_importance_positivity"
+width <- 4.5
+height <- 2.5
+
+ggsave(combined, 
+       filename=file.path(base.folder, paste0(filename, ".pdf")), 
+       width=width, height=height, device=cairo_pdf)
+ggsave(combined, 
+       filename=file.path(base.folder, paste0(filename, ".png")),
+       width=width, height=height, type="cairo", dpi=300)
+
+fig6.1.n <- paste0("Responses related to importance: ", 
+                   sum(plot.data.importance$num),
+                   ". Responses related to positivity: ",
+                   sum(plot.data.positivity$num), ".")
+
+caption <- c("Figure 6.1: NGO assessments of US anti-TIP efforts in their countries.",
+             fig6.1.n,
+             "The N exceeds the total number of respondents because some NGOs work in more than one country and answered the question for each country.",
+             "Source: NGO survey by author.") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
+
+# Figure 6.2: Cycle of scorecard diplomacy, step 5
+# Exported from artboard in `Manual - Scorecard diplomacy cycle.ai`
+filename <- "figure6_2_cycle_step5"
+caption <- "Figure 6.2: The cycle of scorecard diplomacy"
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
+
+# Figure 6.3: Criminalization and TIP report inclusion over time
+df.fig6.3 <- read_csv("final_figures/data_figure6_3.csv") %>%
   gather(Variable, num, -Year) %>%
   filter(!is.na(num))
 
-fig5.2 <- ggplot(df.fig5.2, aes(x=Year, y=num, colour=Variable)) +
+fig6.3 <- ggplot(df.fig6.3, aes(x=Year, y=num, colour=Variable)) +
   geom_line(size=0.75) + 
   labs(x=NULL, y="Number of countries") + 
   scale_colour_manual(values=c("grey30", "grey80"), name=NULL,
@@ -715,31 +798,27 @@ fig5.2 <- ggplot(df.fig5.2, aes(x=Year, y=num, colour=Variable)) +
                           plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"),
                           panel.grid.minor=element_blank())
 
-filename <- "figure5_2_crim_report"
+filename <- "figure6_3_crim_report"
 width <- 4.5
 height <- 2.5
-ggsave(fig5.2, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+ggsave(fig6.3, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(fig5.2, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(fig6.3, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-# Figure 5.3: Relationship between Cho subcomponents and criminalization
-filename <- "figure5_3_cho_crim"
+caption <- c("Figure 6.3: Number of countries with domestic criminalization of human trafficking and number of countries included in the US Department of State TIP Report inclusion, 2000–2014.") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
+
+# Figure 6.4: Relationship between Cho subcomponents and criminalization
+filename <- "figure6_4_cho_crim"
 width <- 5.5
 height <- 4.5
 ggsave(cho.crim.all.countries, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
 ggsave(cho.crim.all.countries, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
-
-df.tier.plot.n <- tiers.summary %>%
-  group_by(year) %>%
-  summarize(total = sum(n))
-
-countries.no.crim
-countries.full.partial
-
-filter(countries.full.partial, years.since.full.alt == "-10")$num
 
 full.partial.n <- paste0("Countries with full criminalization: ", 
                          "10 years before (N = ", 
@@ -757,12 +836,17 @@ no.crim.n <- paste0("Countries without full criminalization: ",
                     filter(countries.no.crim, year == "2000-01-01")$num,
                     ".")
 
-fig5.3.n <- paste(full.partial.n, no.crim.n)
-cat(fig5.3.n, file=file.path(base.folder, paste0(filename, ".txt")))
+fig6.4.n <- paste(full.partial.n, no.crim.n)
+
+caption <- c("Figure 6.4: Number of countries with domestic criminalization of human trafficking and number of countries included in the US Department of State TIP Report inclusion, 2000–2014. Highest possible score is eight.",
+             fig6.4.n,
+             "Source: Author's data and Cho 2015.") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
-# Figure 5.4: Number of anti-TIP laws passing, by month, 2001-2014
-df.fig5.4 <- read_stata("original_files/Criminalization Data UpdatedJK.dta") %>%
+# Figure 6.5: Number of anti-TIP laws passing, by month, 2001-2014
+df.fig6.5 <- read_stata("original_files/Criminalization Data UpdatedJK.dta") %>%
   filter(crimlevel == 2) %>%
   group_by(month) %>%
   summarise(num = n()) %>%
@@ -770,34 +854,40 @@ df.fig5.4 <- read_stata("original_files/Criminalization Data UpdatedJK.dta") %>%
   mutate(month = month.name[month],
          month = factor(month, levels=month, ordered=TRUE))
 
-df.fig5.4.table <- read_stata("original_files/Criminalization Data UpdatedJK.dta") %>%
+df.fig6.5.table <- read_stata("original_files/Criminalization Data UpdatedJK.dta") %>%
   filter(crimlevel == 2) %>%
   xtabs(~ month, .) %>% print
 
-fig5.4.chisq <- chisq.test(df.fig5.4.table)
+fig6.5.chisq <- chisq.test(df.fig6.5.table)
 
-fig5.4 <- ggplot(df.fig5.4, aes(x=month, y=num)) + 
+fig6.5 <- ggplot(df.fig6.5, aes(x=month, y=num)) + 
   geom_bar(stat="identity") +
   labs(x=NULL, y="Anti-TIP laws passed") + 
   theme_clean(10) + theme(axis.text.x = element_text(angle=45, hjust=0.5, vjust=0.5))
 
-filename <- "figure5_4_laws_passed"
+filename <- "figure6_5_laws_passed"
 width <- 4.5
 height <- 2
-ggsave(fig5.4, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+ggsave(fig6.5, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(fig5.4, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(fig6.5, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
 capture.output({
   print("Laws passed each month")
-  print(df.fig5.4.table)
+  print(df.fig6.5.table)
   cat("\n\n")
   print("Chi-squared test")
-  print(fig5.4.chisq)
+  print(fig6.5.chisq)
 }, file=file.path(base.folder, paste0(filename, "_chisq.txt")))
 
-# Figure 5.5: Probability of criminalizing fully in a given year if a country had not already done so, 2001-2010
+caption <- c("Figure 6.5: Number of laws passed to criminalize human trafficking, by month, 2001–2014.",
+             sprintf("N = %s", sum(df.fig6.5$num))) %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
+
+# Figure 6.6: Probability of criminalizing fully in a given year if a country had not already done so, 2001-2010
 ajps.raw <- read_dta("original_files/kelley_simmons_ajps_2014_replication.dta") %>%
   group_by(cowcode) %>%
   mutate(adjbicrimlevel.lag = lag(adjbicrimlevel),
@@ -868,7 +958,6 @@ tier.drop <- ajps.raw %>%
   mutate(label = "Tier drop") %>%
   select(label, num, total, prob.yes)
 
-
 tier.changes <- bind_rows(no.change, tier.drop, drop.to.3)
 
 # Combine all those dataframes and add spacer rows
@@ -884,23 +973,31 @@ full.table <- bind_rows(report.presence, blank.row1,
          label = factor(label, levels=rev(label), ordered=TRUE))
 
 # Finally plot it all
-fig5.5 <- ggplot(full.table, aes(x=label.n, y=prob.yes)) + 
+fig6.6 <- ggplot(full.table, aes(x=label.n, y=prob.yes)) + 
   geom_bar(stat="identity") + 
   labs(x=NULL, y="Probability of criminalizing") + 
   scale_y_continuous(labels=percent) + 
   coord_flip() + 
   theme_clean(10)
 
-filename <- "figure5_5_prob_criminalize"
+filename <- "figure6_6_prob_criminalize"
 width <- 4.5
 height <- 3
-ggsave(fig5.5, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+ggsave(fig6.6, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(fig5.5, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(fig6.6, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
+caption <- c("Figure 6.6: Probability of a country criminalizing human trafficking fully in a given year if it had not already done so, by tier status in the US Department of State TIP Report, 2001–2010") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
-# Figure 5.6: Incidence of criminalization in the following year, 2001-2010 for all countries included in the TIP report that had not yet criminalized in the year of the report
+
+# Figure 6.7: Odds ratios of the variables representing scorecard diplomacy
+# Figure and caption generated with `book_appendix_tables.R`
+
+
+# Figure 6.8: Incidence of criminalization in the following year, 2001-2010 for all countries included in the TIP report that had not yet criminalized in the year of the report
 # Load reaction data from Stata file
 reaction.vars <- c("appreciation", "funding", "anger", "cooperative", 
                    "objection", "comparisonsratingnotfair", "publicfacesaving",
@@ -954,7 +1051,7 @@ df.reaction.types <- reactions.crim.long %>%
   select(reaction = nice.name, num = crim.yes, total, prob.yes)
 
 # Combine the two dataframes, separated by a blank row
-df.fig5.6 <- bind_rows(df.reaction.types, 
+df.fig6.8 <- bind_rows(df.reaction.types, 
                        data_frame(reaction=" ", num=NA, total=NA, prob.yes=0), 
                        df.reactions) %>%
   mutate(label.n = ifelse(reaction != " ", 
@@ -964,20 +1061,29 @@ df.fig5.6 <- bind_rows(df.reaction.types,
          label.n = factor(label.n, levels=label.n, ordered=TRUE))
 
 # Plot, finally
-fig5.6 <- ggplot(df.fig5.6, aes(x=label.n, y=prob.yes)) + 
+fig6.8 <- ggplot(df.fig6.8, aes(x=label.n, y=prob.yes)) + 
   geom_bar(stat="identity") + 
   labs(x=NULL, y="Probability of criminalization") + 
   scale_y_continuous(labels=percent) + 
   coord_flip() + 
   theme_clean(10)
 
-filename <- "figure5_6_react_criminalization"
+filename <- "figure6_8_react_criminalization"
 width <- 4.5
 height <- 3
-ggsave(fig5.6, filename=file.path(base.folder, paste0(filename, ".pdf")), 
+ggsave(fig6.8, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
-ggsave(fig5.6, filename=file.path(base.folder, paste0(filename, ".png")),
+ggsave(fig6.8, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
+
+caption <- c("Figure 6.8: Probability of a country criminalizing human trafficking fully in a given year if it had not already done so, by prior year’s reaction (as documented in the US embassy cables) to the US Department of State TIP Report, 2001–2010",
+             "Source: Author's Data. Note that the total N for the sub-types adds to more than the N for the documented reactions. This is because the sub-types are not mutually exclusive.") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
+
+# Figure 6.9: Odds ratios of the variables representing scorecard diplomacy
+# Figure and caption generated with `book_appendix_tables.R`
 
 
 # -----------
@@ -1302,92 +1408,3 @@ ggsave(fig.dem.down.predict,
        filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
-
-
-# -----------------------
-# Miscellaneous figures
-# -----------------------
-df.importance.positivity <- read_csv(file.path(base.folder, "data_q3_19_25.csv")) %>%
-  mutate(Q3.19 = factor(Q3.19, levels=c("Most important actor", 
-                                        "Somewhat important actor", 
-                                        "Not an important actor", "Don't know"), 
-                        labels=c("Most important", "Somewhat important", 
-                                 "Not important", "Don't know"), 
-                        ordered=TRUE),
-         Q3.25 = factor(Q3.25, levels=c("Positive", "Mixed", 
-                                        "Negative", "Don't know"),
-                        ordered=TRUE))
-
-plot.data.importance <- df.importance.positivity %>%
-  group_by(Q3.19) %>%
-  summarize(num = n()) %>%
-  na.omit() %>%
-  mutate(prop = num / sum(num),
-         prop.nice = sprintf("%.1f%%", prop * 100),
-         Q3.19 = factor(Q3.19, levels=rev(levels(Q3.19)), ordered=TRUE))
-
-fig.us_importance <- ggplot(plot.data.importance, aes(x=Q3.19, y=prop)) + 
-  geom_bar(stat="identity") + 
-  geom_rect(ymin=-0.01, ymax=0.36, xmin=2.5, xmax=4.5, 
-            fill=NA, colour="grey10", size=0.25) +
-  geom_segment(x=3.5, xend=3.5, y=0.36, yend=0.40, size=0.25,
-               arrow = arrow(length = unit(0.03, "npc"))) +
-  labs(x=NULL, y=NULL) + 
-  scale_y_continuous(labels = percent) + 
-  coord_flip(ylim=c(0, 0.40)) + theme_clean(10)
-fig.us_importance
-
-plot.data.positivity <- df.importance.positivity %>%
-  group_by(Q3.25) %>%
-  summarize(num = n()) %>%
-  na.omit() %>%
-  mutate(prop = num / sum(num),
-         prop.nice = sprintf("%.1f%%", prop * 100),
-         Q3.25 = factor(Q3.25, levels=rev(levels(Q3.25)), ordered=TRUE))
-
-fig.us_positivity <- ggplot(plot.data.positivity, aes(x=Q3.25, y=prop)) + 
-  geom_bar(stat="identity") + 
-  labs(x=NULL, y=NULL) + 
-  scale_y_continuous(labels = percent) + 
-  coord_flip() + theme_clean(10)
-fig.us_positivity
-
-blank <- rectGrob(gp=gpar(col="white"))
-
-combined <- arrangeGrob(fig.us_importance, 
-                        arrangeGrob(fig.us_positivity, blank),
-                        ncol=2, widths=c(0.65, 0.35))
-
-filename <- "figure5_7_importance_positivity"
-width <- 4.5
-height <- 2.5
-
-ggsave(combined, 
-       filename=file.path(base.folder, paste0(filename, ".pdf")), 
-       width=width, height=height, device=cairo_pdf)
-ggsave(combined, 
-       filename=file.path(base.folder, paste0(filename, ".png")),
-       width=width, height=height, type="cairo", dpi=300)
-
-fig5.7.n <- paste0("Responses related to importance: ", 
-                   sum(plot.data.importance$num),
-                   ". Responses related to positivity: ",
-                   sum(plot.data.positivity$num), ".")
-
-cat(fig5.7.n, file=file.path(base.folder, paste0(filename, ".txt")))
-
-# library(ggstance)
-# fig.us_importance <- ggplot(plot.data.importance, aes(y=Q3.19, x=prop)) + 
-#   geom_barh(stat="identity") + 
-#   geom_rect(xmin=-0.01, xmax=0.36, ymin=2.5, ymax=4.5, 
-#             fill=NA, colour="grey10", size=0.25) +
-#   geom_segment(y=3.5, yend=3.5, x=0.36, xend=0.40, size=0.25,
-#                arrow = arrow(length = unit(0.03, "npc"))) +
-#   labs(x=NULL, y=NULL) + 
-#   scale_x_continuous(labels = percent) + 
-#   coord_cartesian(xlim=c(0, 0.6)) +
-#   theme_clean(10)
-# fig.us_importance
-# 
-# ggsub_grob <- ggplotGrob(fig.us_positivity)
-# fig.us_importance + annotation_custom(ggsub_grob, ymin=0.5, ymax=2.5, xmin=0.26, xmax=0.6)
