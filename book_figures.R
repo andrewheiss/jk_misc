@@ -1259,7 +1259,7 @@ hq.map <- ggplot(hq.countries, aes(fill=num.ceiling, map_id=id)) +
   theme(legend.position="bottom", legend.key.size=unit(0.5, "lines"),
         strip.background=element_rect(colour="#FFFFFF", fill="#FFFFFF"))
 
-filename <- "figureA1a_hq_map"
+filename <- "figureA1_1a_hq_map"
 width <- 4.5
 height <- 3.5
 ggsave(hq.map, filename=file.path(base.folder, paste0(filename, ".pdf")), 
@@ -1273,7 +1273,7 @@ hq.map.n <- paste0("Number of NGOs: ",
                    nrow(filter(hq.countries, num.ngos > 0)),
                    ".")
 
-caption <- c("Figure A1a: Country location of NGO survey respondent headquarters",
+caption <- c("Figure A1.1a: Country location of NGO survey respondent headquarters",
              hq.map.n) %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
@@ -1294,7 +1294,7 @@ work.map <- ggplot(work.countries, aes(fill=num.ceiling, map_id=id)) +
   theme(legend.position="bottom", legend.key.size=unit(0.5, "lines"),
         strip.background=element_rect(colour="#FFFFFF", fill="#FFFFFF"))
 
-filename <- "figureA1b_work_map"
+filename <- "figureA1_1b_work_map"
 width <- 4.5
 height <- 3.5
 ggsave(work.map, filename=file.path(base.folder, paste0(filename, ".pdf")), 
@@ -1306,7 +1306,7 @@ work.map.n <- paste0("Number of countries: ",
                      nrow(filter(work.countries, num.ngos > 0)),
                      ".")
 
-caption <- c("Figure A1b: Country location of NGO survey respondent work",
+caption <- c("Figure A1.1b: Country location of NGO survey respondent work",
              work.map.n) %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
@@ -1335,7 +1335,7 @@ figA2 <- ggplot(df.cables.est.year, aes(x=year, y=pct.available)) +
   scale_y_continuous(labels=percent) + 
   theme_clean(10)
 
-filename <- "figureA2_wikileaks_prop_estimated"
+filename <- "figureA1_2_wikileaks_prop_estimated"
 width <- 4.5
 height <- 2
 ggsave(figA2, filename=file.path(base.folder, paste0(filename, ".pdf")), 
@@ -1343,7 +1343,7 @@ ggsave(figA2, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(figA2, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- "Figure A2: Observed Wikileaks US Department of State cables as a percent of the estimated number of cables"
+caption <- "Figure A1.2: Observed Wikileaks US Department of State cables as a percent of the estimated number of cables"
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
@@ -1365,7 +1365,7 @@ figA3 <- ggplot(df.cable.missingness, aes(x=year, y=value)) +
   facet_wrap(~ variable, ncol=1, scales="free") + 
   theme_clean(10)
 
-filename <- "figureA3_wikileaks_missingness"
+filename <- "figureA1_3_wikileaks_missingness"
 width <- 4.5
 height <- 4
 ggsave(figA3, filename=file.path(base.folder, paste0(filename, ".pdf")), 
@@ -1373,13 +1373,13 @@ ggsave(figA3, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(figA3, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- "Figure A3: Count of observed Wikileaks cables, TIP-related cables, and TIP-related cables with a documented reaction"
+caption <- "Figure A1.3: Count of observed Wikileaks cables, TIP-related cables, and TIP-related cables with a documented reaction"
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # Figure A4: Cho for all countries vs. case countries
 # Average Cho scores for all countries vs. case countries
-filename <- "figureA4_avg_all_vs_cases"
+filename <- "figureA1_4_avg_all_vs_cases"
 width <- 4.5
 height <- 2.5
 ggsave(fig.cho.all.vs.cases, filename=file.path(base.folder, paste0(filename, ".pdf")), 
@@ -1387,7 +1387,7 @@ ggsave(fig.cho.all.vs.cases, filename=file.path(base.folder, paste0(filename, ".
 ggsave(fig.cho.all.vs.cases, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- "Figure A4: Average 3P anti-TIP policy index for 15 case study countries compared to all other countries."
+caption <- "Figure A1.4: Average 3P anti-TIP policy index for 15 case study countries compared to all other countries."
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
