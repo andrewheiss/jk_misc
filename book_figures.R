@@ -1225,6 +1225,20 @@ caption <- "Figure 8.4: Overview of Japan TIP tiers, criminalization, government
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
+# -----------
+# Chapter 9
+# -----------
+# Conclusion
+#
+# Figure 9.1: Evidence of book
+# Exported from InDesign file `Manual - Scorecard diplomacy cycle.indd`
+filename <- "figure9_1_evidence_of_book"
+caption <- c("Figure 9.1: The evidence of the book",
+             "I = Interviews, C = case study, S = Survey, D = descriptive quantitative analysis, Q = quantitative multivariate analysis, E = Embassy cable analysis, # = chapter in this book") %>%
+  paste0(collapse="\n")
+cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
+
+
 # ------------------
 # Appendix figures
 # ------------------
