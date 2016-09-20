@@ -59,7 +59,6 @@ source("cases_favorability_influence.R")
 # Introduction
 #
 # Figure 1.1: The spread of domestic laws criminalizing human trafficking
-# Source: Author's data
 filename <- "figure1_1_crim_map"
 width <- 4.5
 height <- 5
@@ -68,15 +67,15 @@ ggsave(crim.map, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(crim.map, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- c("Figure 1.1: The spread of domestic laws criminalizing human trafficking",
-             "Source: Author's data") %>% paste0(collapse="\n")
+caption <- c("Figure 1.1: The spread of domestic laws criminalizing human trafficking.",
+             "Source: Author’s data.") %>% paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # Figure 1.2: The cycle of scorecard diplomacy
 # Exported from artboard in `Manual - Scorecard diplomacy cycle.ai`
 filename <- "figure1_2_scorecard_diplomacy_cycle"
-caption <- "Figure 1.2: The cycle of scorecard diplomacy"
+caption <- "Figure 1.2: The cycle of scorecard diplomacy."
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
@@ -88,14 +87,14 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 # Figure 2.1: Performance gaps and the relationship between ideals and practice 
 # Exported from artboard in `Manual - Performance gaps.ai`
 filename <- "figure2_1_performance_gaps"
-caption <- "Figure 2.1: Performance gaps and the relationship between ideals and practice"
+caption <- "Figure 2.1: Performance gaps and the relationship between ideals and practice."
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # Figure 2.2: Factors that influence reputational concern and its translation into action
 # Exported from artboard in `Manual - Reputational concern factors.ai`
 filename <- "figure2_2_reputational_concerns_factors"
-caption <- "Figure 2.2: Factors that influence reputational concern and its translation into action"
+caption <- "Figure 2.2: Factors that influence reputational concern and its translation into action."
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
@@ -107,7 +106,7 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 # Figure 3.1: Trafficking patterns 2010-2012
 # Exported from artboard in `Manual - UNODC trafficking patterns.ai`
 filename <- "figure3_1_trafficking_patterns"
-caption <- c("Figure 3.1: Human trafficking patterns of major origin and destination regions, 2010–2012. The arrows show the flows that represent 5% or above of the total victims detected in the sub-regions.", "Source: UN Office on Drugs and Crime (UNODC)") %>% paste0(collapse="\n")
+caption <- c("Figure 3.1: Human trafficking patterns of major origin and destination regions, 2010–2012. The arrows show the flows that represent 5% or above of the total victims detected in the sub-regions.", "Source: UN Office on Drugs and Crime (UNODC).") %>% paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
@@ -136,8 +135,8 @@ ggsave(fig3.2, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(fig3.2, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- c("Figure 3.2: Human trafficking prosecutions and convictions worldwide, 2003–2014",
-             "Source: 2007 and 2016 TIP Reports, section on \"Global Law Enforcement Data.\"") %>%
+caption <- c("Figure 3.2: Human trafficking prosecutions and convictions worldwide, 2003–2014.",
+             "Source: 2007 and 2016 TIP Reports, section on “Global Law Enforcement Data.”") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -151,8 +150,8 @@ ggsave(fig.ratified, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(fig.ratified, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- c("Figure 3.3: Number of state parties to the Palermo Protocol to Prevent, Suppress and Punish Trafficking in Persons (Palermo Protocol) to the Convention against Transnational Organized Crime",
-             "Source: UNODC") %>%
+caption <- c("Figure 3.3: Number of state parties to the Palermo Protocol to Prevent, Suppress and Punish Trafficking in Persons (Palermo Protocol) to the Convention against Transnational Organized Crime.",
+             "Source: UNODC.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -160,7 +159,7 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 # Figure 3.4: Cycle of scorecard diplomacy, step 1
 # Exported from artboard in `Manual - Scorecard diplomacy cycle.ai`
 filename <- "figure3_4_cycle_step1"
-caption <- "Figure 3.4: The cycle of scorecard diplomacy"
+caption <- "Figure 3.4: The cycle of scorecard diplomacy."
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
@@ -182,9 +181,9 @@ tier.plot.n <- paste0(filter(df.tier.plot.n, year == 2001)$total,
                       filter(df.tier.plot.n, year == 2015)$total,
                       " countries in 2015.")
 
-caption <- c("Figure 3.5: US Department of State tier ratings of countries on human trafficking, 2001–2015",
+caption <- c("Figure 3.5: US Department of State tier ratings of countries on human trafficking, 2001–2015.",
              tier.plot.n,
-             "Source: US TIP Report") %>%
+             "Source: US TIP Report.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -198,14 +197,14 @@ ggsave(report.map, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(report.map, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- "Figure 3.6: The timing of inclusion of countries in the US State Department Trafficking in Persons Report"
+caption <- "Figure 3.6: The timing of inclusion of countries in the US State Department Trafficking in Persons Report."
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # Figure 3.7: Cycle of scorecard diplomacy, step 2
 # Exported from artboard in `Manual - Scorecard diplomacy cycle.ai`
 filename <- "figure3_7_cycle_step2"
-caption <- "Figure 3.7: The cycle of scorecard diplomacy"
+caption <- "Figure 3.7: The cycle of scorecard diplomacy."
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
@@ -268,9 +267,9 @@ ggsave(fig3.8, filename=file.path(base.folder, paste0(filename, ".png")),
 embassies.active.n <- sprintf("%d unique countries mentioned as partner; %d total mentions. %d unique countries mentioned as most active partner; %d total mentions.",
                               num.countries, num.mentions, num.countries.most, num.mentions.most)
 
-caption <- c("Figure 3.8: Embassies or foreign governments that NGOs reported as active partners in the fight against human trafficking",
+caption <- c("Figure 3.8: Embassies or foreign governments that NGOs reported as active partners in the fight against human trafficking.",
              embassies.active.n,
-             "Source: Author's NGO survey") %>%
+             "Source: Author’s NGO survey.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -293,7 +292,7 @@ ggsave(fig3.9, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(fig3.9, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- c("Figure 3.9: Distribution of types of officials meeting with US officials, 2001–2009. N=1320. Note that if two ministers meet at the same time, this is coded as one instance. The same is true for multiple NGOs, IGOs or \"other government officials.\"",
+caption <- c("Figure 3.9: Distribution of types of officials meeting with US officials, 2001–2009. N=1320. Note that if two ministers meet at the same time, this is coded as one instance. The same is true for multiple NGOs, IGOs or “other government officials.”",
              "Source: Author’s coding of US embassy diplomatic cables from Wikileaks.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
@@ -308,9 +307,9 @@ ggsave(grants.purpose, filename=file.path(base.folder, paste0(filename, ".pdf"))
 ggsave(grants.purpose, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- c("Figure 3.10: Distribution of US Department of State grants across purposes, 2001–2014",
-             "Note: A grant can have more than one purpose, so some double counting occurs. Does not include separate funding through other US agencies or some direct funding of IGOs",
-             "Source: US Department of State") %>%
+caption <- c("Figure 3.10: Distribution of US Department of State grants across purposes, 2001–2014.",
+             "Note: A grant can have more than one purpose, so some double counting occurs. Does not include separate funding through other US agencies or some direct funding of IGOs.",
+             "Source: US Department of State.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -324,9 +323,9 @@ ggsave(map.funding, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(map.funding, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- c("Figure 3.11: Distribution of US TIP Department of State funding across countries, 2001–2014",
-             "Note: Does not include separate funding through other US agencies or some direct funding of IGOs",
-             "Source: US Department of State") %>%
+caption <- c("Figure 3.11: Distribution of US TIP Department of State funding across countries, 2001–2014.",
+             "Note: Does not include separate funding through other US agencies or some direct funding of IGOs.",
+             "Source: US Department of State.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -376,7 +375,7 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 # Figure 4.1: Cycle of scorecard diplomacy, step 3
 # Exported from artboard in `Manual - Scorecard diplomacy cycle.ai`
 filename <- "figure4_1_cycle_step3"
-caption <- "Figure 4.1: The cycle of scorecard diplomacy"
+caption <- "Figure 4.1: The cycle of scorecard diplomacy."
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
@@ -390,8 +389,8 @@ ggsave(grants.to.all.sectors, filename=file.path(base.folder, paste0(filename, "
        width=width, height=height, type="cairo", dpi=300)
 
 caption <- c("Figure 4.2: Distribution of US Department of State TIP funding across sectors, 2001–2014.",
-             "Note: Does not include separate funding through other US agencies or some direct funding of IGOs",
-             "Source: US Department of State") %>%
+             "Note: Does not include separate funding through other US agencies or some direct funding of IGOs.",
+             "Source: US Department of State.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -405,9 +404,9 @@ ggsave(grants.to.igos, filename=file.path(base.folder, paste0(filename, ".pdf"))
 ggsave(grants.to.igos, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- c("Figure 4.3: Distribution of US TIP funding across IGOs and other agencies",
-             "Note: Does not include separate funding through other US agencies or some direct funding of IGOs",
-             "Source: US Department of State") %>%
+caption <- c("Figure 4.3: Distribution of US TIP funding across IGOs and other agencies.",
+             "Note: Does not include separate funding through other US agencies or some direct funding of IGOs.",
+             "Source: US Department of State.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -458,9 +457,9 @@ ggsave(fig4.4, filename=file.path(base.folder, paste0(filename, ".png")),
 
 fig4.4.n <- paste0(unique(df.Q3.18$denom.Q3.18), " responses.")
 
-caption <- c("Figure 4.4: NGO responses to the question: \"Over the last 10–15 years, has your organization worked directly with or had direct contact with the US embassy or government on human trafficking issues?\"",
+caption <- c("Figure 4.4: NGO responses to the question: “Over the last 10–15 years, has your organization worked directly with or had direct contact with the US embassy or government on human trafficking issues?”.",
              fig4.4.n,
-             "Source: Author's NGO survey") %>%
+             "Source: Author’s NGO survey.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -505,9 +504,9 @@ ggsave(fig4.5, filename=file.path(base.folder, paste0(filename, ".png")),
 
 fig4.5.n <- paste0(unique(df.Q3.21$denom.Q3.21), " responses.")
 
-caption <- c("Figure 4.5: Stakeholders with whom NGOs report discussing the US Department of State TIP Report",
+caption <- c("Figure 4.5: Stakeholders with whom NGOs report discussing the US Department of State TIP Report.",
              fig4.5.n,
-             "Source: Author's NGO survey") %>%
+             "Source: Author’s NGO survey.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -529,8 +528,8 @@ ggsave(fig4.6, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(fig4.6, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- c("Figure 4.6: Total news coverage of human trafficking issues in Oman, by publication month, 2005–2014",
-             "Source: Lexis Nexis") %>%
+caption <- c("Figure 4.6: Total news coverage of human trafficking issues in Oman, by publication month, 2005–2014.",
+             "Source: Lexis Nexis.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -543,7 +542,7 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 # Figure 5.1: Cycle of scorecard diplomacy, step 4
 # Exported from artboard in `Manual - Scorecard diplomacy cycle.ai`
 filename <- "figure5_1_cycle_step4"
-caption <- "Figure 5.1: The cycle of scorecard diplomacy"
+caption <- "Figure 5.1: The cycle of scorecard diplomacy."
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
@@ -581,8 +580,8 @@ ggsave(fig5.2, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(fig5.2, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- c("Figure 5.2: Percent of US Department of State TIP Reports with a documented reaction by the rated state",
-             "Source: US Department of State diplomatic cables, Wikileaks") %>%
+caption <- c("Figure 5.2: Percent of US Department of State TIP Reports with a documented reaction by the rated state.",
+             "Source: US Department of State diplomatic cables, Wikileaks.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -590,7 +589,7 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 # Figure 5.3: Coding categories
 # Exported from artboard in `Manual - Coding categories.ai`
 filename <- "figure5_3_coding_categories"
-caption <- c("Figure 5.3: Reaction coding categories",
+caption <- c("Figure 5.3: Reaction coding categories.",
              "For more details, please see the methods appendix.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
@@ -776,7 +775,7 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 # Figure 6.2: Cycle of scorecard diplomacy, step 5
 # Exported from artboard in `Manual - Scorecard diplomacy cycle.ai`
 filename <- "figure6_2_cycle_step5"
-caption <- "Figure 6.2: The cycle of scorecard diplomacy"
+caption <- "Figure 6.2: The cycle of scorecard diplomacy."
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
@@ -841,7 +840,7 @@ fig6.4.n <- paste(full.partial.n, no.crim.n)
 
 caption <- c("Figure 6.4: Number of countries with domestic criminalization of human trafficking and number of countries included in the US Department of State TIP Report inclusion, 2000–2014. Highest possible score is eight.",
              fig6.4.n,
-             "Source: Author's data and Cho 2015.") %>%
+             "Source: Author’s data and Cho 2015.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -989,7 +988,7 @@ ggsave(fig6.6, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(fig6.6, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- c("Figure 6.6: Probability of a country criminalizing human trafficking fully in a given year if it had not already done so, by tier status in the US Department of State TIP Report, 2001–2010") %>%
+caption <- c("Figure 6.6: Probability of a country criminalizing human trafficking fully in a given year if it had not already done so, by tier status in the US Department of State TIP Report, 2001–2010.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -1077,8 +1076,8 @@ ggsave(fig6.8, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(fig6.8, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- c("Figure 6.8: Probability of a country criminalizing human trafficking fully in a given year if it had not already done so, by prior year’s reaction (as documented in the US embassy cables) to the US Department of State TIP Report, 2001–2010",
-             "Source: Author's Data. Note that the total N for the sub-types adds to more than the N for the documented reactions. This is because the sub-types are not mutually exclusive.") %>%
+caption <- c("Figure 6.8: Probability of a country criminalizing human trafficking fully in a given year if it had not already done so, by prior year’s reaction (as documented in the US embassy cables) to the US Department of State TIP Report, 2001–2010.",
+             "Source: Author’s Data. Note that the total N for the sub-types adds to more than the N for the documented reactions. This is because the sub-types are not mutually exclusive.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -1106,7 +1105,7 @@ ggsave(fig.cho.changes, filename=file.path(base.folder, paste0(filename, ".png")
 
 caption <- c("Figure 7.1: Variation in the Human Trafficking Index for each case study country, 2000–2013.",
              "Dashed horizontal line indicates policy score when the country entered the TIP Report. Vertical dashed lines indicate year country passed partial anti-TIP legislation, while solid vertical lines indicate year country passed full anti-TIP legislation.",
-             "Source: Author's data and Cho 2015") %>%
+             "Source: Author’s data and Cho 2015") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -1140,12 +1139,12 @@ ggsave(p.cases.favor.influence, filename=file.path(base.folder, paste0(filename,
 
 favor.influence.cor <- cor.test(cases$Favorability, cases$Influence)
 
-caption <- c("Figure 7.3: Correlation between influence and favorability",
+caption <- c("Figure 7.3: Correlation between influence and favorability.",
              sprintf("N = %d. Correlation = %.2f, p = %.2f", 
                      favor.influence.cor$parameter + 2,
                      favor.influence.cor$estimate,
                      favor.influence.cor$p.value),
-             "Source: Author's data (see Table 6.1 and 7.1)") %>%
+             "Source: Author’s data (see Table 6.1 and 7.1)") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -1171,7 +1170,7 @@ system(sprintf("cp %s %s",
                file.path(base.folder, "cases", paste0(filename.original, ".pdf")),
                file.path(base.folder, paste0(filename, ".pdf"))))
 
-caption <- "Figure 8.1: Overview of Armenia TIP tiers, criminalization, governments, and the anti-TIP policy index"
+caption <- "Figure 8.1: Overview of Armenia TIP tiers, criminalization, governments, and the anti-TIP policy index."
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
@@ -1188,7 +1187,7 @@ system(sprintf("cp %s %s",
                file.path(base.folder, "cases", paste0(filename.original, ".pdf")),
                file.path(base.folder, paste0(filename, ".pdf"))))
 
-caption <- "Figure 8.2: Overview of Israel TIP tiers, criminalization, governments, and the anti-TIP policy index"
+caption <- "Figure 8.2: Overview of Israel TIP tiers, criminalization, governments, and the anti-TIP policy index."
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
@@ -1205,7 +1204,7 @@ system(sprintf("cp %s %s",
                file.path(base.folder, "cases", paste0(filename.original, ".pdf")),
                file.path(base.folder, paste0(filename, ".pdf"))))
 
-caption <- "Figure 8.3: Overview of Zimbabwe TIP tiers, criminalization, governments, and the anti-TIP policy index"
+caption <- "Figure 8.3: Overview of Zimbabwe TIP tiers, criminalization, governments, and the anti-TIP policy index."
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
@@ -1221,7 +1220,7 @@ system(sprintf("cp %s %s",
                file.path(base.folder, "cases", paste0(filename.original, ".pdf")),
                file.path(base.folder, paste0(filename, ".pdf"))))
 
-caption <- "Figure 8.4: Overview of Japan TIP tiers, criminalization, governments, and the anti-TIP policy index"
+caption <- "Figure 8.4: Overview of Japan TIP tiers, criminalization, governments, and the anti-TIP policy index."
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
@@ -1234,7 +1233,7 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 # Exported from InDesign file `Manual - Scorecard diplomacy cycle.indd`
 filename <- "figure9_1_evidence_of_book"
 caption <- c("Figure 9.1: The evidence of the book",
-             "I = Interviews, C = case study, S = Survey, D = descriptive quantitative analysis, Q = quantitative multivariate analysis, E = Embassy cable analysis, # = chapter in this book") %>%
+             "I = Interviews, C = case study, S = Survey, D = descriptive quantitative analysis, Q = quantitative multivariate analysis, E = Embassy cable analysis, # = chapter in this book.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
@@ -1273,7 +1272,7 @@ hq.map.n <- paste0("Number of NGOs: ",
                    nrow(filter(hq.countries, num.ngos > 0)),
                    ".")
 
-caption <- c("Figure A1.1a: Country location of NGO survey respondent headquarters",
+caption <- c("Figure A1.1a: Country location of NGO survey respondent headquarters.",
              hq.map.n) %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
@@ -1306,7 +1305,7 @@ work.map.n <- paste0("Number of countries: ",
                      nrow(filter(work.countries, num.ngos > 0)),
                      ".")
 
-caption <- c("Figure A1.1b: Country location of NGO survey respondent work",
+caption <- c("Figure A1.1b: Country location of NGO survey respondent work.",
              work.map.n) %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
@@ -1343,7 +1342,7 @@ ggsave(figA2, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(figA2, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- "Figure A1.2: Observed Wikileaks US Department of State cables as a percent of the estimated number of cables"
+caption <- "Figure A1.2: Observed Wikileaks US Department of State cables as a percent of the estimated number of cables."
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
@@ -1373,7 +1372,7 @@ ggsave(figA3, filename=file.path(base.folder, paste0(filename, ".pdf")),
 ggsave(figA3, filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- "Figure A1.3: Count of observed Wikileaks cables, TIP-related cables, and TIP-related cables with a documented reaction"
+caption <- "Figure A1.3: Count of observed Wikileaks cables, TIP-related cables, and TIP-related cables with a documented reaction."
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
@@ -1408,7 +1407,7 @@ fig.media.report <- ggplot(plot.predict, aes(x=inreport, y=avg.logstory_exp)) +
 filename <- "figureA4_media_inreport_predict"
 width <- 4.5
 height <- 3
-caption <- "Predicted number of TIP-related stories given a country’s presence in the annual TIP report; mean predicted values of every observation in Model 4.1.1"
+caption <- "Predicted number of TIP-related stories given a country’s presence in the annual TIP report; mean predicted values of every observation in Model 4.1.1."
 ggsave(fig.media.report, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
 ggsave(fig.media.report, filename=file.path(base.folder, paste0(filename, ".png")),
@@ -1438,7 +1437,7 @@ fig.dem.report.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +
 filename <- "figureA7_1_interactions_democracy_report"
 width <- 4.5
 height <- 3
-caption <- "Predicted probability of criminalization across different levels of democracy, given presence in the annual TIP report (Model 7.5.1)"
+caption <- "Predicted probability of criminalization across different levels of democracy, given presence in the annual TIP report (Model 7.5.1)."
 ggsave(fig.dem.report.predict, 
        filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
@@ -1470,7 +1469,7 @@ fig.dem.lowest.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +
 filename <- "figureA7_2_interactions_democracy_lowest"
 width <- 4.5
 height <- 3
-caption <- "Predicted probability of criminalization across different levels of democracy, given assignment to the lowest TIP tier (Model 7.5.2)"
+caption <- "Predicted probability of criminalization across different levels of democracy, given assignment to the lowest TIP tier (Model 7.5.2)."
 ggsave(fig.dem.lowest.predict, 
        filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
