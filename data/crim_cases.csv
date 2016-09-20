@@ -1,17 +1,17 @@
 iso,year,year.actual,crim.type,crim.year,hjust
-ARE,1999,1999-01-01,Full criminalization,2007-01-01,0.5
-ARG,1999,1999-01-01,Full criminalization,2008-01-01,0.5
+ARE,1999,1999-01-01,Full criminalization,2006-01-01,0.5
+ARG,1999,1999-01-01,Full criminalization,2008-01-01,0.9
 ARM,1999,1999-01-01,Full criminalization,2006-01-01,0.25
-ECU,1999,1999-01-01,Full criminalization,2006-01-01,0.5
+ECU,1999,1999-01-01,Full criminalization,2005-01-01,0.5
 HND,1999,1999-01-01,Full criminalization,2012-01-01,0.5
 IDN,1999,1999-01-01,Full criminalization,2007-01-01,0.5
-ISR,1999,1999-01-01,Full criminalization,2006-01-01,0.25
+ISR,1999,1999-01-01,Full criminalization,2006-01-01,0.1
 JPN,1999,1999-01-01,Full criminalization,NA,0.5
 KAZ,1999,1999-01-01,Full criminalization,2003-01-01,0.001
 MOZ,1999,1999-01-01,Full criminalization,2008-01-01,0.5
 MYS,1999,1999-01-01,Full criminalization,2007-01-01,0.5
 NGA,1999,1999-01-01,Full criminalization,2003-01-01,0.5
-OMN,1999,1999-01-01,Full criminalization,2009-01-01,0.5
+OMN,1999,1999-01-01,Full criminalization,2008-01-01,0.5
 TCD,1999,1999-01-01,Full criminalization,NA,0.5
 ZWE,1999,1999-01-01,Full criminalization,NA,0.5
 ARE,1999,1999-01-01,Partial criminalization,NA,0.5
@@ -20,8 +20,8 @@ ARM,1999,1999-01-01,Partial criminalization,2003-01-01,0.75
 ECU,1999,1999-01-01,Partial criminalization,NA,0.5
 HND,1999,1999-01-01,Partial criminalization,2006-01-01,0.5
 IDN,1999,1999-01-01,Partial criminalization,1967-01-01,0.5
-ISR,1999,1999-01-01,Partial criminalization,2001-01-01,0.25
-JPN,1999,1999-01-01,Partial criminalization,2006-01-01,0.5
+ISR,1999,1999-01-01,Partial criminalization,2000-01-01,0.1
+JPN,1999,1999-01-01,Partial criminalization,2005-01-01,0.5
 KAZ,1999,1999-01-01,Partial criminalization,2002-01-01,0.5
 MOZ,1999,1999-01-01,Partial criminalization,NA,0.5
 MYS,1999,1999-01-01,Partial criminalization,2001-01-01,0.25
@@ -29,3 +29,5 @@ NGA,1999,1999-01-01,Partial criminalization,NA,0.5
 OMN,1999,1999-01-01,Partial criminalization,NA,0.5
 TCD,1999,1999-01-01,Partial criminalization,NA,0.5
 ZWE,1999,1999-01-01,Partial criminalization,2014-01-01,0.75
+ARG,1999,1999-01-01,Strengthened criminalization,2012-01-01,0.5
+MYS,1999,1999-01-01,Strengthened criminalization,2010-01-01,0.1

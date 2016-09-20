@@ -66,7 +66,13 @@ wdi.clean <- wdi.raw %>%
 # Policy index
 df.cho <- readRDS("data/policy_index.rds") %>%
   mutate(year.actual = ymd(paste0(year, "-01-01"))) %>%
-  filter(iso %in% cases)
+  filter(iso %in% cases) %>%
+  # To get the tiers evenly spaced on the y axis, convert watchlist 2.5 to 3 and tier 3 to 4
+  mutate(tier.even = case_when(
+    .$tier == 3 ~ 4,
+    .$tier == 2.5 ~ 3,
+    TRUE ~ .$tier
+  ))
 
 df.crim.orig <- df.cho %>%
   group_by(iso) %>%
@@ -155,15 +161,15 @@ timeline_case <- function(iso3) {
 
   # Tier rankings
   plot.tier <- ggplot(filter(df.cho, iso == iso3),
-                      aes(x=year.actual, y=tier)) + 
+                      aes(x=year.actual, y=tier.even)) + 
     geom_line() + 
     geom_vline(data=df.crim.plot, aes(xintercept=as.numeric(crim.year)),
                size=0.5, colour="grey50", linetype="dotted") +
     labs(x=NULL, y="TIP ranking") +
-    scale_y_continuous(breaks=c(1, 2, 2.5, 3), 
-                       labels=c("Tier 1", "Tier 2", "Watch List", "Tier 3")) +
+    scale_y_reverse(breaks=c(1, 2, 3, 4), 
+                    labels=c("Tier 1", "Tier 2", "Watch List", "Tier 3")) +
     coord_cartesian(xlim=ymd(c("2000-01-01", "2014-12-31")),
-                    ylim=c(1, 3)) +
+                    ylim=c(1, 4)) +
     theme_clean(10) + theme(panel.grid.minor.x=element_blank(),
                             panel.grid.minor.y=element_blank())
 

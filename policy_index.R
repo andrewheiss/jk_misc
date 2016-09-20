@@ -150,11 +150,18 @@ year.criminalized.subset <- read_stata("original_files/Criminalization Data Upda
   mutate(criminalization.type = factor(crimlevel, levels=c(1, 2),
                                        labels=c("Partial", "Full")))
 
+crim.years.cases <- read_csv("data/criminalization_cases.csv") %>%
+  gather(criminalization.type, year, -countryname) %>%
+  filter(!is.na(year)) %>%
+  mutate(criminalization.type = factor(criminalization.type,
+                                       levels=c("Partial", "Full", "Strengthened"),
+                                       ordered=TRUE))
+
 # Cho Chang!  (⌐○Ϟ○)
 fig.cho.changes <- ggplot(plot.data, aes(x=year)) + 
   geom_hline(data=plot.baselines, aes(yintercept=p.while.in.tip),
              size=0.25, color="grey50", linetype="dashed") + 
-  geom_vline(data=year.criminalized.subset, 
+  geom_vline(data=crim.years.cases, 
              aes(xintercept=year, linetype=criminalization.type),
              size=0.5, color="grey50") +
   geom_line(aes(y=p), size=0.75) +
@@ -162,11 +169,11 @@ fig.cho.changes <- ggplot(plot.data, aes(x=year)) +
   labs(x=NULL, y="Anti-TIP policy index") + 
   scale_y_continuous(limits=c(0, 15)) + 
   scale_x_continuous(limits=c(2000, 2015)) + 
-  scale_linetype_manual(values=c("dotted", "solid"), guide=FALSE) +
+  scale_linetype_manual(values=c("dotted", "solid", "longdash"), guide=FALSE) +
   facet_wrap(~ countryname, scales="free", ncol=3) + 
   theme_clean(10) + 
   theme(panel.grid.minor=element_blank(), strip.text=element_text(size=rel(0.8)))
-# fig.cho.changes
+fig.cho.changes
 
 # Plot average changes for 15 case study countries vs. all countries (without 
 # 15 case study countries)
