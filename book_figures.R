@@ -1395,7 +1395,7 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 # Appendix 2
 # ----------
 # Impact of report on media coverage
-plot.predict <- read_csv("final_figures/data_figureA_3_media_predict.csv") %>%
+plot.predict <- read_csv("final_figures/data_figureA_4_media_predict.csv") %>%
   mutate(inreport = factor(inreport, levels=c("Not in report", "In report"), 
                            ordered=TRUE))
 
@@ -1405,10 +1405,10 @@ fig.media.report <- ggplot(plot.predict, aes(x=inreport, y=avg.logstory_exp)) +
   labs(x=NULL, y="Average predicted number of TIP-related stories") +
   theme_clean(10)
 
-filename <- "figureA2_3_media_inreport_predict"
+filename <- "figureA4_media_inreport_predict"
 width <- 4.5
 height <- 3
-caption <- "Predicted number of TIP-related stories given a country’s presence in the annual TIP report; mean predicted values of every observation in Model 3.1.1"
+caption <- "Predicted number of TIP-related stories given a country’s presence in the annual TIP report; mean predicted values of every observation in Model 4.1.1"
 ggsave(fig.media.report, filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
 ggsave(fig.media.report, filename=file.path(base.folder, paste0(filename, ".png")),
@@ -1417,7 +1417,7 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # Predicted probability of criminalization, democracy × in report
-plot.predict <- readRDS("final_figures/data_figureA_6_report_predict.rds")
+plot.predict <- readRDS("final_figures/data_figureA_7_report_predict.rds")
 
 fig.dem.report.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +  
   geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=inreport1), 
@@ -1435,10 +1435,10 @@ fig.dem.report.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +
                           legend.margin = unit(0.25, "lines"),
                           plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
 
-filename <- "figureA2_6_1_interactions_democracy_report"
+filename <- "figureA7_1_interactions_democracy_report"
 width <- 4.5
 height <- 3
-caption <- "Predicted probability of criminalization across different levels of democracy, given presence in the annual TIP report (Model 6.5.1)"
+caption <- "Predicted probability of criminalization across different levels of democracy, given presence in the annual TIP report (Model 7.5.1)"
 ggsave(fig.dem.report.predict, 
        filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
@@ -1449,7 +1449,7 @@ cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
 
 # Predicted probability of criminalization, democracy × lowest tier
-plot.predict <- readRDS("final_figures/data_figureA_6_lowest_tier_predict.rds")
+plot.predict <- readRDS("final_figures/data_figureA_7_lowest_tier_predict.rds")
 
 fig.dem.lowest.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +  
   geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=low_tier1), 
@@ -1467,10 +1467,10 @@ fig.dem.lowest.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +
                           legend.margin = unit(0.25, "lines"),
                           plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
 
-filename <- "figureA2_6_2_interactions_democracy_lowest"
+filename <- "figureA7_2_interactions_democracy_lowest"
 width <- 4.5
 height <- 3
-caption <- "Predicted probability of criminalization across different levels of democracy, given assignment to the lowest TIP tier (Model 6.5.2)"
+caption <- "Predicted probability of criminalization across different levels of democracy, given assignment to the lowest TIP tier (Model 7.5.2)"
 ggsave(fig.dem.lowest.predict, 
        filename=file.path(base.folder, paste0(filename, ".pdf")), 
        width=width, height=height, device=cairo_pdf)
@@ -1478,25 +1478,3 @@ ggsave(fig.dem.lowest.predict,
        filename=file.path(base.folder, paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
-
-
-# Predicted probability of criminalization, democracy × downgrading
-plot.predict <- readRDS("final_figures/data_figureA_6_downgrade_predict.rds")
-
-fig.dem.down.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +  
-  geom_ribbon(aes(ymax=prob.upper, ymin=prob.lower, fill=demote_type), 
-              alpha=0.2) + 
-  geom_line(aes(colour=demote_type), size=0.75) +
-  labs(x="Worse democracy (Freedom House civil liberties)", 
-       y="Predicted probability of criminalization") + 
-  scale_y_continuous(labels=percent, limits=c(0, max(plot.predict$prob.upper))) + 
-  scale_x_continuous(breaks=seq(1, 7, 1)) +
-  scale_fill_manual(values=c("grey50", "grey30", "black", "grey80"), 
-                    name="Time since demotion", guide=FALSE) + 
-  scale_colour_manual(values=c("grey50", "grey30", "black", "grey80"),
-                      name="Time since demotion",
-                      labels=c("1 year  ", "2 years  ", "3 years  ", "No demotion")) +
-  theme_clean(10) + theme(legend.key.size=unit(0.65, "lines"),
-                          legend.key = element_blank(),
-                          legend.margin = unit(0.25, "lines"),
-                          plot.margin = unit(c(1, 0.25, 0, 0.25), "lines"))
