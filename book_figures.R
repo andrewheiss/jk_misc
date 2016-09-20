@@ -1461,7 +1461,7 @@ fig.dem.lowest.predict <- ggplot(plot.predict, aes(x=fh_cl1, y=prob)) +
   scale_x_continuous(breaks=seq(1, 7, 1)) +
   scale_fill_manual(values=c("grey80", "grey30"), name=NULL, guide=FALSE) + 
   scale_colour_manual(values=c("grey80", "grey30"), name=NULL,
-                      labels=c("Tier 1 or 2    ", "Watchlist or Tier 3")) +
+                      labels=c("Not watchlist or Tier 3    ", "Watchlist or Tier 3")) +
   theme_clean(10) + theme(legend.key.size=unit(0.65, "lines"),
                           legend.key = element_blank(),
                           legend.margin = unit(0.25, "lines"),
