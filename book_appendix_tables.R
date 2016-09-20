@@ -271,12 +271,12 @@ final <- bind_rows(
              single.year=2007)
 )
 
-caption <- "Table A1.4: Comparison of case study countries and other countries in years they are included in the TIP Report"
+caption <- "Table A1.6: Comparison of case study countries and other countries in years they are included in the TIP Report."
 
 cat(pandoc.table.return(final, caption=caption),
-    file=file.path(base.folder, paste0("table_a1_4.txt")))
+    file=file.path(base.folder, paste0("table_a1_6.txt")))
 
-Pandoc.convert(file.path(getwd(), base.folder, paste0("table_a1_4.txt")),
+Pandoc.convert(file.path(getwd(), base.folder, paste0("table_a1_6.txt")),
                format="html", footer=FALSE, proc.time=FALSE, 
                options = "-s", open=FALSE)
 
@@ -303,9 +303,9 @@ col.labs <- c("Model A1.1")
 
 extra.lines <- list(c("Year fixed effects", c("Yes")))
 
-title <- "Table A1.1: Percent of estimated cables actually present"
+title <- "Table A1.1: Percent of estimated cables actually present."
 
-out.file <- file.path(base.folder, "table_methods_a1_5.html")
+out.file <- file.path(base.folder, "table_a1_1.html")
 
 stargazer(cables.presence.tip,
           type="html", out=out.file, out.header=TRUE, no.space=TRUE,
@@ -345,7 +345,7 @@ ses <- list(get.or.se(model.3.1.1))
 extra.lines <- list(c("Number of countries", c(model.3.1.1.fit["n.max"])),
                     c("Number of inclusions", c(model.3.1.1.fit["events"])))
 
-title <- "Table A3.1: Time to a country’s inclusion in the annual <em>U.S. Trafficking in Persons Report</em>"
+title <- "Table A3.1: Time to a country’s inclusion in the annual <em>U.S. Trafficking in Persons Report</em>."
 notes <- "Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."
 
 out.file <- file.path(base.folder, "table_a3_1.html")
@@ -386,7 +386,7 @@ extra.lines <- list(c("Pseudo R-squared",
                       sapply(list(model3.2.1, model3.2.2), 
                              calc.pseudo.r.squared)))
 
-title <- "Table A3.2: Correlates of shaming in the annual <em>U.S. Trafficking in Persons Report</em>"
+title <- "Table A3.2: Correlates of shaming in the annual <em>U.S. Trafficking in Persons Report</em>."
 notes <- "Logit model; odds ratios reported. Standard errors in parentheses. All explanatory variables are lagged one period."
 
 out.file <- file.path(base.folder, "table_a3_2.html")
@@ -439,7 +439,7 @@ ses <- list(get.or.se(model4.1.1), get.or.se(model4.1.2))
 extra.lines <- list(c("Year fixed effects", rep("Yes", 2)),
                     c("Country fixed effects", rep("Yes", 2)))
 
-title <- "Table A4.1: Determinants of receiving increased coverage of TIP issues"
+title <- "Table A4.1: Determinants of receiving increased coverage of TIP issues."
 notes <- "All explanatory variables are lagged one period unless otherwise noted."
 
 out.file <- file.path(base.folder, "table_a4_1.html")
@@ -550,7 +550,7 @@ extra.lines <- list(c("Pseudo R-squared",
                       sapply(list(model5.1.1, model5.1.2, model5.1.3), 
                              calc.pseudo.r.squared)))
 
-title <- "Table A5.1: Determinants of observing a reaction to the TIP report in Wikileaks cables"
+title <- "Table A5.1: Determinants of observing a reaction to the TIP report in Wikileaks cables."
 notes <- "Logit model; odds ratios reported. Standard errors in parentheses. All explanatory variables are lagged one period."
 
 out.file <- file.path(base.folder, "table_a5_1.html")
@@ -600,10 +600,10 @@ ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".png")),
 
 fig5.6.n <- sprintf("N = %s", model5.1.3$df.null + 1)
 
-caption <- c("Figure 5.6: Odds ratios of Model 5.1.3",
+caption <- c("Figure 5.6: Odds ratios of Model 5.1.3.",
              "Logit model of probability of criminalization in the next year.",
              fig5.6.n,
-             "Source: Author's data.") %>%
+             "Source: Author’s data.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path("final_figures", paste0(filename, ".txt")))
 
@@ -659,7 +659,7 @@ extra.lines <- list(c("Number of countries",
                       c(model6.1.1.fit["events"], model6.1.2.fit["events"],
                         model6.1.3.fit["events"])))
 
-title <- "Table A6.1: Time to TIP criminalization"
+title <- "Table A6.1: Time to TIP criminalization."
 notes <- "Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."
 
 out.file <- file.path(base.folder, "table_a6_1.html")
@@ -725,7 +725,7 @@ extra.lines <- list(c("Number of countries",
                       c(model6.2.1.fit["events"], model6.2.2.fit["events"],
                         model6.2.3.fit["events"])))
 
-title <- "Table A6.2: Time to TIP criminalization"
+title <- "Table A6.2: Time to TIP criminalization."
 notes <- "Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."
 
 out.file <- file.path(base.folder, "table_a6_2.html")
@@ -772,7 +772,7 @@ extra.lines <- list(c("Year fixed effects",
                       sapply(list(model6.3.1, model6.3.2), 
                              calc.pseudo.r.squared)))
 
-title <- "Table A6.3: Determinants of TIP criminalization"
+title <- "Table A6.3: Determinants of TIP criminalization."
 notes <- "Logit model; odds ratios reported. Robust standard errors in parentheses. All explanatory variables are lagged one period."
 
 out.file <- file.path(base.folder, "table_a6_3.html")
@@ -827,11 +827,11 @@ ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".pdf")),
 ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- c("Figure 6.7: Odds ratios of the variables representing scorecard diplomacy",
-             sprintf("Duration models of time to criminalization. N = %s (models 6.1.2 and 6.2.5) and %s (model 6.2.3)", 
+caption <- c("Figure 6.7: Odds ratios of the variables representing scorecard diplomacy.",
+             sprintf("Duration models of time to criminalization. N = %s (models 6.1.2 and 6.2.5) and %s (model 6.2.3).", 
                      format(model6.1.2$n, big.mark=",", trim=TRUE),
                      format(model6.2.3$n, big.mark=",", trim=TRUE)),
-             "Source: Author's data. For full results, see the Results Appendix") %>%
+             "Source: Author’s data. For full results, see the Results Appendix.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path("final_figures", paste0(filename, ".txt")))
 
@@ -876,10 +876,10 @@ ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".pdf")),
 ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
-caption <- c("Figure 6.9: Odds ratios of the variables representing scorecard diplomacy",
-             sprintf("Logit models of probability of criminalization in the next year. N = %s", 
+caption <- c("Figure 6.9: Odds ratios of the variables representing scorecard diplomacy.",
+             sprintf("Logit models of probability of criminalization in the next year. N = %s.", 
                      model6.3.1$df.null + 1),
-             "Source: Author's data. For full results, see the Results Appendix") %>%
+             "Source: Author’s data. For full results, see the Results Appendix.") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path("final_figures", paste0(filename, ".txt")))
 
@@ -959,7 +959,7 @@ extra.lines <- list(c("Number of countries",
                     c("OECD DAC eligible countries only",
                       c(rep("No", 3), rep("Yes", 3))))
 
-title <- "Table A7.1: Time to TIP criminalization: presence in report (aid)"
+title <- "Table A7.1: Time to TIP criminalization: presence in report (aid)."
 notes <- "Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."
 
 out.file <- file.path(base.folder, "table_a7_1.html")
@@ -1041,7 +1041,7 @@ extra.lines <- list(c("Number of countries",
                         model7.2.3.fit["events"], model7.2.4.fit["events"],
                         model7.2.5.fit["events"])))
 
-title <- "Table A7.2: Time to TIP criminalization: presence in report (trade)"
+title <- "Table A7.2: Time to TIP criminalization: presence in report (trade)."
 notes <- "Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."
 
 out.file <- file.path(base.folder, "table_a7_2.html")
@@ -1127,7 +1127,7 @@ extra.lines <- list(c("Number of countries",
                     c("OECD DAC eligible countries only",
                       c(rep("No", 3), rep("Yes", 3))))
 
-title <- "Table A7.3: Time to TIP criminalization: US pressure (aid)"
+title <- "Table A7.3: Time to TIP criminalization: US pressure (aid)."
 notes <- "Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."
 
 out.file <- file.path(base.folder, "table_a7_3.html")
@@ -1210,7 +1210,7 @@ extra.lines <- list(c("Number of countries",
                         model7.4.3.fit["events"], model7.4.4.fit["events"],
                         model7.4.5.fit["events"])))
 
-title <- "Table A7.4: Time to TIP criminalization: US pressure (trade)"
+title <- "Table A7.4: Time to TIP criminalization: US pressure (trade)."
 notes <- "Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."
 
 out.file <- file.path(base.folder, "table_a7_4.html")
@@ -1282,7 +1282,7 @@ extra.lines <- list(c("Year fixed effects",
                       sapply(list(model7.5.1, model7.5.2, model7.5.3), 
                              calc.pseudo.r.squared)))
 
-title <- "Table A7.5: Determinants of criminalization—effects of democracy interacted with scorecard diplomacy treatments"
+title <- "Table A7.5: Determinants of criminalization—effects of democracy interacted with scorecard diplomacy treatments."
 notes <- "Logit models; odds ratios reported. Standard errors in parentheses. All explanatory variables are lagged one period."
 
 out.file <- file.path(base.folder, "table_a7_5.html")
@@ -1485,7 +1485,7 @@ vars.all.prop.clean <- vars.all.prop %>%
          `Standard deviation` = Stdev)
 
 # Save final clean tables
-caption <- "Table A1.3: Description of all variables used in statistical analysis"
+caption <- "Table A1.3: Description of all variables used in statistical analysis."
 filename <- "table_a1_3_var_descriptions.txt"
 cat(pandoc.table.return(vars.descriptions, caption=caption),
     file=file.path(base.folder, paste0(filename)))
@@ -1494,7 +1494,7 @@ Pandoc.convert(file.path(getwd(), base.folder, paste0(filename)),
                format="html", footer=FALSE, proc.time=FALSE, 
                options = "-s", open=FALSE)
 
-caption <- "Table A1.4a: Summary of continuous variables used in statistical analysis"
+caption <- "Table A1.4a: Summary of continuous variables used in statistical analysis."
 filename <- "table_a1_4a_var_summary_continuous.txt"
 cat(pandoc.table.return(vars.all.cont.clean, caption=caption),
     file=file.path(base.folder, paste0(filename)))
@@ -1503,7 +1503,7 @@ Pandoc.convert(file.path(getwd(), base.folder, paste0(filename)),
                format="html", footer=FALSE, proc.time=FALSE, 
                options = "-s", open=FALSE)
 
-caption <- "Table A1.4b: Summary of proportional variables used in statistical analysis"
+caption <- "Table A1.4b: Summary of proportional variables used in statistical analysis."
 filename <- "table_a1_4b_var_summary_proportions.txt"
 cat(pandoc.table.return(vars.all.prop.clean),
     file=file.path(base.folder, paste0(filename)))
