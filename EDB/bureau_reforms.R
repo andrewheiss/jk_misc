@@ -495,7 +495,8 @@ plot.model.committee <- ggplot(committee.tidy, aes(x=estimate, y=term)) +
   geom_pointrangeh(aes(xmin=conf.low, xmax=conf.high)) + 
   labs(x="Odds ratio", y=NULL,
        title="Predicting the formation of an EDB committee",
-       subtitle="Coefficients from logistic regression; data limited to 2008") +
+       # subtitle="Coefficients from logistic regression; data limited to 2008") +
+       subtitle="Coefficients from logistic regression") +
   theme_edb()
 plot.model.committee
 
