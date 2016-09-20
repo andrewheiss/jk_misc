@@ -271,72 +271,25 @@ final <- bind_rows(
              single.year=2007)
 )
 
-cat(pandoc.table.return(final),
-    file=file.path(base.folder, paste0("table_methods_a4.txt")))
+caption <- "Table A1.4: Comparison of case study countries and other countries in years they are included in the TIP Report"
 
-Pandoc.convert(file.path(getwd(), base.folder, paste0("table_methods_a4.txt")),
-               format="html", footer=FALSE, proc.time=FALSE, 
-               options = "-s", open=FALSE)
+cat(pandoc.table.return(final, caption=caption),
+    file=file.path(base.folder, paste0("table_methods_a1_4.txt")))
 
-
-final.tier1.out <- bind_rows(
-  run.t.test("tier", title="Tier", 
-             tier1.exclude=TRUE),
-  run.t.test("ngos_ave", title="Count of NGOs", 
-             single.year=2011, tier1.exclude=TRUE),
-  run.t.test("igos_ave", title="Count of IGOs", 
-             single.year=2011, tier1.exclude=TRUE),
-  run.t.test("ht_news_country", title="TIP media coverage", 
-             tier1.exclude=TRUE),
-  run.t.test("ht_incidence_transit", title="Incidence (transit)", 
-             single.year=2011, tier1.exclude=TRUE),
-  run.t.test("ht_incidence_origin", title="Incidence (origin)", 
-             single.year=2011, tier1.exclude=TRUE),
-  run.t.test("ht_incidence_destination", title="Incidence (destination)", 
-             single.year=2011, tier1.exclude=TRUE),
-  run.t.test("data4", title="GDP per capita (constant 2000 dollars)", 
-             tier1.exclude=TRUE),
-  run.t.test("data9", title="Population", 
-             tier1.exclude=TRUE),
-  run.t.test("corrupt", title="Corruption", 
-             tier1.exclude=TRUE),
-  run.t.test("fh_pr", title="Political rights", 
-             tier1.exclude=TRUE),
-  run.t.test("data8", title="Aid (OECD)", 
-             tier1.exclude=TRUE),
-  run.t.test("econasst0", title="Aid (US)", 
-             tier1.exclude=TRUE),
-  run.t.test("percapeconasst0", title="Aid (US) per capita", 
-             tier1.exclude=TRUE),
-  run.t.test("ratproto2000", title="Ratification of 2000 TIP protocol", 
-             single.year=2011, tier1.exclude=TRUE),
-  run.t.test("prop_tip_wl", title="US TIP effort (proportion of Wikileaks cables mentioning TIP)", 
-             single.year=2007, tier1.exclude=TRUE)
-)
-
-cat(pandoc.table.return(final.tier1.out),
-    file=file.path(base.folder, paste0("table_methods_a4_no_tier1.txt")))
-
-Pandoc.convert(file.path(getwd(), base.folder, paste0("table_methods_a4_no_tier1.txt")),
+Pandoc.convert(file.path(getwd(), base.folder, paste0("table_methods_a1_4.txt")),
                format="html", footer=FALSE, proc.time=FALSE, 
                options = "-s", open=FALSE)
 
 
 # Analysis of cables
 cables.panel.all <- readRDS("final_figures/data_figureA_cables.rds")
+
 cables.presence.tip <- lm(prop_present100 ~ gdpcap.log + oda.log + 
                             totalfreedom + tier + crim1 + 
                             ht_incidence_transit + ht_incidence_origin + 
                             ht_incidence_destination + ratproto2000 +
-                            region + as.factor(year),
+                            as.factor(year),
                           data=cables.panel.all)
-
-cables.presence.tip.no.region <- lm(prop_present100 ~ gdpcap.log + oda.log + 
-                                      totalfreedom + tier + crim1 + 
-                                      ht_incidence_transit + ht_incidence_origin + 
-                                      ht_incidence_destination + ratproto2000 +
-                                      as.factor(year),
-                                    data=cables.panel.all)
 
 var.labs <- c("GDP per capita (logged)", "Total foreign aid (logged)", 
               "Worse total freedom", "TIP tier",
@@ -346,22 +299,22 @@ var.labs <- c("GDP per capita (logged)", "Total foreign aid (logged)",
               "Trafficking intensity in destination countries",
               "2000 TIP protocol ratification")
 
-col.labs <- c("Model AM5.1", "Model AM5.2")
+col.labs <- c("Model A1.1")
 
-extra.lines <- list(c("Region fixed effects", c("Yes", "No")),
-                    c("Year fixed effects", c("Yes", "Yes")))
+extra.lines <- list(c("Year fixed effects", c("Yes")))
 
-title <- "Table methods A5: Relationship between cable availability and human trafficking"
+title <- "Table A1.1: Percent of estimated cables actually present"
 
-out.file <- file.path(base.folder, "table_methods_a5.html")
+out.file <- file.path(base.folder, "table_methods_a1_5.html")
 
-stargazer(cables.presence.tip, cables.presence.tip.no.region,
+stargazer(cables.presence.tip,
           type="html", out=out.file, out.header=TRUE, no.space=TRUE,
           covariate.labels=var.labs, column.labels=col.labs, 
           dep.var.caption="Percent of estimated cables actually present",
           omit="\\.factor|region",
           model.numbers=FALSE, dep.var.labels.include=FALSE,
-          notes.align="l", add.lines=extra.lines)
+          notes.align="l", add.lines=extra.lines,
+          notes="Standard OLS estimates")
 
 
 # -----------
