@@ -583,8 +583,8 @@ plot.data <- models %>%
                              ordered=TRUE))
 
 coef.plot <- ggplot(plot.data, aes(y=clean.name, x=estimate)) + 
-  geom_vline(xintercept=1, colour="#6B4A3D", alpha=0.6, size=0.5) + 
-  geom_pointrangeh(aes(xmin=xmin, xmax=xmax), size=.5, 
+  geom_vline(xintercept=1, colour="grey50", alpha=0.6, size=0.5) + 
+  geom_pointrangeh(aes(xmin=xmin, xmax=xmax), size=0.2, 
                    position=position_dodge(width=.7)) + 
   coord_cartesian(xlim=c(0, 7)) +
   labs(x="Odds ratio", y=NULL) +
@@ -601,7 +601,7 @@ ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".png")),
 fig5.6.n <- sprintf("N = %s", model5.1.3$df.null + 1)
 
 caption <- c("Figure 5.6: Odds ratios of Model 5.1.3.",
-             "Logit model of probability of criminalization in the next year.",
+             "Logit model of probability of a documented reaction.",
              fig5.6.n,
              "Source: Author’s data.") %>%
   paste0(collapse="\n")
@@ -809,8 +809,8 @@ plot.data <- models %>%
 
 coef.plot <- ggplot(plot.data, aes(y=clean.name, x=estimate,
                                    colour=model.name, shape=model.name)) + 
-  geom_vline(xintercept=1, colour="#6B4A3D", alpha=0.6, size=0.5) + 
-  geom_pointrangeh(aes(xmin=xmin, xmax=xmax), size=.5, 
+  geom_vline(xintercept=1, colour="grey50", alpha=0.6, size=0.5) + 
+  geom_pointrangeh(aes(xmin=xmin, xmax=xmax), size=0.2, 
                    position=position_dodge(width=.7)) + 
   scale_colour_manual(values=c("grey70", "black", "black"), name="") +
   scale_shape_manual(values=c(19, 19, 17), name="") +
@@ -858,8 +858,8 @@ plot.data <- models %>%
 
 coef.plot <- ggplot(plot.data, aes(y=clean.name, x=estimate,
                                    colour=model.name, shape=model.name)) + 
-  geom_vline(xintercept=1, colour="#6B4A3D", alpha=0.6, size=0.5) + 
-  geom_pointrangeh(aes(xmin=xmin, xmax=xmax), size=.5, 
+  geom_vline(xintercept=1, colour="grey50", alpha=0.6, size=0.5) + 
+  geom_pointrangeh(aes(xmin=xmin, xmax=xmax), size=0.2, 
                    position=position_dodge(width=.7)) + 
   scale_colour_manual(values=c("black", "grey70"), name="") +
   scale_shape_manual(values=c(19, 17), name="") +
