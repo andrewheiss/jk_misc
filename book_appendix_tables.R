@@ -274,9 +274,9 @@ final <- bind_rows(
 caption <- "Table A1.4: Comparison of case study countries and other countries in years they are included in the TIP Report"
 
 cat(pandoc.table.return(final, caption=caption),
-    file=file.path(base.folder, paste0("table_methods_a1_4.txt")))
+    file=file.path(base.folder, paste0("table_a1_4.txt")))
 
-Pandoc.convert(file.path(getwd(), base.folder, paste0("table_methods_a1_4.txt")),
+Pandoc.convert(file.path(getwd(), base.folder, paste0("table_a1_4.txt")),
                format="html", footer=FALSE, proc.time=FALSE, 
                options = "-s", open=FALSE)
 
@@ -1405,10 +1405,10 @@ model.vars.clean <- read_csv("data/model_vars_labels.csv") %>%
          ignore = ifelse(is.na(ignore), FALSE, TRUE))
 
 vars.df.complete <- model.vars %>%
-  filter(dataset != "df.reactions", dataset != "df.model5.3")
+  filter(dataset != "df.reactions", dataset != "df.model6.3")
 
 vars.df.reactions <- model.vars %>%
-  filter(dataset == "df.reactions" | dataset == "df.model5.3")
+  filter(dataset == "df.reactions" | dataset == "df.model6.3")
 
 # Create a list of unique variables to eventually select from df.complete
 vars.df.complete.select <- unique(vars.df.complete$var_name)
@@ -1459,6 +1459,13 @@ vars.all.cont <- vars.all.summary %>%
 vars.all.prop <- vars.all.summary %>%
   filter(Variable %in% other.prop | Max == 1)
 
+vars.descriptions <- vars.all.summary %>%
+  left_join(model.vars.clean, by=c("Variable" = "var_name")) %>%
+  filter(!ignore) %>%
+  arrange(first.chapter, desc(num.chapters)) %>%
+  select(Variable = label, Description, Source, Chapters = chapters)
+
+
 # Join summary stats to table grouped by chapter
 vars.all.cont.clean <- vars.all.cont %>%
   left_join(model.vars.clean, by=c("Variable" = "var_name")) %>%
@@ -1467,30 +1474,40 @@ vars.all.cont.clean <- vars.all.cont %>%
   # There are some tiny tiny minimum values; this rounds them for nicer display
   mutate(Min = ifelse(Min < 0.00001, 0, Min)) %>%
   mutate_each(funs(comma(., digits=2)), c(Mean, Median, Stdev, Min, Max)) %>%
-  select(Variable = label, Description, Source, Chapters = chapters,
-         Mean, Median, `Standard deviation` = Stdev, Min, Max)
+  select(Variable = label, Mean, Median, `Standard deviation` = Stdev, Min, Max)
 
 vars.all.prop.clean <- vars.all.prop %>%
   left_join(model.vars.clean, by=c("Variable" = "var_name")) %>%
   filter(!ignore) %>%
   arrange(first.chapter, desc(num.chapters)) %>%
   mutate_each(funs(comma(., digits=1)), c(Mean, Stdev)) %>%
-  select(Variable = label, Description, Source, Chapters = chapters,
-         `Mean proportion` = Mean, `Standard deviation` = Stdev)
+  select(Variable = label, `Mean proportion` = Mean, 
+         `Standard deviation` = Stdev)
 
 # Save final clean tables
-cat(pandoc.table.return(vars.all.cont.clean),
-    file=file.path(base.folder, paste0("table_var_summary_continuous.txt")))
+caption <- "Table A1.3: Description of all variables used in statistical analysis"
+filename <- "table_a1_3_var_descriptions.txt"
+cat(pandoc.table.return(vars.descriptions, caption=caption),
+    file=file.path(base.folder, paste0(filename)))
 
-cat(pandoc.table.return(vars.all.prop.clean),
-    file=file.path(base.folder, paste0("table_var_summary_proportions.txt")))
-
-Pandoc.convert(file.path(getwd(), base.folder,
-                         paste0("table_var_summary_continuous.txt")),
+Pandoc.convert(file.path(getwd(), base.folder, paste0(filename)),
                format="html", footer=FALSE, proc.time=FALSE, 
                options = "-s", open=FALSE)
 
-Pandoc.convert(file.path(getwd(), base.folder,
-                         paste0("table_var_summary_proportions.txt")),
+caption <- "Table A1.4a: Summary of continuous variables used in statistical analysis"
+filename <- "table_a1_4a_var_summary_continuous.txt"
+cat(pandoc.table.return(vars.all.cont.clean, caption=caption),
+    file=file.path(base.folder, paste0(filename)))
+
+Pandoc.convert(file.path(getwd(), base.folder, paste0(filename)),
+               format="html", footer=FALSE, proc.time=FALSE, 
+               options = "-s", open=FALSE)
+
+caption <- "Table A1.4b: Summary of proportional variables used in statistical analysis"
+filename <- "table_a1_4b_var_summary_proportions.txt"
+cat(pandoc.table.return(vars.all.prop.clean),
+    file=file.path(base.folder, paste0(filename)))
+
+Pandoc.convert(file.path(getwd(), base.folder, paste0(filename)),
                format="html", footer=FALSE, proc.time=FALSE, 
                options = "-s", open=FALSE)
