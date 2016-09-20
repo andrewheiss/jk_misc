@@ -600,7 +600,7 @@ ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".png")),
 
 fig5.6.n <- sprintf("N = %s", model5.1.3$df.null + 1)
 
-caption <- c("Figure 5.6: Odds ratios of Model 4.1.3",
+caption <- c("Figure 5.6: Odds ratios of Model 5.1.3",
              "Logit model of probability of criminalization in the next year.",
              fig5.6.n,
              "Source: Author's data.") %>%
@@ -828,7 +828,7 @@ ggsave(coef.plot, filename=file.path("final_figures", paste0(filename, ".png")),
        width=width, height=height, type="cairo", dpi=300)
 
 caption <- c("Figure 6.7: Odds ratios of the variables representing scorecard diplomacy",
-             sprintf("Duration models of time to criminalization. N = %s (models 5.1.2 and 5.2.5) and %s (model 5.2.3)", 
+             sprintf("Duration models of time to criminalization. N = %s (models 6.1.2 and 6.2.5) and %s (model 6.2.3)", 
                      format(model6.1.2$n, big.mark=",", trim=TRUE),
                      format(model6.2.3$n, big.mark=",", trim=TRUE)),
              "Source: Author's data. For full results, see the Results Appendix") %>%
@@ -1044,7 +1044,7 @@ extra.lines <- list(c("Number of countries",
 title <- "Table A7.2: Time to TIP criminalization: presence in report (trade)"
 notes <- "Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."
 
-out.file <- file.path(base.folder, "table_a6_2.html")
+out.file <- file.path(base.folder, "table_a7_2.html")
 
 stargazer(model7.2.1, model7.2.2, model7.2.3, model7.2.4, model7.2.5,
           type="html", out=out.file, out.header=TRUE,
@@ -1130,7 +1130,7 @@ extra.lines <- list(c("Number of countries",
 title <- "Table A7.3: Time to TIP criminalization: US pressure (aid)"
 notes <- "Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."
 
-out.file <- file.path(base.folder, "table_a6_3.html")
+out.file <- file.path(base.folder, "table_a7_3.html")
 
 stargazer(model7.3.1, model7.3.2, model7.3.3, model7.3.4,
           model7.3.5, model7.3.6, 

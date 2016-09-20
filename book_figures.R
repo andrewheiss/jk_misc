@@ -1145,7 +1145,7 @@ caption <- c("Figure 7.3: Correlation between influence and favorability",
                      favor.influence.cor$parameter + 2,
                      favor.influence.cor$estimate,
                      favor.influence.cor$p.value),
-             "Source: Author's data (see Table 5.1 and 6.1)") %>%
+             "Source: Author's data (see Table 6.1 and 7.1)") %>%
   paste0(collapse="\n")
 cat(caption, file=file.path(base.folder, paste0(filename, ".txt")))
 
