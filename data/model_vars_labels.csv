@@ -21,7 +21,7 @@ logstory,4,,Coverage / Human trafficking news (logged),"The log of the number of
 logstory1,4,1,Coverage,—,—
 totalfreedom1,"5, 6",,Worse total freedom,"Sum of Freedom House political rights and civil liberties scores. 2 to 14 scale, with 2 representing the best total freedom and 7 the worst.",Freedom House (http://www.freedom house.org/reports)
 loght_news_country,5,1,Human trafficking news (logged),—,—
-newus_share_tot_trade1,5,,Share of total trade with US,??????,??????
+newus_share_tot_trade1,5,,Share of total trade with US,Share of a country’s total trade (imports plus exports) that is with the United States.,IMF Direction of Trade Statistics
 pressure,"5, 7",1,US pressure (Watchlist or Tier 3),—,—
 reactionnomedia,"5, 6",,Reaction (no media),Count of non-media reactions in Wikileaks cables,Author generated from Wikileaks cables
 tier_2,"5, 6",,Tier 2,Dichotomous variable (0/1) indicating whether the US has rated a country as Tier 2.,TIP report
@@ -43,11 +43,9 @@ tier1_25,6,1,Watchlist,—,—
 tier1_3,6,1,Tier 3,—,—
 totalreactionnomedia1,6,,Total reactions (no media),Count of non-media reactions in Wikileaks cables,Author generated from Wikileaks cables
 aid.us.total.perc_lag,7,,US aid as share of total aid (logged),Proportion of foreign aid from the US out of all received aid.,AidData (http://aiddata.org)
-econasstPgdp_1,7,,US aid as share of GDP (logged),??????,??????
 fdi.from.us.log_lag,7,,FDI from US (logged),Total amount of foreign direct investment (FDI) from the US.,"Bilateral FDI statistics, UN Conference on Trade and Development (http://unctad.org/en/Pages/DIAE/FDI%20Statistics/FDI-Statistics-Bilateral.aspx)"
 has.bit.sig.with.us_lag,7,,Has BIT with US,Dichotomous variable (0/1) indicating whether a country has signed a bilateral investment treaty (BIT) with the US.,Office of the United States Trade Representative (https://ustr.gov/trade-agreements/bilateral-investment-treaties)
 low_tier1,7,1,Lowest tier,—,—
-newus_tradeshare_gdp1,7,,US trade as share of GDP (logged),??????,??????
 pressure_lag,7,1,US pressure (Watchlist or Tier 3),—,—
 trade.to.us.log_lag,7,,Imports to US (logged),Total value of imports to the US for a given country.,IMF (http://data.imf.org/regular.aspx?key=61013712)
 us.military.aid.log_lag,7,,US military aid (logged),Total military aid provided by the US,Security Assistance Monitor (http://www.securityassistance.org/data/country/military/country/1996/2017/is_all/Global)
