@@ -884,6 +884,45 @@ caption <- c("Figure 6.9: Odds ratios of the variables representing scorecard di
 cat(caption, file=file.path("final_figures", paste0(filename, ".txt")))
 
 
+# Table A6.4: The effect of TIP-specific funding on criminalization
+model6.4.1 <- coxph(Surv(start_time, yrfromj2, fail) ~ log.total.funding1 +
+                      women1 + totalfreedom1 + ratproto2000 +
+                      corrected_regcrim1_1 + missinfo8_2 +
+                      cluster(name),
+                    data=df.survivalized.crim, ties="efron")
+
+model6.4.1.fit <- summary(survfit(model6.4.1))$table
+
+# Save table
+var.labs <- c("Total US funding for TIP (logged)", "Share of women in parliament",
+              "Worse total freedom (political rights + civil liberties)",
+              "2000 TIP protocol ratification", 
+              "Regional density of criminalization",
+              "Missing information")
+col.labs <- c("Model 6.4.1")
+
+ses <- list(get.or.se(model6.4.1))
+
+extra.lines <- list(c("Number of countries", 
+                      c(model6.4.1.fit["n.max"])),
+                    c("Number of criminalizations", 
+                      c(model6.4.1.fit["events"])))
+
+title <- "Table A6.4: The effect of TIP-specific funding on criminalization."
+notes <- "Robust standard errors in parentheses. All explanatory variables are lagged one period unless otherwise noted."
+
+out.file <- file.path(base.folder, "table_a6_4.html")
+
+stargazer(model6.4.1,
+          type="html", out=out.file, out.header=TRUE,
+          apply.coef=exp, se=ses, p.auto=FALSE, no.space=TRUE,
+          covariate.labels=var.labs, column.labels=col.labs, 
+          dep.var.caption="Time to TIP criminalization", 
+          model.numbers=FALSE, dep.var.labels.include=FALSE,
+          notes.align="l", add.lines=extra.lines, keep.stat=c("n"),
+          notes.label="Notes:", notes=notes, title=title)
+
+
 # -----------
 # Chapter 7
 # -----------
