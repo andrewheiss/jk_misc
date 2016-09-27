@@ -586,7 +586,7 @@ coef.plot <- ggplot(plot.data, aes(y=clean.name, x=estimate)) +
   geom_vline(xintercept=1, colour="grey50", alpha=0.6, size=0.5) + 
   geom_pointrangeh(aes(xmin=xmin, xmax=xmax), size=0.2, 
                    position=position_dodge(width=.7)) + 
-  coord_cartesian(xlim=c(0, 7)) +
+  coord_cartesian(xlim=c(0, 6.5)) +
   labs(x="Odds ratio", y=NULL) +
   theme_clean(10)
 
